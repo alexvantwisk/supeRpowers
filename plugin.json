@@ -1,0 +1,14 @@
+{
+  "name": "supeRpowers",
+  "version": "0.1.0",
+  "description": "Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, and biostatistics.",
+  "keywords": ["r", "rstats", "tidyverse", "shiny", "biostatistics", "clinical-trials"],
+  "author": "Alexander van Twisk",
+  "license": "MIT",
+  "claude_code": {
+    "min_version": "1.0.0",
+    "rules": ["rules/r-conventions.md"],
+    "skills": ["skills/*/SKILL.md"],
+    "agents": ["agents/*.md"]
+  }
+}
