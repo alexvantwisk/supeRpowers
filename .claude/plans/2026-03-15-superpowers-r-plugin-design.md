@@ -45,6 +45,31 @@ Service Layer (agents/)
 - **Scalable:** New skills/agents can be added without touching existing ones
 - **Phased delivery:** Independent skills can be built and shipped incrementally
 
+### Agent Dispatch Convention
+
+Skills dispatch to shared agents via Claude Code's Agent tool with `subagent_type` referencing the agent by name.
+
+- **Path convention:** Shared agents live at `.claude/agents/<name>.md`. Skill-local agents live at `.claude/skills/<skill>/agents/<name>.md`.
+- **Dispatch is skill-initiated:** When a skill determines that a task crosses into an agent's domain, it dispatches automatically (no user confirmation needed). Example: `r-data-analysis` detects modeling questions and dispatches to `r-statistician`.
+- **Agent output returns to skill context:** Agents produce structured markdown reports. The dispatching skill incorporates the agent's findings into its response to the user.
+- **User can invoke agents directly:** Agents are also available for direct invocation (e.g., "review this R code" triggers `r-code-reviewer` without going through a skill).
+
+### Context Budget
+
+To avoid context window bloat across 12 skills:
+
+- **`r-conventions.md`:** Maximum 150 lines. Concise reference card, not a tutorial.
+- **Each `SKILL.md`:** Maximum 300 lines for the skill body (excluding frontmatter).
+- **Reference files:** Loaded lazily — only when the user's question requires them. Skills include explicit "Read `references/<file>` when the user asks about X" instructions rather than loading all references upfront.
+- **Agent prompts:** Maximum 200 lines each. Focused on procedure, not background knowledge.
+
+### Error Handling Convention
+
+- **Script failures:** Log the error, report to user, suggest manual alternative. Max 2 retries.
+- **Agent contradictions:** When agent output conflicts with skill knowledge, flag the conflict to the user rather than silently choosing one.
+- **MCP unavailability:** All MCP-dependent features degrade gracefully. Skills must function fully without MCP — MCP enhances but is never required.
+- **General retry limit:** Max 2 attempts for any automated operation before asking the user for guidance.
+
 ---
 
 ## Foundation Layer
@@ -70,6 +95,27 @@ A concise reference card (not a textbook) loaded into context for every R intera
 ---
 
 ## Domain Layer — Skills
+
+### Skill Frontmatter Contracts
+
+Every SKILL.md uses YAML frontmatter with `name` and `description`. The `description` field defines when the skill activates.
+
+| Skill | `name` | `description` (trigger condition) |
+|-------|--------|-----------------------------------|
+| r-data-analysis | r-data-analysis | Use when working with data wrangling, cleaning, transformation, or pipelines in R using dplyr, tidyr, readr, lubridate, stringr, or forcats. |
+| r-visualization | r-visualization | Use when creating plots, charts, or visualizations in R using ggplot2, plotly, or htmlwidgets. Includes publication-quality figures and domain-specific plots. |
+| r-tdd | r-tdd | Use when writing or running tests for R code, setting up testthat, or following TDD workflow in R packages or scripts. |
+| r-debugging | r-debugging | Use when diagnosing bugs, errors, or unexpected behavior in R code. Covers browser(), traceback(), profiling, and common R pitfalls. |
+| r-package-dev | r-package-dev | Use when creating, developing, documenting, or submitting R packages. Covers usethis, devtools, roxygen2, pkgdown, CRAN submission, and CI/CD. |
+| r-shiny | r-shiny | Use when building, structuring, testing, or deploying Shiny applications. Covers reactivity, modules, golem/rhino, bslib, shinytest2, and deployment. |
+| r-stats | r-stats | Use when fitting statistical models, checking assumptions, or performing inference in R. Covers lm, glm, mixed models, survival, Bayesian, and time series. General methodology regardless of domain. |
+| r-clinical | r-clinical | Use when working with clinical trial data, CDISC datasets (ADaM/SDTM), regulatory tables (TLFs), trial design, biomarker analysis, or domain-specific biostatistics workflows. |
+| r-tables | r-tables | Use when creating formatted tables in R using gt, gtsummary, or gtExtras. Covers demographic tables, regression tables, and publication-quality output. |
+| r-quarto | r-quarto | Use when authoring Quarto documents, presentations, websites, or books with R. Covers YAML config, code chunks, cross-references, journal templates, and multi-format output. |
+| r-performance | r-performance | Use when optimizing R code for speed or memory. Covers profiling, data.table, vectorization, Rcpp, and parallel processing. |
+| r-package-skill-generator | r-package-skill-generator | Use when generating a Claude Code skill from an R package GitHub repository. Existing meta-tool. |
+
+**Boundary: `r-stats` vs `r-clinical`:** `r-stats` covers general statistical methodology (model fitting, diagnostics, inference) regardless of application domain. `r-clinical` covers domain-specific workflows: CDISC data structures, regulatory TLFs, trial design, ICH guidelines. Survival analysis methodology lives in `r-stats`; applying survival analysis to a clinical trial endpoint with ADaM data lives in `r-clinical`.
 
 ### Phase 1: Core R Development
 
@@ -113,6 +159,7 @@ Systematic debugging for R.
 - Common pitfalls: NSE scoping, factor surprises, recycling rules, copy-on-modify
 - Memory debugging: `lobstr::obj_size()`, `bench::mark()`, `profvis`
 - Context-aware: distinguishes interactive script debugging from package code debugging
+- Dispatches to `r-code-reviewer` agent when the bug appears to stem from a code quality issue (style, anti-pattern, NSE misuse)
 
 ### Phase 2: Package Development & Shiny
 
@@ -219,6 +266,8 @@ When speed matters.
 
 Meta-tool that generates Claude skills from any R package GitHub repo. Already implemented with multi-agent exploration (API, Architecture, Idiom, Edge-Case agents) and synthesis pipeline.
 
+**Integration note:** Generated skills should conform to supeRpowers conventions (tidyverse-first, base pipe, consistent frontmatter format). The skill generator's synthesis step should reference `r-conventions.md` to ensure generated skills align with the plugin's style. The existing `skill-creator` external dependency is retained for the drafting step.
+
 ---
 
 ## Service Layer — Shared Agents
@@ -227,51 +276,75 @@ Meta-tool that generates Claude skills from any R package GitHub repo. Already i
 
 Opinionated R code review dispatched after code generation from any skill.
 
-- Style: styler compliance, lintr rules, naming conventions, base pipe enforcement
-- Correctness: NSE hygiene (`{{ }}`, `.data$`, `.env$`), roxygen2 completeness
-- Performance: flags known slow patterns (growing vectors, rbind in loops)
-- Severity: CRITICAL (bugs) → HIGH (style violations) → MEDIUM (suggestions)
+- **Inputs:** File paths to review, or inline code block. Optionally: review scope (style-only, full, performance).
+- **Output:** Markdown report with categorized findings. Format: severity (CRITICAL/HIGH/MEDIUM), location (file:line), issue description, suggested fix.
+- **Invocation:** Auto-dispatched by skills after code generation. Also directly invocable by user ("review this R code").
+- **Procedure:**
+  1. Read target files
+  2. Check styler compliance, lintr rules, naming conventions, base pipe enforcement
+  3. Check NSE hygiene (`{{ }}`, `.data$`, `.env$`), roxygen2 completeness
+  4. Flag known slow patterns (growing vectors, rbind in loops)
+  5. Return findings sorted by severity
 
 ### `r-statistician.md`
 
 Statistical consulting agent.
 
-- Model selection guidance based on data structure and research question
-- Assumption checking prompts (normality, homoscedasticity, independence, linearity)
-- Interpretation: coefficients, CIs, effect sizes in plain language
-- Warnings: multiple comparisons, p-hacking, Simpson's paradox, correlation ≠ causation
-- Power analysis and sample size guidance
-- Biostat depth: survival diagnostics (Schoenfeld residuals, PH assumption), competing risks
+- **Inputs:** Research question or modeling task description. Optionally: dataset summary (str/glimpse output), current model code, model output.
+- **Output:** Markdown advisory report. Format: recommended approach with rationale, assumptions to verify (with R code to check each), interpretation guidance, warnings/caveats.
+- **Invocation:** Dispatched by `r-stats`, `r-clinical`, or `r-data-analysis` when analysis crosses into modeling. Also directly invocable.
+- **Procedure:**
+  1. Assess data structure and research question
+  2. Recommend model family with rationale
+  3. List assumptions with R code to verify each one
+  4. If model output provided: interpret coefficients, CIs, effect sizes in plain language
+  5. Flag risks: multiple comparisons, p-hacking, Simpson's paradox, correlation ≠ causation
+  6. Biostat depth: survival diagnostics (Schoenfeld residuals, PH assumption), competing risks
 
 ### `r-pkg-check.md`
 
 R CMD check issue resolver.
 
-- Parses check output, categorizes ERROR/WARNING/NOTE
-- Knows fixes for common NOTEs ("no visible binding" → `.data$`, missing imports, undocumented args)
-- CRAN-specific: acceptable NOTEs, reviewer expectations
-- Cross-platform: Windows path/encoding issues, macOS/Linux differences
-- Suggests correct `usethis::use_*()` calls for structural fixes
+- **Inputs:** R CMD check output (text), or package root path to run check.
+- **Output:** Markdown report. Format: categorized issues (ERROR/WARNING/NOTE), each with: issue text, root cause, fix (specific code/command), and whether CRAN reviewers would flag it.
+- **Invocation:** Dispatched by `r-package-dev` after `devtools::check()`. Also directly invocable.
+- **Procedure:**
+  1. Parse check output into ERROR/WARNING/NOTE categories
+  2. For each issue: identify root cause, provide specific fix
+  3. Common NOTEs: "no visible binding" → `.data$`, missing imports → `usethis::use_import_from()`, undocumented args → roxygen2 update
+  4. Flag CRAN-specific concerns: acceptable vs problematic NOTEs
+  5. Note cross-platform issues (Windows paths, encoding)
+  6. Suggest correct `usethis::use_*()` calls for structural fixes
 
 ### `r-shiny-architect.md`
 
 Shiny app structure reviewer.
 
-- Module decomposition: size, coupling, namespacing
-- Reactivity audit: reactive spaghetti, unnecessary invalidation, missing `isolate()`
-- Performance: unbounded reactive chains, missing `bindCache()`, large session data
-- Security: input validation, SQL injection via inputs, file upload handling
-- Architecture: golem structure adherence, business logic separation
+- **Inputs:** Shiny app root directory path. Optionally: specific concern (performance, modularity, security).
+- **Output:** Markdown architecture review. Format: findings by category (modules, reactivity, performance, security), each with severity, location, and recommendation.
+- **Invocation:** Dispatched by `r-shiny` for structure review. Also directly invocable.
+- **Procedure:**
+  1. Scan app structure (server.R/ui.R or app.R, modules/, R/, tests/)
+  2. Evaluate module decomposition: size, coupling, namespacing
+  3. Audit reactivity: identify reactive spaghetti, unnecessary invalidation, missing `isolate()`
+  4. Check performance: unbounded reactive chains, missing `bindCache()`, large session data
+  5. Review security: input validation, SQL injection via inputs, file upload handling
+  6. Assess architecture: golem/rhino structure adherence, business logic separation
 
 ### `r-dependency-manager.md`
 
 renv and dependency management expert.
 
-- Workflow: `renv::init()` → `renv::snapshot()` → `renv::restore()`
-- Dependency audit: heavy/unnecessary deps, lighter alternatives
-- Version conflicts: diagnosis and resolution
-- Mixed repos: Bioconductor + CRAN coexistence in renv
-- Lock file review: concerning pins, missing packages
+- **Inputs:** Project root path. Optionally: specific concern (conflict resolution, audit, setup).
+- **Output:** Markdown report. Format: current state assessment, issues found with fixes, recommended actions.
+- **Invocation:** Dispatched by `r-package-dev` or `r-data-analysis` for dependency questions. Also directly invocable.
+- **Procedure:**
+  1. Check for renv.lock presence and renv status
+  2. Audit dependencies: identify heavy/unnecessary deps, suggest lighter alternatives
+  3. Diagnose version conflicts with resolution steps
+  4. Handle mixed repos: Bioconductor + CRAN coexistence in renv configuration
+  5. Review lock file for concerning version pins or missing packages
+  6. Recommend `renv::init()`, `renv::snapshot()`, or `renv::restore()` as appropriate
 
 ---
 
@@ -279,11 +352,29 @@ renv and dependency management expert.
 
 ### MCP Server Integration
 
-The `r-clinical` skill leverages connected MCP servers:
+The `r-clinical` skill leverages connected MCP servers. All MCP features are optional — the skill functions fully without them.
 
-- **Clinical Trials MCP:** Pull trial design details (endpoints, sample sizes, eligibility) to inform analysis. E.g., "look up NCT04012345 and help me replicate the primary endpoint analysis"
-- **bioRxiv MCP:** Search preprints for methodology or disease area context. E.g., "find recent preprints on adaptive enrichment designs in oncology"
-- The `r-statistician` agent can reference MCP data when advising on methodology
+**Clinical Trials MCP — workflow mapping:**
+
+| Clinical Workflow | MCP Tool | Usage |
+|------------------|----------|-------|
+| Look up a specific trial | `get_trial_details` | Fetch protocol, endpoints, locations by NCT ID |
+| Find trials for a condition | `search_trials` | Discover relevant trials by condition/intervention |
+| Analyze competitor pipelines | `search_by_sponsor` | Company pipeline analysis |
+| Compare endpoint designs | `analyze_endpoints` | Systematic endpoint comparison across trials |
+| Find trial investigators | `search_investigators` | PI and site identification |
+| Match patient eligibility | `search_by_eligibility` | Demographic/clinical criteria matching |
+
+**bioRxiv MCP — workflow mapping:**
+
+| Clinical Workflow | MCP Tool | Usage |
+|------------------|----------|-------|
+| Literature search | `search_preprints` | Find preprints by keyword, author, date |
+| Preprint deep dive | `get_preprint` | Full details for a specific DOI |
+| Check publication status | `search_published_preprints` | Find if preprints have been peer-reviewed |
+| Funding analysis | `search_by_funder` | Research funding patterns in a field |
+
+The `r-statistician` agent can reference MCP data when advising on methodology.
 
 ### Skill Chaining — Natural Workflows
 
@@ -371,9 +462,52 @@ Each skill bundles reference material loaded into context when needed:
 
 ---
 
+## Plugin Packaging
+
+### Manifest
+
+The plugin ships as a Git repository with a `plugin.json` manifest at root:
+
+```json
+{
+  "name": "supeRpowers",
+  "version": "1.0.0",
+  "description": "Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, and biostatistics.",
+  "keywords": ["r", "rstats", "tidyverse", "shiny", "biostatistics", "clinical-trials"],
+  "author": "Alexander van Twisk",
+  "license": "MIT",
+  "claude_code": {
+    "min_version": "1.0.0",
+    "rules": ["rules/r-conventions.md"],
+    "skills": ["skills/*/SKILL.md"],
+    "agents": ["agents/*.md"]
+  }
+}
+```
+
+### Installation
+
+Users install via Claude Code marketplace. The plugin installs its `.claude/` subtree (rules, skills, agents) into the user's project. All components install as a unit — no partial installation.
+
+### Versioning
+
+Semantic versioning (major.minor.patch):
+- **Major:** Breaking changes to skill triggers, agent contracts, or conventions
+- **Minor:** New skills/agents, new reference material, expanded capabilities
+- **Patch:** Bug fixes, improved prompts, reference updates
+
+### Dependencies
+
+- No external runtime dependencies beyond R itself (>= 4.1.0)
+- Python 3 required only for `r-package-skill-generator` scripts
+- MCP servers (Clinical Trials, bioRxiv) are optional enhancements, not requirements
+
+---
+
 ## Implementation Phases
 
 ### Phase 1: Foundation + Core (First delivery)
+- `plugin.json` manifest
 - `rules/r-conventions.md`
 - `r-data-analysis/`
 - `r-visualization/`
@@ -386,6 +520,7 @@ Each skill bundles reference material loaded into context when needed:
 - `r-shiny/`
 - `agents/r-pkg-check.md`
 - `agents/r-shiny-architect.md`
+- `agents/r-dependency-manager.md`
 
 ### Phase 3: Statistics, Clinical & Publishing
 - `r-stats/`
@@ -394,20 +529,30 @@ Each skill bundles reference material loaded into context when needed:
 - `r-quarto/`
 - `agents/r-statistician.md`
 
-### Phase 4: Performance & Advanced
+### Phase 4: Performance
 - `r-performance/`
-- `agents/r-dependency-manager.md`
 
 Each phase is independently deliverable and testable. Later phases build on the foundation but don't require changes to earlier phases.
 
 ---
 
+## Quality Assurance
+
+Each skill and agent includes 3-5 example prompts with expected behavior descriptions in a `## Examples` section of its SKILL.md or agent markdown. These serve as:
+- A lightweight test suite during development (run the prompt, verify the output matches expectations)
+- Documentation for users on what the skill/agent can do
+- Regression checks when updating skill prompts
+
+---
+
 ## Success Criteria
 
-- Every skill has a clear trigger condition (when to invoke)
-- Every agent has defined input/output contracts
-- R conventions rule is comprehensive but concise (loadable in context without bloat)
-- Skills produce idiomatic, modern R code that passes styler/lintr
+- Every skill has YAML frontmatter with `name` and `description` (trigger condition)
+- Every agent has defined input/output contracts and procedure
+- R conventions rule is under 150 lines, comprehensive but concise
+- Each SKILL.md body is under 300 lines; reference files loaded lazily
+- Skills produce idiomatic, modern R code conforming to `r-conventions.md`
 - Statistical advice is sound and includes appropriate caveats
-- MCP integration provides genuine value for clinical workflows
-- Plugin is installable from Claude Code marketplace as a single unit
+- MCP integration enhances but is never required — graceful degradation
+- Plugin is installable from Claude Code marketplace as a single unit via `plugin.json`
+- `r-debugging` dispatches to `r-code-reviewer` when code quality issues are suspected
