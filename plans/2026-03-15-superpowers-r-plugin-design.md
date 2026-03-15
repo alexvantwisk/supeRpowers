@@ -49,7 +49,7 @@ Service Layer (agents/)
 
 Skills dispatch to shared agents via Claude Code's Agent tool with `subagent_type` referencing the agent by name.
 
-- **Path convention:** Shared agents live at `.claude/agents/<name>.md`. Skill-local agents live at `.claude/skills/<skill>/agents/<name>.md`.
+- **Path convention:** Shared agents live at `agents/<name>.md`. Skill-local agents live at `skills/<skill>/agents/<name>.md`.
 - **Dispatch is skill-initiated:** When a skill determines that a task crosses into an agent's domain, it dispatches automatically (no user confirmation needed). Example: `r-data-analysis` detects modeling questions and dispatches to `r-statistician`.
 - **Agent output returns to skill context:** Agents produce structured markdown reports. The dispatching skill incorporates the agent's findings into its response to the user.
 - **User can invoke agents directly:** Agents are also available for direct invocation (e.g., "review this R code" triggers `r-code-reviewer` without going through a skill).
@@ -74,7 +74,7 @@ To avoid context window bloat across 12 skills:
 
 ## Foundation Layer
 
-### `.claude/rules/r-conventions.md`
+### `rules/r-conventions.md`
 
 A concise reference card (not a textbook) loaded into context for every R interaction.
 
@@ -409,55 +409,54 @@ Each skill bundles reference material loaded into context when needed:
 ## Directory Structure
 
 ```
-.claude/
-  rules/
-    r-conventions.md
-  skills/
-    r-data-analysis/
-      SKILL.md
-      references/
-    r-visualization/
-      SKILL.md
-      references/
-    r-tdd/
-      SKILL.md
-      scripts/
-    r-debugging/
-      SKILL.md
-    r-package-dev/
-      SKILL.md
-      references/
-      scripts/
-    r-shiny/
-      SKILL.md
-      references/
-      scripts/
-    r-stats/
-      SKILL.md
-      references/
-    r-clinical/
-      SKILL.md
-      references/
-    r-tables/
-      SKILL.md
-      references/
-    r-quarto/
-      SKILL.md
-      references/
-    r-performance/
-      SKILL.md
-      references/
-    r-package-skill-generator/   # existing
-      SKILL.md
-      agents/
-      references/
-      scripts/
-  agents/
-    r-code-reviewer.md
-    r-statistician.md
-    r-pkg-check.md
-    r-shiny-architect.md
-    r-dependency-manager.md
+rules/
+  r-conventions.md
+skills/
+  r-data-analysis/
+    SKILL.md
+    references/
+  r-visualization/
+    SKILL.md
+    references/
+  r-tdd/
+    SKILL.md
+    scripts/
+  r-debugging/
+    SKILL.md
+  r-package-dev/
+    SKILL.md
+    references/
+    scripts/
+  r-shiny/
+    SKILL.md
+    references/
+    scripts/
+  r-stats/
+    SKILL.md
+    references/
+  r-clinical/
+    SKILL.md
+    references/
+  r-tables/
+    SKILL.md
+    references/
+  r-quarto/
+    SKILL.md
+    references/
+  r-performance/
+    SKILL.md
+    references/
+  r-package-skill-generator/   # existing
+    SKILL.md
+    agents/
+    references/
+    scripts/
+agents/
+  r-code-reviewer.md
+  r-statistician.md
+  r-pkg-check.md
+  r-shiny-architect.md
+  r-dependency-manager.md
 ```
 
 ---

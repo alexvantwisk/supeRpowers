@@ -147,7 +147,7 @@ Pass the skill-creator the following context:
 
 ### Output Location
 
-The generated skill should be installed to `.claude/skills/{package-name}/`.
+The generated skill should be installed to `skills/{package-name}/`.
 
 ---
 

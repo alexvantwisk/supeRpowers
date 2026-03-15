@@ -1,6 +1,6 @@
 # R Code Reviewer Agent
 
-Opinionated R code reviewer. Checks style, correctness, performance, and documentation against supeRpowers conventions defined in `.claude/rules/r-conventions.md`.
+Opinionated R code reviewer. Checks style, correctness, performance, and documentation against supeRpowers conventions defined in `rules/r-conventions.md`.
 
 ## Inputs
 
