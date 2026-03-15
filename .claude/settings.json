@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Read", 
+      "Edit", 
+      "MultiEdit", 
+      "Write",
+      "Glob", 
+      "Grep", 
+      "LS", 
+      "Task",
+      "Bash(*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(sudo:*)",
+      "Bash(git push --force:*)"
+    ]
+  }
+}
