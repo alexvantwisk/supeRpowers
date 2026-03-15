@@ -72,6 +72,41 @@ if [ "$PROJECT_TYPE" != "none" ]; then
     fi
 fi
 
+# --- Detect MCP availability (only if R project detected) ---
+MCP_STATUS="not configured"
+MCP_GROUPS=""
+
+if [ "$PROJECT_TYPE" != "none" ]; then
+    CACHE_FILE="/tmp/superpowers-mcp-status-${USER:-unknown}.json"
+    CACHE_TTL=300  # 5 minutes
+
+    # Use cache if fresh
+    if [ -f "$CACHE_FILE" ]; then
+        CACHE_AGE=$(( $(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0) ))
+        if [ "$CACHE_AGE" -lt "$CACHE_TTL" ]; then
+            MCP_JSON=$(cat "$CACHE_FILE")
+        fi
+    fi
+
+    # Run detection if no cache hit
+    if [ -z "${MCP_JSON:-}" ]; then
+        DETECT_SCRIPT="${PLUGIN_ROOT}/hooks/detect-mcp.sh"
+        if [ -f "$DETECT_SCRIPT" ]; then
+            MCP_JSON=$(bash "$DETECT_SCRIPT" 2>/dev/null || echo '{"mcp_registered":false}')
+            echo "$MCP_JSON" > "$CACHE_FILE" 2>/dev/null || true
+        else
+            MCP_JSON='{"mcp_registered":false}'
+        fi
+    fi
+
+    # Parse results (lightweight — no jq dependency)
+    if echo "$MCP_JSON" | grep -q '"mcp_registered":true'; then
+        MCP_STATUS="available"
+        # Extract tool groups for context string
+        MCP_GROUPS=$(echo "$MCP_JSON" | grep -oE '"tool_groups":\[[^]]*\]' | sed 's/"tool_groups":\[//;s/\]//;s/"//g')
+    fi
+fi
+
 # --- Build skill relevance ---
 case "$PROJECT_TYPE" in
     r-package|shiny-package)
@@ -143,6 +178,15 @@ else
     # Skills and agents
     if [ -n "$SKILLS" ]; then CONTEXT="$CONTEXT Relevant skills: $SKILLS."; fi
     if [ -n "$AGENTS" ]; then CONTEXT="$CONTEXT Agents: $AGENTS."; fi
+
+    # MCP status
+    if [ "$MCP_STATUS" = "available" ] && [ -n "$MCP_GROUPS" ]; then
+        CONTEXT="$CONTEXT MCP: available | groups: ${MCP_GROUPS}."
+    elif [ "$MCP_STATUS" = "available" ]; then
+        CONTEXT="$CONTEXT MCP: available."
+    elif [ "$PROJECT_TYPE" != "none" ]; then
+        CONTEXT="$CONTEXT MCP: not configured. Use the r-mcp-setup skill to enable enhanced R integration."
+    fi
 fi
 
 # Escape for JSON
