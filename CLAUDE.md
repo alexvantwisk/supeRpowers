@@ -2,12 +2,16 @@
 
 ## What This Is
 
-A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 12 skills, 6 agents, and 1 rule — covering data analysis, visualization, statistics, clinical trials, Shiny, package development, tables, Quarto publishing, performance, TDD, and debugging.
+A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 15 skills, 5 agents, and 1 rule — covering data analysis, visualization, statistics, clinical trials, Shiny, package development, tables, Quarto publishing, performance, machine learning, pipelines, TDD, and debugging.
 
 ## Project Structure
 
 ```
-plugin.json              # Plugin manifest — declares rules, skills, agents
+plugin.json              # Plugin manifest — declares rules, skills, agents, hooks
+hooks/                   # Session lifecycle hooks
+  hooks.json             # SessionStart hook configuration
+  session-start          # R project detection script
+  run-hook.cmd           # Cross-platform wrapper
 rules/                   # Foundation rules (loaded into every R conversation)
   r-conventions.md       # Base pipe |>, tidyverse-first, style guide
 skills/                  # Domain skills (SKILL.md + optional references/)
@@ -15,6 +19,7 @@ skills/                  # Domain skills (SKILL.md + optional references/)
   r-debugging/           r-package-dev/         r-shiny/
   r-stats/               r-clinical/            r-tables/
   r-quarto/              r-performance/         r-package-skill-generator/
+  r-project-setup/       r-tidymodels/          r-targets/
 agents/                  # Shared agents (no YAML frontmatter)
   r-code-reviewer.md     r-statistician.md      r-pkg-check.md
   r-shiny-architect.md   r-dependency-manager.md
@@ -92,3 +97,7 @@ Before committing any content changes:
 - [ ] Rule files are ≤150 lines with no frontmatter
 - [ ] All R code uses `<-`, `|>`, snake_case, double quotes
 - [ ] plugin.json glob patterns still match new files
+
+## Hooks
+
+The plugin includes a session-start hook (`hooks/session-start`) that fires on startup, resume, clear, and compact. It detects the R project type in the current directory and injects context about relevant skills and agents. Configuration is in `hooks/hooks.json`.

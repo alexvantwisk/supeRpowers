@@ -114,6 +114,9 @@ Every SKILL.md uses YAML frontmatter with `name` and `description`. The `descrip
 | r-quarto | r-quarto | Use when authoring Quarto documents, presentations, websites, or books with R. Covers YAML config, code chunks, cross-references, journal templates, and multi-format output. |
 | r-performance | r-performance | Use when optimizing R code for speed or memory. Covers profiling, data.table, vectorization, Rcpp, and parallel processing. |
 | r-package-skill-generator | r-package-skill-generator | Use when generating a Claude Code skill from an R package GitHub repository. Existing meta-tool. |
+| r-project-setup | r-project-setup | Use when setting up, initializing, or scaffolding a new R project, package, Shiny app, or Quarto document. |
+| r-tidymodels | r-tidymodels | Use when building machine learning models, predictive modeling, or model tuning in R using tidymodels, recipes, workflows, tune, or yardstick. |
+| r-targets | r-targets | Use when creating reproducible analysis pipelines, managing computational workflows, or using the targets package for pipeline orchestration in R. |
 
 **Boundary: `r-stats` vs `r-clinical`:** `r-stats` covers general statistical methodology (model fitting, diagnostics, inference) regardless of application domain. `r-clinical` covers domain-specific workflows: CDISC data structures, regulatory TLFs, trial design, ICH guidelines. Survival analysis methodology lives in `r-stats`; applying survival analysis to a clinical trial endpoint with ADaM data lives in `r-clinical`.
 
@@ -384,6 +387,8 @@ Skills don't call each other directly, but natural workflows cross skill boundar
 - **Package development loop:** `r-package-dev` → `r-tdd` → `r-code-reviewer` agent
 - **Clinical pipeline:** `r-stats` → `r-clinical` → `r-tables` → `r-quarto`
 - **Shiny development loop:** `r-shiny` → `r-shiny-architect` agent → `r-tdd`
+- **ML pipeline:** `r-project-setup` → `r-targets` → `r-tidymodels` → `r-visualization`
+- **Reproducible analysis:** `r-project-setup` → `r-targets` → `r-data-analysis` → `r-quarto`
 
 ### Scripts & Utilities
 
@@ -409,6 +414,10 @@ Each skill bundles reference material loaded into context when needed:
 ## Directory Structure
 
 ```
+hooks/
+  hooks.json
+  session-start
+  run-hook.cmd
 rules/
   r-conventions.md
 skills/
@@ -444,6 +453,15 @@ skills/
     SKILL.md
     references/
   r-performance/
+    SKILL.md
+    references/
+  r-project-setup/
+    SKILL.md
+    references/
+  r-tidymodels/
+    SKILL.md
+    references/
+  r-targets/
     SKILL.md
     references/
   r-package-skill-generator/   # existing
@@ -530,6 +548,13 @@ Semantic versioning (major.minor.patch):
 
 ### Phase 4: Performance
 - `r-performance/`
+
+### Phase 5: Infrastructure & New Skills
+- `hooks/` (session-start hook, cross-platform runner)
+- `r-project-setup/`
+- `r-tidymodels/`
+- `r-targets/`
+- README.md, LICENSE, RELEASE-NOTES.md
 
 Each phase is independently deliverable and testable. Later phases build on the foundation but don't require changes to earlier phases.
 
