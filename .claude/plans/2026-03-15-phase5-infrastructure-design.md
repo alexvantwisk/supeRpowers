@@ -114,7 +114,7 @@ Polyglot file that works as both Windows batch and Unix bash:
 - **Windows:** Discovers bash via Git for Windows, MSYS2, Cygwin, or system PATH. Silent exit if bash not found.
 - **Unix/macOS:** Treats leading `:` as no-op, executes directly as bash.
 
-This follows the superpowers pattern exactly — proven cross-platform approach.
+This follows the polyglot .cmd pattern used by the [obra/superpowers](https://github.com/obra/superpowers) Claude Code plugin — proven cross-platform approach in production (v5.0.2).
 
 ### Skill Relevance Mapping
 
@@ -124,7 +124,7 @@ The session-start hook maps project type to most relevant skills:
 |-------------|---------------|----------------|
 | R package | r-package-dev, r-tdd, r-debugging | r-code-reviewer, r-pkg-check, r-dependency-manager |
 | Shiny app | r-shiny, r-tdd, r-debugging | r-shiny-architect, r-code-reviewer |
-| targets pipeline | r-targets, r-data-analysis | r-code-reviewer |
+| targets pipeline | r-targets, r-data-analysis | r-code-reviewer, r-dependency-manager |
 | Quarto project | r-quarto, r-visualization, r-tables | — |
 | Analysis project | r-data-analysis, r-visualization, r-stats | r-statistician |
 | R scripts | r-data-analysis, r-debugging | r-code-reviewer |
@@ -197,22 +197,7 @@ After scaffold: `renv::init()` to initialize dependency management.
 
 **Scaffold: R Package**
 
-Uses `usethis` functions (not manual file creation):
-
-```r
-usethis::create_package("path/to/pkgname")
-usethis::use_testthat(3)
-usethis::use_pipe()
-usethis::use_roxygen_md()
-usethis::use_package_doc()
-usethis::use_news_md()
-usethis::use_readme_rmd()
-usethis::use_mit_license()
-usethis::use_github_actions()
-usethis::use_pkgdown()
-```
-
-Plus: `.lintr` configuration, `styler` integration.
+For R package scaffolding, defer to the `r-package-dev` skill which provides the authoritative scaffold workflow. `r-project-setup` detects the user wants a package and dispatches to `r-package-dev` for the actual scaffold, then adds `.lintr` configuration if not already present.
 
 **Scaffold: Shiny App**
 
@@ -377,6 +362,10 @@ list(
 
 **Dispatch:** To `r-statistician` agent for model selection methodology questions.
 
+### Line Budget Strategy
+
+The SKILL.md must stay under 300 lines. To achieve this, offload the parsnip model/engine table to `references/parsnip-engines.md` and keep only a summary in the skill body. The stacking section should be a brief pointer to a reference. The skill body should include: rsample (brief), recipes (key steps + order), parsnip (summary + pointer), workflows, tuning, evaluation, targets integration, dispatch, and examples.
+
 ### Boundary: r-tidymodels vs r-stats
 
 `r-tidymodels` covers the tidymodels framework for predictive modeling. `r-stats` covers inferential statistics. Overlap in linear/logistic regression: `r-stats` for inference on coefficients, `r-tidymodels` for prediction performance.
@@ -500,6 +489,7 @@ list(
   tar_target(raw, read_csv("data.csv", col_types = cols())),
   tar_target(split, initial_split(raw, strata = outcome)),
   tar_target(recipe, build_recipe(training(split))),
+  tar_target(spec, build_model_spec()),
   tar_target(wf, workflow() |> add_recipe(recipe) |> add_model(spec)),
   tar_target(folds, vfold_cv(training(split), v = 10)),
   tar_target(tuned, tune_grid(wf, resamples = folds, grid = 20)),
@@ -535,6 +525,8 @@ tar_option_set(controller = crew_controller_local(workers = 4))
 
 **`references/targets-integration-recipes.md`** — Copy-paste pipeline patterns for ML, reports, simulations.
 
+**Dispatch:** To `r-dependency-manager` agent for renv + targets reproducibility questions.
+
 ### Examples
 
 ```
@@ -549,21 +541,75 @@ tar_option_set(controller = crew_controller_local(workers = 4))
 
 ## 5. Marketplace Readiness
 
+### Versioning Note
+
+Version 0.2.0 reflects pre-1.0 development status. Version 1.0.0 will be the marketplace launch release after all content is stable and tested. The original design spec's 1.0.0 target remains the goal.
+
 ### README.md
 
-Full showcase: badges (version, license, skill count, R version), installation, architecture diagram, skill catalog table, agent catalog table, quick start examples, "how it works" section.
+**Structure:**
+
+```
+# supeRpowers
+
+[badges: version, license, skills count, R >= 4.1.0]
+
+One-line description + installation command.
+
+## How It Works
+
+Architecture explanation with text diagram:
+  Foundation (rules/) → Domain (skills/) → Service (agents/)
+Brief explanation of each layer.
+
+## Skills
+
+Table: skill name | trigger summary | key packages
+(15 rows — all skills)
+
+## Agents
+
+Table: agent name | purpose | dispatched by
+(5 rows — all agents)
+
+## Quick Start
+
+5-6 example prompts showing what users can ask.
+
+## Requirements
+
+R >= 4.1.0, Claude Code >= 1.0.0
+
+## License
+
+MIT
+```
+
+**Badges** (shields.io format): `v0.2.0`, `MIT`, `15 skills`, `R >= 4.1.0`
 
 ### LICENSE
 
-MIT license, Alexander van Twisk, 2026.
+MIT license file, copyright 2026 Alexander van Twisk.
 
 ### RELEASE-NOTES.md
 
-Version history: 0.1.0 (initial), 0.2.0 (Phase 5).
+```
+## 0.2.0 (2026-03-15)
+- Hooks: session-start R project detection
+- Skills: r-project-setup, r-tidymodels, r-targets
+- Marketplace: README, LICENSE, badges
+
+## 0.1.0 (2026-03-15)
+- Phase 1: r-data-analysis, r-visualization, r-tdd, r-debugging
+- Phase 2: r-package-dev, r-shiny + r-code-reviewer, r-dependency-manager agents
+- Phase 3: r-stats, r-clinical, r-tables, r-quarto + r-statistician, r-pkg-check, r-shiny-architect agents
+- Phase 4: r-performance, r-package-skill-generator
+- Foundation: r-conventions rule, CLAUDE.md
+```
 
 ### marketplace.json (if required)
 
-`.claude-plugin/marketplace.json` with categories, icon, pricing.
+`.claude-plugin/marketplace.json` with categories, icon, pricing. Research Claude Code marketplace requirements during implementation — omit if not needed.
 
 ---
 
@@ -646,6 +692,25 @@ supeRpowers/
 - **ML pipeline:** `r-project-setup` → `r-targets` → `r-tidymodels` → `r-visualization`
 - **Reproducible analysis:** `r-project-setup` → `r-targets` → `r-data-analysis` → `r-quarto`
 - **New package:** `r-project-setup` → `r-package-dev` → `r-tdd` → `r-code-reviewer` agent
+
+---
+
+## Original Design Spec Updates
+
+The following changes must be made to `plans/2026-03-15-superpowers-r-plugin-design.md`:
+
+1. **Skill Frontmatter Contracts table (line ~103):** Add r-project-setup, r-tidymodels, r-targets trigger entries
+2. **Directory Structure (line ~411):** Add r-project-setup/, r-tidymodels/, r-targets/ under skills/
+3. **Skill Chaining section (line ~379):** Add ML pipeline and reproducible analysis chains
+4. **Phase section:** Add Phase 5 entry
+
+The following changes must be made to `CLAUDE.md`:
+
+1. Update skill count from "12 skills" to "15 skills"
+2. Correct agent count (currently says "6 agents" in header but lists 5 — resolve to 5)
+3. Add hooks/ to the project structure
+4. Add new skills to the directory listing
+5. Add hooks section explaining the session-start hook
 
 ---
 
