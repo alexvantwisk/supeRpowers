@@ -244,49 +244,49 @@ collect_metrics(cv_results)
 
 ## Examples
 
-### 1. Linear model with diagnostics
-**Prompt:** "Fit a linear model of salary on years_exp and department, check assumptions."
+### Happy Path: Linear model with diagnostics and tidy output
+
+**Prompt:** "Fit a linear model of salary on years_exp and department, check assumptions, and report results."
 
 ```r
+# Input
 fit <- lm(salary ~ years_exp + department, data = employees)
-car::vif(fit)
-par(mfrow = c(2, 2)); plot(fit)
+
+# Check assumptions
+car::vif(fit)                            # VIF < 5 = OK
+par(mfrow = c(2, 2)); plot(fit)          # residual diagnostics
+
+# Output — tidy summary with CIs
 broom::tidy(fit, conf.int = TRUE)
+#> # A tibble: 4 x 7
+#>   term              estimate std.error statistic  p.value conf.low conf.high
+#>   <chr>                <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+#> 1 (Intercept)        32000.     1200.      26.7  1.2e-45   29600.    34400.
+#> 2 years_exp           2150.      180.      11.9  3.4e-22    1790.     2510.
+#> 3 departmentSales    -1800.      950.      -1.89 6.0e-02   -3680.      80.
+#> 4 departmentEng       4200.      980.       4.29 3.1e-05    2260.     6140.
 ```
 
-### 2. Logistic regression with odds ratios
-**Prompt:** "Predict churn (binary) from usage and plan_type, report ORs."
+### Edge Case: Logistic regression forgetting family = binomial
+
+**Prompt:** "Predict churn (binary) from usage and plan_type."
 
 ```r
+# WRONG — glm() defaults to gaussian; silently fits linear model on 0/1
+fit_bad <- glm(churn ~ usage + plan_type, data = customers)
+
+# CORRECT — specify family for binary outcome
 fit <- glm(churn ~ usage + plan_type, family = binomial, data = customers)
 broom::tidy(fit, exponentiate = TRUE, conf.int = TRUE)
+#> # A tibble: 3 x 7
+#>   term           estimate std.error statistic p.value conf.low conf.high
+#>   <chr>             <dbl>     <dbl>     <dbl>   <dbl>    <dbl>     <dbl>
+#> 1 (Intercept)       0.12      0.45     -4.72  2.3e-06   0.049      0.28
+#> 2 usage             1.03      0.008     3.91  9.2e-05   1.02       1.05
+#> 3 plan_typePro      0.54      0.21     -2.93  3.4e-03   0.36       0.82
 ```
 
-### 3. Mixed model for repeated measures
-**Prompt:** "Test treatment effect on pain score with repeated measurements per patient."
-
-```r
-fit <- lmer(pain ~ time * treatment + (time | patient_id), data = trial_df)
-summary(fit)
-lmerTest::anova(fit)     # F-tests with Satterthwaite df
-```
-
-### 4. Kaplan-Meier + Cox PH
-**Prompt:** "Compare survival by treatment arm and fit a Cox model with age adjustment."
-
-```r
-km <- survfit(Surv(os_time, os_event) ~ treatment, data = trial_df)
-survminer::ggsurvplot(km, data = trial_df, pval = TRUE, risk.table = TRUE)
-fit_cox <- coxph(Surv(os_time, os_event) ~ treatment + age, data = trial_df)
-broom::tidy(fit_cox, exponentiate = TRUE, conf.int = TRUE)
-cox.zph(fit_cox)          # verify PH assumption
-```
-
-### 5. Correct for multiple comparisons
-**Prompt:** "We ran 50 tests; apply FDR correction."
-
-```r
-results |>
-  mutate(p_fdr = p.adjust(p_value, method = "BH"),
-         significant = p_fdr < 0.05)
-```
+**More example prompts:**
+- "Test treatment effect on pain score with repeated measurements per patient."
+- "Compare survival by treatment arm and fit a Cox model with age."
+- "We ran 50 tests; apply FDR correction."

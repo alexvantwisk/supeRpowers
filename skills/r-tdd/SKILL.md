@@ -80,14 +80,10 @@ test_that("fit_model returns a tibble with expected columns", {
 ```r
 describe("validate_input", {
   it("accepts a valid data frame", {
-    df <- tibble::tibble(x = 1:3, y = 4:6)
-    expect_no_error(validate_input(df))
+    expect_no_error(validate_input(tibble::tibble(x = 1:3)))
   })
   it("rejects NULL input", {
     expect_error(validate_input(NULL), class = "my_pkg_input_error")
-  })
-  it("rejects zero-row data frames", {
-    expect_error(validate_input(tibble::tibble(x = numeric())), "at least one row")
   })
 })
 ```
@@ -97,29 +93,17 @@ describe("validate_input", {
 ## Core Expectations
 
 ```r
-# Value comparisons
 expect_equal(actual, expected)          # Equal with tolerance (waldo)
 expect_identical(actual, expected)      # Exactly identical (type + value)
 expect_true(x > 0)                     # Logical TRUE
-expect_false(is.null(result))          # Logical FALSE
 expect_length(result, 5)               # Length check
 expect_named(df, c("a", "b"))          # Names check
-
-# Type and class
 expect_type(x, "double")              # typeof() check
 expect_s3_class(obj, "tbl_df")        # S3 class check
-
-# Conditions (prefer class matching in 3e)
-expect_error(fn(), class = "pkg_error_type")
-expect_error(fn(), "column not found") # Message pattern
+expect_error(fn(), class = "pkg_error_type")  # Class match (3e preferred)
 expect_warning(fn(), "NAs introduced")
-expect_message(fn(), "Processing")
 expect_no_error(fn())
 expect_no_warning(fn())
-
-# Output and side effects
-expect_output(print(obj), "some output")
-expect_invisible(fn())
 ```
 
 ---
@@ -164,13 +148,7 @@ test_that("function uses env var", {
 
 ### Test Helpers (helper.R)
 
-```r
-# tests/testthat/helper.R
-make_test_data <- function(n = 10) {
-  tibble::tibble(x = rnorm(n), y = rnorm(n),
-                 group = sample(c("a", "b"), n, replace = TRUE))
-}
-```
+Put shared factory functions in `tests/testthat/helper.R` — available to all test files.
 
 ---
 
@@ -196,7 +174,6 @@ local_mocked_bindings(read_csv = function(...) tibble::tibble(x = 1:3), .package
 ```r
 devtools::test()                          # All tests
 devtools::test_active_file()              # Current file in IDE
-testthat::test_file("tests/testthat/test-fit-model.R")  # Specific file
 devtools::test(filter = "fit-model")      # Tests matching pattern
 ```
 
@@ -209,28 +186,11 @@ covr::package_coverage()                  # Full package coverage
 covr::report()                            # HTML report in browser
 ```
 
-**Minimum target: 80% coverage.** Run `scripts/run_coverage.R` for function-level coverage report:
-
-```bash
-Rscript scripts/run_coverage.R            # From package root
-Rscript scripts/run_coverage.R /path/to/pkg  # Specify path
-```
+**Minimum target: 80% coverage.** Use `scripts/run_coverage.R` from package root for function-level report.
 
 ---
 
 ## Common Patterns
-
-### Testing Data Frames
-
-```r
-test_that("transform_data returns correct structure", {
-  input <- tibble::tibble(x = 1:3, y = c("a", "b", "c"))
-  result <- transform_data(input)
-  expect_s3_class(result, "tbl_df")
-  expect_named(result, c("x", "y", "x_squared"))
-  expect_equal(result$x_squared, c(1, 4, 9))
-})
-```
 
 ### Testing Plots (vdiffr)
 
@@ -242,25 +202,13 @@ test_that("plot_scatter produces expected output", {
 
 Setup: `usethis::use_package("vdiffr", type = "Suggests")`
 
-### Testing Error Messages
+### Testing Error Messages (capture + inspect)
 
 ```r
 test_that("validate_column errors with informative message", {
   df <- tibble::tibble(a = 1, b = 2)
-  expect_error(validate_column(df, "nonexistent"), class = "pkg_column_not_found")
-  err <- expect_error(validate_column(df, "nonexistent"))
+  err <- expect_error(validate_column(df, "nonexistent"), class = "pkg_column_not_found")
   expect_match(conditionMessage(err), "nonexistent")
-})
-```
-
-### Testing with Temporary Files
-
-```r
-test_that("export_results writes correct CSV", {
-  tmp <- withr::local_tempfile(fileext = ".csv")
-  data <- tibble::tibble(x = 1:3, y = 4:6)
-  export_results(data, tmp)
-  expect_equal(readr::read_csv(tmp, show_col_types = FALSE), data)
 })
 ```
 
@@ -270,25 +218,83 @@ test_that("export_results writes correct CSV", {
 
 | Trap | Why It Fails | Fix |
 |------|-------------|-----|
-| Implementation written before its test | Tests-after prove nothing about design; you test what you built, not what you need | Write the test first — if it passes immediately, the test is wrong |
-| Skipping the RED phase (test never fails) | A test that never failed never proved anything; it may be tautological | Run the test before implementation, confirm failure, read the error message |
-| `test_active_file()` exits silently outside a package | `devtools::test_active_file()` requires a package context with DESCRIPTION | Use `testthat::test_file()` directly for standalone scripts, or wrap code in a package |
-| Tests pass alone but fail in `devtools::test()` | Fixture ordering or shared state between test files; `setup.R` side effects leak | Each test must be self-contained; use `withr::local_*()` for temporary state |
-| Snapshot collisions across branches | Two branches update the same `_snaps/*.md` file, causing merge conflicts | Accept snapshots on one branch, rebase, re-run `snapshot_review()` on the other |
-| "Too simple to test" | Simple code breaks too — off-by-one, NULL input, empty vector edge cases | If you wrote it, test it; trivial tests run in milliseconds and catch regressions |
-| Mocking the wrong binding scope | `local_mocked_bindings()` mocks in the test package namespace, not the target package | Set `.package = "targetpkg"` to mock where the function is actually called |
-| Writing exhaustive test suites when user asked for one test | Scope creep wastes time and overwhelms the user with unnecessary coverage | Deliver exactly what was requested; suggest additional tests as follow-up |
+| Implementation written before its test | Tests-after prove nothing about design | Write the test first — if it passes immediately, the test is wrong |
+| Skipping the RED phase (test never fails) | A test that never failed never proved anything | Run the test before implementation, confirm failure |
+| Tests pass alone but fail in `devtools::test()` | Shared state between test files leaks | Each test must be self-contained; use `withr::local_*()` |
+| Snapshot collisions across branches | Two branches update the same `_snaps/*.md` file | Accept on one branch, rebase, re-run `snapshot_review()` |
+| Mocking the wrong binding scope | `local_mocked_bindings()` mocks in test namespace | Set `.package = "targetpkg"` to mock the actual call site |
+| Writing exhaustive test suites when user asked for one test | Scope creep wastes time | Deliver exactly what was requested; suggest extras as follow-up |
 
 ---
 
-## Example Prompts — Full TDD Cycle
+## Examples
 
-**1. New validation function:** "Add `validate_input()` that checks a data frame has required columns and at least one row." Steps: create test file, write tests for valid/invalid inputs, run (RED), implement in `R/validate-input.R` (GREEN), refactor error messages with cli (REFACTOR).
+### Happy Path: RED-GREEN-REFACTOR for a Validation Function
 
-**2. Fixing a bug:** "Bug: `summarise_groups()` drops groups with all NA values." Steps: write test reproducing bug (RED), fix `na.rm` logic (GREEN), run full suite for regressions.
+**Prompt:** "Add `validate_input()` that checks a data frame has required columns."
 
-**3. Adding a plot function:** "Create `plot_distribution()` with histogram + density overlay." Steps: test returns ggplot, correct layers, vdiffr snapshot (RED), implement (GREEN), extract theme helper (REFACTOR).
+```r
+# RED — write the failing test first
+# tests/testthat/test-validate-input.R
+test_that("validate_input accepts a valid data frame", {
+  df <- tibble::tibble(id = 1:3, value = c(10, 20, 30))
+  expect_no_error(validate_input(df, required = c("id", "value")))
+})
 
-**4. Refactoring:** "Split `R/utils.R` into `R/utils-validation.R` and `R/utils-formatting.R`." Steps: run existing suite (baseline GREEN), move functions, run suite (still GREEN), add missing coverage.
+test_that("validate_input errors on missing columns", {
+  df <- tibble::tibble(id = 1:3)
+  expect_error(
+    validate_input(df, required = c("id", "value")),
+    class = "pkg_missing_columns"
+  )
+})
+# Run: devtools::test_active_file()
+# Result: FAIL — validate_input does not exist yet. Good.
 
-**5. API integration:** "Test `fetch_weather()` calling external API." Steps: write tests with `local_mocked_bindings()` for success/failure/malformed (RED), implement (GREEN), add skipped-on-CI integration test.
+# GREEN — minimal implementation
+# R/validate-input.R
+validate_input <- function(df, required) {
+  missing <- setdiff(required, names(df))
+  if (length(missing) > 0) {
+    cli::cli_abort(
+      "Column{?s} {.val {missing}} not found in data.",
+      class = "pkg_missing_columns"
+    )
+  }
+  invisible(df)
+}
+# Run: devtools::test_active_file()
+# Result: PASS — both tests green.
+
+# REFACTOR — check coverage, clean up
+# covr::package_coverage() -> target 80%+
+```
+
+### Edge Case: Testing a Function with Side Effects Using withr
+
+**Prompt:** "Test `write_report()` that writes a CSV and respects an option for the delimiter."
+
+```r
+# tests/testthat/test-write-report.R
+test_that("write_report writes CSV with default comma separator", {
+  tmp <- withr::local_tempfile(fileext = ".csv")
+  data <- tibble::tibble(x = 1:3, y = c("a", "b", "c"))
+  write_report(data, tmp)
+  result <- readr::read_csv(tmp, show_col_types = FALSE)
+  expect_equal(result, data)
+})
+
+test_that("write_report respects mypkg.delim option for TSV", {
+  withr::local_options(list(mypkg.delim = "\t"))
+  tmp <- withr::local_tempfile(fileext = ".tsv")
+  data <- tibble::tibble(x = 1:2, y = c("a", "b"))
+  write_report(data, tmp)
+  result <- readr::read_tsv(tmp, show_col_types = FALSE)
+  expect_equal(result, data)
+})
+```
+
+**More example prompts:**
+- "Add `validate_input()` that checks a data frame has required columns and at least one row."
+- "Bug: `summarise_groups()` drops groups with all NA values — write a failing test first."
+- "Test `fetch_weather()` calling an external API using mocked bindings."

@@ -120,32 +120,18 @@ format:
 ```markdown
 ## Slide Title
 
-Content here.
-
 ::: {.incremental}
 - Point one
 - Point two reveals after click
 :::
 
 ::: {.notes}
-Speaker notes here — not shown to audience.
+Speaker notes — not shown to audience.
 :::
-
----
-
-## Columns Layout
-
-:::: {.columns}
-::: {.column width="60%"}
-Left content
-:::
-::: {.column width="40%"}
-Right content
-:::
-::::
 ```
 
-Use `##` for slide breaks. `---` for a blank slide break.
+Use `##` for slide breaks, `---` for blank breaks. Use `:::: {.columns}` /
+`::: {.column width="60%"}` for side-by-side layouts.
 
 ---
 
@@ -223,37 +209,16 @@ Common extensions: `quarto-ext/fontawesome`, `quarto-ext/lightbox`,
 
 ## Parameters
 
-```yaml
----
-params:
-  region: "North"
-  year: 2024
----
-```
-
-```r
-#| label: setup
-params$region  # "North"
-params$year    # 2024
-```
-
-Render with overrides:
-```bash
-quarto render report.qmd -P region:South -P year:2023
-```
+Define in YAML with `params:`, access as `params$name` in R chunks.
+Override at render: `quarto render report.qmd -P region:South -P year:2023`.
+See Happy Path example below for a full parameterized report pattern.
 
 ---
 
 ## Multi-Format Output
 
 List multiple formats under `format:` (html, pdf, docx) with per-format options.
-Use `content-visible`/`content-hidden` divs for conditional content:
-
-```markdown
-::: {.content-visible when-format="html"}
-Interactive content for HTML only.
-:::
-```
+Use conditional divs: `::: {.content-visible when-format="html"}`.
 
 ---
 
@@ -272,16 +237,61 @@ Interactive content for HTML only.
 
 ## Examples
 
-**1. Reproducible report:** "Create a Quarto report with EDA, model results,
-and figures that renders to both HTML and PDF."
+### Happy Path: Parameterized report with render command
 
-**2. Presentation:** "Convert this Rmd analysis into a revealjs presentation
-with incremental bullets, speaker notes, and ggplot figures."
+**Prompt:** "Generate region-specific summaries from a single .qmd template."
 
-**3. Documentation site:** "Set up a Quarto website for this R package with
-a navbar, sidebar, and GitHub Pages deployment."
+```yaml
+# Input — report.qmd YAML header
+---
+title: "Regional Summary"
+params:
+  region: "North"
+  year: 2024
+format:
+  html:
+    toc: true
+    embed-resources: true
+execute:
+  echo: false
+---
+```
 
-**4. Journal manuscript:** "Format this analysis as an Elsevier submission
-using quarto-journals extension with cross-references and bibliography."
+```r
+# In code chunk — access params
+df_filtered <- sales |>
+  dplyr::filter(region == params$region, year == params$year)
+```
 
-**5. Parameterized report:** "Generate region-specific summaries from a single .qmd template using Quarto parameters."
+```bash
+# Output — render for each region
+quarto render report.qmd -P region:North -P year:2024
+quarto render report.qmd -P region:South -P year:2024
+```
+
+### Edge Case: Cross-reference broken by missing fig- prefix
+
+**Prompt:** "My @fig-scatter reference shows '?fig-scatter' in the output."
+
+```markdown
+# WRONG — chunk label missing required fig- prefix; cross-ref breaks
+{r scatter}
+#| fig-cap: "MPG vs weight"
+plot(mtcars$wt, mtcars$mpg)
+
+See @fig-scatter for details.
+<!-- renders as: See ?fig-scatter for details. -->
+
+# CORRECT — label starts with fig- so Quarto links it
+{r fig-scatter}
+#| fig-cap: "MPG vs weight"
+plot(mtcars$wt, mtcars$mpg)
+
+See @fig-scatter for details.
+<!-- renders as: See Figure 1 for details. -->
+```
+
+**More example prompts:**
+- "Create a Quarto report rendering to both HTML and PDF."
+- "Convert this Rmd into a revealjs presentation with speaker notes."
+- "Format this analysis for Elsevier using quarto-journals extension."

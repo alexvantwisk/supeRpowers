@@ -149,16 +149,11 @@ Read `references/theme-guide.md` for complete theme element hierarchy.
 
 ```r
 library(patchwork)
-
 p1 <- ggplot(data, aes(x, y)) + geom_point()
 p2 <- ggplot(data, aes(x)) + geom_histogram()
 p3 <- ggplot(data, aes(group, y)) + geom_boxplot()
 
-p1 + p2            # Side by side
-p1 / p2            # Stacked vertically
-(p1 | p2) / p3     # Complex layout
-
-(p1 + p2 + p3) +
+(p1 | p2) / p3 +   # Complex layout: top row | bottom
   plot_layout(ncol = 2, widths = c(2, 1)) +
   plot_annotation(title = "Combined Figure", tag_levels = "A")
 ```
@@ -223,29 +218,12 @@ forest_data |>
 
 ```r
 de_results |>
-  mutate(significance = case_when(
-    adj_p_val < 0.05 & abs(log2fc) > 1 ~ "Significant",
-    TRUE ~ "Not significant"
-  )) |>
-  ggplot(aes(x = log2fc, y = -log10(adj_p_val), color = significance)) +
+  mutate(sig = ifelse(adj_p_val < 0.05 & abs(log2fc) > 1, "Sig", "NS")) |>
+  ggplot(aes(x = log2fc, y = -log10(adj_p_val), color = sig)) +
   geom_point(alpha = 0.6, size = 1.5) +
   scale_color_manual(values = c("grey70", "#D55E00")) +
   geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
-  geom_vline(xintercept = c(-1, 1), linetype = "dashed") +
-  theme_minimal()
-```
-
-### Manhattan Plot
-
-```r
-gwas_results |>
-  mutate(pos_index = row_number()) |>
-  ggplot(aes(x = pos_index, y = -log10(p_value), color = factor(chromosome))) +
-  geom_point(alpha = 0.7, size = 0.8) +
-  geom_hline(yintercept = -log10(5e-8), linetype = "dashed", color = "red") +
-  scale_color_manual(values = rep(c("#1B9E77", "#7570B3"), 11), guide = "none") +
-  labs(x = "Chromosome", y = "-Log10(P-Value)") +
-  theme_minimal()
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed") + theme_minimal()
 ```
 
 ---
@@ -267,7 +245,49 @@ gwas_results |>
 
 ## Examples
 
-- "Create a scatterplot of wt vs mpg colored by cyl with a trend line"
+### Happy Path: Faceted scatter with colorblind palette and theme
+
+**Prompt:** "Scatter of wt vs mpg faceted by gear, colorblind-safe, publication theme."
+
+```r
+# Input
+library(ggplot2)
+
+# Output
+mtcars |>
+  ggplot(aes(x = wt, y = mpg, color = factor(cyl))) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.8) +
+  scale_color_viridis_d(name = "Cylinders", option = "cividis") +
+  facet_wrap(~ gear, labeller = labeller(gear = c("3" = "3 Gears", "4" = "4 Gears", "5" = "5 Gears"))) +
+  labs(x = "Weight (1000 lbs)", y = "Miles per Gallon", title = "Fuel Efficiency by Weight") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title.position = "plot", legend.position = "bottom",
+        strip.text = element_text(face = "bold"))
+```
+
+### Edge Case: Overlapping labels fixed with ggrepel
+
+**Prompt:** "Label the top 5 cars by mpg, but labels overlap badly."
+
+```r
+# Input
+library(ggrepel)
+top5 <- mtcars |> tibble::rownames_to_column("car") |>
+  dplyr::slice_max(mpg, n = 5)
+
+# Output — geom_text() would overlap; ggrepel pushes labels apart
+mtcars |>
+  tibble::rownames_to_column("car") |>
+  ggplot(aes(x = wt, y = mpg)) +
+  geom_point(color = "grey60") +
+  geom_point(data = top5, color = "#D55E00", size = 3) +
+  geom_text_repel(data = top5, aes(label = car),
+                  max.overlaps = 10, nudge_y = 1, seed = 42) +
+  theme_minimal()
+```
+
+**More example prompts:**
 - "Make a grouped bar chart with dodged bars and Set2 palette"
 - "Build a multi-panel figure (scatter + density + boxplot) with patchwork for a paper"
 - "Plot a Kaplan-Meier survival curve with risk table using survminer"

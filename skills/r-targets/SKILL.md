@@ -173,12 +173,7 @@ list(
 
 ## Integration: targets + renv
 
-Full reproducibility stack:
-
-- `renv.lock` — pinned package versions (version controlled)
-- `_targets.R` — pipeline definition (version controlled)
-- `R/` — function definitions (version controlled)
-- `_targets/` — pipeline cache (**gitignored**)
+Version-control `renv.lock`, `_targets.R`, and `R/`. Gitignore `_targets/` (machine-specific cache).
 
 ---
 
@@ -201,24 +196,101 @@ tar_option_set(
 | Trap | Why It Fails | Fix |
 |------|-------------|-----|
 | One giant target that does everything | No caching granularity; any change reruns the whole thing | Break into small, focused targets with single responsibilities |
-| Targets that return invisible side effects | targets caches return values; invisible side effects are not tracked | Return the value explicitly, or use `format = "file"` for side-effect targets |
-| Hard-coded file paths inside functions | targets cannot detect the dependency; file changes are invisible to the graph | Pass paths as target inputs so targets tracks them |
-| Functions defined inside `_targets.R` | `tar_make()` re-sources `_targets.R` each run; functions pollute the pipeline definition | Move functions to `R/` directory; `tar_source()` loads them |
-| `_targets/` committed to git | Cache is machine-specific and large; bloats repo, causes merge conflicts | Add `_targets/` to `.gitignore` |
-| Using `tar_load()` inside a target function | Breaks reproducibility — the loaded target is invisible to the dependency graph | Pass the value as a function argument; targets wires dependencies automatically |
-| Non-serializable objects (DB connections, R6 with env refs) | `format = "qs"` or `"rds"` cannot serialize them; target fails on cache write | Return data, not connections; reconnect inside the target that needs the connection |
-| NULL-returning targets silently skipped | A target returning `NULL` appears up-to-date but carries no value downstream | Return a sentinel value or empty tibble; use `tar_assert_*()` to guard |
-| `tar_source()` loading files in non-deterministic order | If `R/` files depend on load order (e.g., one sources another), results vary | Make each file self-contained; declare dependencies via function calls, not file order |
-| Redesigning entire pipeline when user asked to add one target | Scope creep wastes time and risks breaking a working pipeline | Add the requested target, verify with `tar_visnetwork()`, suggest improvements as follow-up |
+| Targets that return invisible side effects | targets caches return values; side effects not tracked | Return the value explicitly, or use `format = "file"` for side-effect targets |
+| Hard-coded file paths inside functions | targets cannot detect the dependency | Pass paths as target inputs so targets tracks them |
+| Functions defined inside `_targets.R` | Functions pollute the pipeline definition | Move functions to `R/`; `tar_source()` loads them |
+| `_targets/` committed to git | Cache is machine-specific and large | Add `_targets/` to `.gitignore` |
+| Using `tar_load()` inside a target function | Loaded target is invisible to the dependency graph | Pass the value as a function argument |
+| Non-serializable objects (DB connections, R6) | `format = "qs"` or `"rds"` cannot serialize them | Return data, not connections; reconnect inside the target |
+| NULL-returning targets silently skipped | Target appears up-to-date but carries no value | Return a sentinel value or empty tibble |
+| Redesigning entire pipeline when user asked to add one target | Scope creep risks breaking a working pipeline | Add the requested target, suggest improvements as follow-up |
 
 ---
 
 ## Examples
 
+### Happy Path: Convert a Script to a Targets Pipeline
+
+**Prompt:** "Convert my analysis script into a reproducible targets pipeline."
+
+```r
+# Before: monolithic script (R/analysis.R)
+# data <- read_csv("data/raw/sales.csv")
+# clean <- data |> filter(!is.na(revenue))
+# model <- lm(revenue ~ region + quarter, data = clean)
+# saveRDS(model, "output/model.rds")
+
+# After: _targets.R
+library(targets)
+tar_option_set(packages = c("dplyr", "readr"), format = "qs")
+tar_source()
+
+list(
+  tar_target(data_raw, read_csv("data/raw/sales.csv", col_types = cols())),
+  tar_target(data_clean, clean_sales(data_raw)),
+  tar_target(model, fit_revenue_model(data_clean)),
+  tar_target(model_file, save_model(model, "output/model.rds"), format = "file")
+)
+
+# R/functions.R — extracted pipeline functions
+clean_sales <- function(df) {
+  df |> dplyr::filter(!is.na(revenue))
+}
+
+fit_revenue_model <- function(df) {
+  lm(revenue ~ region + quarter, data = df)
+}
+
+save_model <- function(model, path) {
+  saveRDS(model, path)
+  path
+}
+
+# Run: tar_make()
+# Inspect: tar_read(model)
+# Visualize: tar_visnetwork()
 ```
-"Set up a targets pipeline for my data analysis project"
-"Convert my analysis scripts into a reproducible pipeline with targets"
-"Add Quarto report rendering as a target in my pipeline"
-"Set up parallel execution for my branched targets"
-"Debug a failing target in my pipeline"
+
+### Edge Case: Dynamic Branching with pattern = map() on Grouped Data
+
+**Prompt:** "Fit a separate model for each region in my data using dynamic branching."
+
+```r
+# _targets.R
+library(targets)
+tar_option_set(packages = c("dplyr", "readr"), format = "qs")
+tar_source()
+
+list(
+  tar_target(data_raw, read_csv("data/sales.csv", col_types = cols())),
+  tar_target(
+    regions,
+    data_raw |> dplyr::distinct(region) |> dplyr::pull(region)
+  ),
+  tar_target(
+    region_data,
+    data_raw |> dplyr::filter(region == regions),
+    pattern = map(regions)
+  ),
+  tar_target(
+    region_model,
+    lm(revenue ~ quarter, data = region_data),
+    pattern = map(region_data)
+  ),
+  tar_target(
+    combined,
+    bind_region_results(region_model),
+    # Aggregate all branches back into one target
+    pattern = map(region_model)
+  )
+)
+
+# tar_make() runs one branch per region.
+# tar_read(region_model, branches = 1) reads a single branch.
+# tar_read(combined) returns aggregated results.
 ```
+
+**More example prompts:**
+- "Add Quarto report rendering as a target in my pipeline"
+- "Set up parallel execution for my branched targets"
+- "Debug a failing target in my pipeline"

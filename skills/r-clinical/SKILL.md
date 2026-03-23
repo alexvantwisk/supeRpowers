@@ -233,29 +233,54 @@ search_by_funder           — filter by funding source
 
 ## Examples
 
-### 1. Power calculation for a Phase 2 trial
-**Prompt:** "How many patients do I need to detect an ORR improvement from 20% to 40%?"
+### Happy Path: Kaplan-Meier survival curve with log-rank test
+
+**Prompt:** "Plot overall survival by treatment arm with a risk table and log-rank p-value."
 
 ```r
-pwr.2p.test(h = ES.h(0.40, 0.20), sig.level = 0.05, power = 0.80)
+# Input — ADTTE dataset with CDISC conventions
+library(survival)
+library(survminer)
+
+km_fit <- survfit(
+  Surv(AVAL, CNSR == 0) ~ TRT01P,
+  data = adtte,
+  conf.type = "log-log"
+)
+survdiff(Surv(AVAL, CNSR == 0) ~ TRT01P, data = adtte)
+
+# Output — KM plot with risk table
+survminer::ggsurvplot(
+  km_fit,
+  data       = adtte,
+  risk.table = TRUE,
+  pval       = TRUE,
+  xlab       = "Time (days)",
+  ylab       = "Overall Survival Probability",
+  legend.labs = c("Placebo", "Treatment")
+)
 ```
 
-### 2. Kaplan-Meier plot with risk table from ADTTE
-**Prompt:** "Plot OS by treatment arm with risk table."
+### Edge Case: Competing risks when death precedes progression
 
-See `references/tlf-templates.md` → KM figure section.
+**Prompt:** "Estimate PFS but some patients died before progressing — standard KM is biased."
 
-### 3. Demographic Table 1
-**Prompt:** "Create a demographics table comparing arms."
+```r
+# WRONG — treating death-before-progression as censored biases KM upward
+km_naive <- survfit(Surv(AVAL, CNSR == 0) ~ TRT01P, data = adtte_pfs)
 
-See `references/tlf-templates.md` → Table 1 section.
+# CORRECT — competing risks via cumulative incidence
+library(tidycmprsk)
 
-### 4. Meta-analysis of published HR estimates
-**Prompt:** "Pool hazard ratios from 5 studies."
+cuminc_fit <- cuminc(Surv(AVAL, factor(EVNTDESC)) ~ TRT01P, data = adtte_pfs)
+#> EVNTDESC levels: "Progression", "Death", "Censored"
 
-Use `metagen()` with `sm = "HR"` as shown above; report I², τ², forest plot.
+# Output — cumulative incidence curves per event type
+ggcuminc(cuminc_fit, outcome = "Progression") +
+  ggplot2::labs(x = "Time (days)", y = "Cumulative Incidence of Progression")
+```
 
-### 5. Search for comparable trials via MCP
-**Prompt:** "What Phase 3 NSCLC trials used PFS as primary endpoint?"
-
-Use `search_trials` MCP tool, then `analyze_endpoints` on retrieved NCT IDs.
+**More example prompts:**
+- "How many patients do I need to detect an ORR improvement from 20% to 40%?"
+- "Pool hazard ratios from 5 studies in a meta-analysis."
+- "What Phase 3 NSCLC trials used PFS as primary endpoint?"

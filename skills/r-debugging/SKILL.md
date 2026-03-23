@@ -195,6 +195,66 @@ for a focused review of the problematic code.
 
 ## Examples
 
+### Happy Path: Function returns wrong result -- isolate with browser()
+
+**Prompt:** "My `calc_growth()` function returns NA for some groups. Help me debug it."
+
+```r
+# Input — buggy function
+calc_growth <- function(data) {
+  data |>
+    arrange(date) |>
+    mutate(growth = (value - lag(value)) / lag(value) * 100, .by = group)
+}
+
+test_data <- tibble(
+  group = c("A", "A", "B"),
+  date  = as.Date(c("2024-01-01", "2024-02-01", "2024-01-01")),
+  value = c(100, 120, 50)
+)
+calc_growth(test_data)
+#> Group B has only 1 row -> lag() returns NA -> growth is NA
+
+# Diagnose — insert browser() to inspect
+calc_growth <- function(data) {
+  data <- data |> arrange(group, date)
+  browser()  # inspect: data |> count(group) reveals single-row groups
+  data |> mutate(growth = (value - lag(value)) / lag(value) * 100, .by = group)
+}
+
+# Fix — guard against single-row groups
+calc_growth <- function(data) {
+  data |>
+    arrange(group, date) |>
+    mutate(
+      growth = if (n() > 1) (value - lag(value)) / lag(value) * 100 else NA_real_,
+      .by = group
+    )
+}
+```
+
+### Edge Case: Vector recycling producing wrong results without error
+
+**Prompt:** "My filter seems to work but returns wrong rows. No error at all."
+
+```r
+# Input — subtle recycling bug
+df <- tibble(id = 1:6, status = c("A", "B", "C", "A", "B", "C"))
+
+# BAD: intended to keep A and B, but c("A", "B") recycles to match 6 rows
+# R compares element-wise: row1=="A", row2=="B", row3=="A", row4=="B"...
+df |> filter(status == c("A", "B"))
+#> Returns 4 rows — wrong! Recycling matched positions, not values
+
+# GOOD: use %in% for set membership
+df |> filter(status %in% c("A", "B"))
+#> Returns 4 rows — the correct 4 (all A and B rows)
+
+# Defensive: always use %in% for multi-value comparisons
+# If you must use ==, guard with stopifnot(length(x) == length(y))
+```
+
+**More example prompts:**
 - "My dplyr pipeline throws 'object not found' for a column I know exists"
 - "This function returns NULL instead of a data frame, but only sometimes"
 - "My R script runs fine interactively but fails in `Rscript --vanilla`"

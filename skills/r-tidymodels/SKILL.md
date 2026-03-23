@@ -222,10 +222,75 @@ list(
 
 ## Examples
 
+### Happy Path: Full Split-Recipe-Model-Tune-Evaluate Workflow
+
+**Prompt:** "Build a classification model to predict customer churn with tuning."
+
+```r
+library(tidymodels)
+
+set.seed(42)
+data_split <- initial_split(churn_df, prop = 0.75, strata = churn)
+train <- training(data_split)
+test  <- testing(data_split)
+
+# Recipe — preprocessing blueprint
+rec <- recipe(churn ~ ., data = train) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_zv(all_predictors())
+
+# Model spec with tunable parameters
+xgb_spec <- boost_tree(trees = tune(), learn_rate = tune()) |>
+  set_engine("xgboost") |>
+  set_mode("classification")
+
+# Bundle into workflow
+wf <- workflow() |> add_recipe(rec) |> add_model(xgb_spec)
+
+# Tune with cross-validation
+folds <- vfold_cv(train, v = 5, strata = churn)
+tune_results <- wf |> tune_grid(resamples = folds, grid = 20)
+
+# Finalize and evaluate on held-out test set
+best_params <- select_best(tune_results, metric = "roc_auc")
+final_fit <- finalize_workflow(wf, best_params) |> last_fit(data_split)
+collect_metrics(final_fit)
+# # A tibble: 2 x 4
+#   .metric  .estimator .estimate .config
+#   accuracy binary         0.841 Preprocessor1_Model1
+#   roc_auc  binary         0.897 Preprocessor1_Model1
 ```
-"Build a classification model to predict customer churn"
-"Set up a tidymodels workflow with xgboost and hyperparameter tuning"
-"Create a recipe for preprocessing survey data with missing values"
-"Compare random forest vs gradient boosting on this dataset"
-"Tune an elastic net model with cross-validation"
+
+### Edge Case: Data Leakage from Preprocessing Outside the Recipe
+
+**Prompt:** "Why are my cross-validation metrics suspiciously high?"
+
+```r
+# WRONG — normalizing BEFORE splitting leaks test info into training
+# all_data_scaled <- all_data |>
+#   mutate(across(where(is.numeric), scale))
+# split <- initial_split(all_data_scaled, strata = outcome)
+# Metrics will be inflated because test data influenced scaling parameters.
+
+# CORRECT — all preprocessing inside the recipe
+set.seed(99)
+split <- initial_split(raw_data, strata = outcome)
+train <- training(split)
+
+rec <- recipe(outcome ~ ., data = train) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_dummy(all_nominal_predictors())
+
+# workflow() handles prep(train) + bake(test) automatically
+wf <- workflow() |> add_recipe(rec) |> add_model(logistic_reg())
+final_fit <- wf |> last_fit(split)
+collect_metrics(final_fit)
+# Metrics now reflect true out-of-sample performance.
 ```
+
+**More example prompts:**
+- "Create a recipe for preprocessing survey data with missing values"
+- "Compare random forest vs gradient boosting on this dataset"
+- "Tune an elastic net model with cross-validation"

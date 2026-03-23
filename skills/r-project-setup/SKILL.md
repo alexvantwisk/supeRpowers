@@ -192,9 +192,79 @@ After scaffold, dispatch to **r-dependency-manager** agent for renv review.
 
 ## Examples
 
+### Happy Path: Scaffold an Analysis Project with renv, git, and README
+
+**Prompt:** "Set up a new analysis project for exploring the mtcars dataset."
+
+```r
+# 1. Create directory structure
+dir.create("mtcars-analysis", recursive = TRUE)
+setwd("mtcars-analysis")
+
+dirs <- c("R", "data/raw", "data/processed", "output", "docs")
+lapply(dirs, dir.create, recursive = TRUE)
+
+# 2. Create starter analysis script
+writeLines(c(
+  "library(dplyr)",
+  "library(ggplot2)",
+  "",
+  'raw <- readr::read_csv(here::here("data", "raw", "mtcars.csv"))',
+  "clean <- raw |> filter(!is.na(mpg))"
+), "R/01-import.R")
+
+# 3. Initialize renv and git
+renv::init()
+usethis::use_git()
+
+# 4. Verify scaffold
+fs::dir_tree()
+# mtcars-analysis/
+# ├── .Rprofile           <- source("renv/activate.R")
+# ├── .gitignore
+# ├── R/
+# │   └── 01-import.R
+# ├── data/
+# │   ├── processed/
+# │   └── raw/
+# ├── docs/
+# ├── output/
+# ├── renv/
+# ├── renv.lock
+# └── README.md
 ```
-"Set up a new analysis project for exploring the mtcars dataset"
-"Create an R package called tidywidgets"
-"Scaffold a Shiny dashboard with golem"
-"Start a Quarto website for my research group"
+
+### Edge Case: Add renv to an Existing Project Mid-Development
+
+**Prompt:** "I have a project that's been running for weeks without renv. Add it now."
+
+```r
+# In an existing project with packages already installed system-wide:
+renv::init()
+# renv detects packages used in R/ and .qmd files via renv::dependencies().
+# It creates renv.lock capturing current versions from your library.
+
+# If renv misses a package (e.g., loaded via `library()` in an un-scanned file):
+renv::install("janitor")
+renv::snapshot()
+
+# Common pitfall: renv::init() may find version conflicts.
+# Check the lockfile for unexpected versions:
+renv::status()
+# The following package(s) are out of sync:
+#   janitor  [installed 2.2.0, lockfile 2.1.0]
+
+# Fix with:
+renv::snapshot()   # update lockfile to match installed
+# or
+renv::restore()    # downgrade installed to match lockfile
+
+# Add renv files to git
+# .gitignore already includes renv/library/ (machine-specific)
+# Commit: renv.lock, .Rprofile, renv/activate.R, renv/settings.json
 ```
+
+**More example prompts:**
+- "Create an R package called tidywidgets"
+- "Scaffold a Shiny dashboard with golem"
+- "Start a Quarto website for my research group"

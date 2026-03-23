@@ -30,26 +30,17 @@ guidance inline.
 ## Data Import with readr
 
 ```r
-df <- read_csv("data/sales.csv")                  # basic import
-df <- read_tsv("data/results.tsv")                 # tab-delimited
-
-# Explicit column types (always do this in production)
+# Always specify col_types in production — silent guessing causes subtle bugs
 df <- read_csv("data/sales.csv", col_types = cols(
   id = col_integer(), date = col_date(format = "%Y-%m-%d"),
   amount = col_double(), category = col_character()
 ))
 
-spec(read_csv("data/sales.csv", n_max = 0))        # inspect spec first
-
-# Messy files
+# Messy files: custom NA strings, skip rows, encoding
 df <- read_csv("data/messy.csv",
   na = c("", "NA", "N/A", "null", "-"), skip = 2,
   locale = locale(encoding = "latin1")
 )
-```
-
-Always specify `col_types` for production code — silent type guessing causes
-subtle bugs downstream.
 
 ---
 
@@ -72,21 +63,10 @@ sales |>
 ### across, pick, reframe
 
 ```r
-# Multiple functions across numeric columns
-df |> summarise(
-  across(where(is.numeric), list(mean = mean, sd = sd), na.rm = TRUE),
-  .by = group
-)
-
-# Rename output with .names glue syntax
+df |> summarise(across(where(is.numeric), list(mean = mean, sd = sd), na.rm = TRUE), .by = group)
 df |> mutate(across(c(x, y, z), \(col) col / max(col), .names = "{.col}_scaled"))
-
-# Multi-row summaries with reframe
-df |> reframe(
-  quantile = c(0.25, 0.5, 0.75),
-  value = quantile(score, c(0.25, 0.5, 0.75)),
-  .by = group
-)
+df |> reframe(quantile = c(0.25, 0.5, 0.75),
+              value = quantile(score, c(0.25, 0.5, 0.75)), .by = group)
 ```
 
 ---
@@ -141,18 +121,12 @@ Read `references/join-guide.md` for inequality joins and complex strategies.
 ## String Manipulation with stringr
 
 ```r
-df |>
-  mutate(
-    clean_name = str_to_lower(name) |> str_trim() |> str_squish(),
-    has_email = str_detect(contact, "@"),
-    domain = str_extract(email, "(?<=@)[^.]+"),
-    parts = str_split(tags, ",\\s*")
-  ) |>
-  filter(str_starts(code, "PRD"))
+df |> mutate(
+  clean_name = str_to_lower(name) |> str_trim() |> str_squish(),
+  has_email = str_detect(contact, "@"),
+  domain = str_extract(email, "(?<=@)[^.]+")
+) |> filter(str_starts(code, "PRD"))
 ```
-
-Key functions: `str_detect()`, `str_extract()`, `str_replace()`,
-`str_remove()`, `str_split()`, `str_c()`, `str_glue()`, `str_pad()`.
 
 ---
 
@@ -192,22 +166,10 @@ Use `floor_date()` / `ceiling_date()` for rounding to periods.
 ## Missing Data Strategies
 
 ```r
-# Diagnose
-df |> summarise(across(everything(), \(x) sum(is.na(x))))
-
-# Remove rows with any NA in key columns
-df |> drop_na(revenue, date)
-
-# Replace NAs — coalesce takes first non-NA across columns
-df |> mutate(
-  score = replace_na(score, 0),
-  label = coalesce(label, backup_label, "unknown")
-)
-
-# Fill within groups (time series)
-df |>
-  arrange(group, date) |>
-  mutate(value = fill(value, .direction = "down"), .by = group)
+df |> summarise(across(everything(), \(x) sum(is.na(x))))  # diagnose
+df |> drop_na(revenue, date)                                # remove NAs in key cols
+df |> mutate(score = replace_na(score, 0),                  # replace NAs
+             label = coalesce(label, backup_label, "unknown"))
 ```
 
 ---
@@ -245,55 +207,53 @@ For most analysis under 1M rows, dplyr is clearer and preferred.
 
 ## Examples
 
-### 1. Clean and summarise survey data
-**Prompt:** "Compute average satisfaction by department, excluding incomplete."
+### Happy Path: Reshape wide-to-long, clean, and summarise
+
+**Prompt:** "Monthly columns (jan-dec) need to be long, clean missing values, then summarise by region."
 
 ```r
-survey <- read_csv("data/survey_results.csv", col_types = cols(
-  employee_id = col_integer(), department = col_character(),
-  satisfaction = col_double(), completed = col_logical()
-))
-
-survey |>
-  filter(completed) |>
-  drop_na(satisfaction) |>
-  summarise(avg = mean(satisfaction), n = n(), .by = department) |>
-  arrange(desc(avg))
-```
-
-### 2. Reshape wide time-series data
-**Prompt:** "Monthly columns (jan-dec) need to be long for plotting."
-
-```r
-wide_data |>
-  pivot_longer(cols = jan:dec, names_to = "month", values_to = "value") |>
-  mutate(month = fct_relevel(month, month.abb |> str_to_lower()))
-```
-
-### 3. Find customers who never purchased
-**Prompt:** "Which customers have zero orders?"
-
-```r
-customers |> anti_join(orders, join_by(customer_id))
-```
-
-### 4. Standardize numeric columns by group
-**Prompt:** "Z-score all numeric columns within each group."
-
-```r
-df |> mutate(
-  across(where(is.numeric), \(x) (x - mean(x, na.rm = TRUE)) / sd(x, na.rm = TRUE)),
-  .by = group
+# Input
+wide_sales <- tribble(
+  ~region,  ~jan, ~feb, ~mar,
+  "North",  100,  NA,   130,
+  "South",  200,  210,  220
 )
+
+# Output
+wide_sales |>
+  pivot_longer(cols = jan:mar, names_to = "month", values_to = "sales") |>
+  mutate(month = fct_relevel(month, "jan", "feb", "mar")) |>
+  drop_na(sales) |>
+  summarise(avg_sales = mean(sales), n_months = n(), .by = region)
+#> # A tibble: 2 x 3
+#>   region avg_sales n_months
+#>   <chr>      <dbl>    <int>
+#> 1 North       115.        2
+#> 2 South       210.        3
 ```
 
-### 5. Date filtering with string cleanup
-**Prompt:** "Last 90 days, clean names, weekly totals by region."
+### Edge Case: Join with duplicates causing silent row fan-out
+
+**Prompt:** "Left join orders to customers, but some customers have multiple addresses."
 
 ```r
-sales |>
-  filter(date >= today() - days(90)) |>
-  mutate(name = str_to_title(name) |> str_squish(), week = floor_date(date, "week")) |>
-  summarise(weekly_total = sum(amount, na.rm = TRUE), .by = c(region, week)) |>
-  arrange(region, week)
+# Input — addresses has duplicates on customer_id
+orders <- tibble(order_id = 1:3, customer_id = c(10, 20, 10))
+addresses <- tibble(customer_id = c(10, 10, 20), city = c("NYC", "LA", "CHI"))
+
+# BAD: silent fan-out — 3 orders become 4 rows
+orders |> left_join(addresses, join_by(customer_id))
+#> # A tibble: 4 x 3   <-- unexpected extra row!
+
+# GOOD: detect duplicates first, then deduplicate before joining
+addresses |> count(customer_id) |> filter(n > 1)  # find duplicates
+primary <- addresses |> slice_head(n = 1, by = customer_id)
+orders |> left_join(primary, join_by(customer_id))
+#> # A tibble: 3 x 3   <-- correct row count
 ```
+
+**More example prompts:**
+- "Compute average satisfaction by department, excluding incomplete surveys"
+- "Z-score all numeric columns within each group"
+- "Last 90 days, clean names, weekly totals by region"
+- "Which customers have zero orders?"

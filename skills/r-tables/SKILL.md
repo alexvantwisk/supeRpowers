@@ -149,29 +149,10 @@ tbl_stack(
 ```r
 library(gtExtras)
 
-# Sparkline column
-df |>
-  gt() |>
-  gt_sparkline(trend_col, type = "line", same_limit = FALSE)
-
-# Inline bar chart
-df |>
-  gt() |>
-  gt_plt_bar(value_col, color = "steelblue", scale_type = "number")
-
-# Built-in themes
-tbl |> gt_theme_538()
-tbl |> gt_theme_nytimes()
-tbl |> gt_theme_espn()
-tbl |> gt_theme_guardian()
-
-# Color-scale column
-tbl |>
-  gt_color_rows(
-    columns  = value,
-    palette  = c("#FFF5F0", "#C00000"),
-    domain   = c(0, 100)
-  )
+df |> gt() |> gt_sparkline(trend_col, type = "line")    # sparklines
+df |> gt() |> gt_plt_bar(value_col, color = "steelblue") # inline bars
+tbl |> gt_theme_538()                                     # themed tables
+tbl |> gt_color_rows(value, palette = c("#FFF5F0", "#C00000"))  # heatmap
 ```
 
 ---
@@ -227,24 +208,15 @@ library(reactable)
 
 reactable(
   mtcars,
-  filterable  = TRUE,
-  searchable  = TRUE,
-  pagination  = TRUE,
-  defaultPageSize = 15,
+  filterable = TRUE, searchable = TRUE, defaultPageSize = 15,
   columns = list(
     mpg = colDef(name = "MPG", format = colFormat(digits = 1)),
     cyl = colDef(name = "Cylinders", filterable = TRUE)
-  ),
-  theme = reactableTheme(
-    borderColor     = "#dfe2e5",
-    stripedColor    = "#f6f8fa",
-    highlightColor  = "#f0f5ff"
   )
 )
 ```
 
-Use `reactable` for Shiny and Quarto HTML output; use gt/gtsummary for
-static/print contexts.
+Use `reactable` for Shiny/Quarto HTML; use gt/gtsummary for static/print.
 
 ---
 
@@ -262,22 +234,57 @@ static/print contexts.
 
 ## Examples
 
-### 1. Table 1 for a clinical paper
-**Prompt:** "Create a demographics Table 1 comparing treatment vs control with
-p-values, styled for JAMA submission."
+### Happy Path: Demographics Table 1 with gtsummary
 
-### 2. Regression table with multiple models
-**Prompt:** "Make a publication table showing unadjusted and adjusted odds
-ratios side by side from two logistic regression models."
+**Prompt:** "Create a demographics Table 1 comparing treatment vs control with p-values for JAMA."
 
-### 3. Summary statistics with sparklines
-**Prompt:** "Build a gt table of monthly sales by region with sparkline
-trend columns using gtExtras."
+```r
+# Input
+library(gtsummary)
+theme_gtsummary_journal("jama")
 
-### 4. Export table to Word
-**Prompt:** "I have a gtsummary tbl_summary — export it to a Word document
-for my manuscript."
+tbl1 <- trial |>
+  tbl_summary(
+    by        = trt,
+    include   = c(age, grade, stage),
+    statistic = list(all_continuous() ~ "{mean} ({sd})",
+                     all_categorical() ~ "{n} ({p}%)"),
+    missing   = "no"
+  ) |>
+  add_overall() |>
+  add_p() |>
+  bold_labels()
 
-### 5. Conditional formatting
-**Prompt:** "Color the p-value column red when < 0.05 and add data bars to
-the effect size column."
+# Output — rendered gt table with JAMA styling
+tbl1
+
+reset_gtsummary_theme()
+```
+
+### Edge Case: Merging two gtsummary tables with duplicate column names
+
+**Prompt:** "Combine unadjusted and adjusted regression tables side by side."
+
+```r
+# Input — two models produce tables with identical stat column names
+tbl_unadj <- glm(response ~ trt, data = trial, family = binomial) |>
+  tbl_regression(exponentiate = TRUE)
+
+tbl_adj <- glm(response ~ trt + age + grade, data = trial, family = binomial) |>
+  tbl_regression(exponentiate = TRUE)
+
+# WRONG — piping gtsummary directly to gt functions without as_gt()
+# tbl_unadj |> tab_header(title = "Model")   # ERROR
+
+# CORRECT — tbl_merge handles column deduplication automatically
+tbl_merged <- tbl_merge(
+  tbls        = list(tbl_unadj, tbl_adj),
+  tab_spanner = c("**Unadjusted**", "**Adjusted**")
+)
+tbl_merged
+```
+
+**More example prompts:**
+- "Build a gt table with sparkline trend columns using gtExtras."
+- "Export a gtsummary table to Word for my manuscript."
+- "Color p-values red when < 0.05 and add data bars to effect sizes."

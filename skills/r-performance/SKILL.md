@@ -239,10 +239,56 @@ or memory per worker exceeds available RAM.
 
 ---
 
-## Example Prompts
+## Examples
 
-1. "This dplyr pipeline is too slow on 5M rows — convert to data.table"
-2. "Profile why my Shiny app takes 8 seconds to load"
-3. "Benchmark three approaches to computing rolling averages"
-4. "Parallelize this `purrr::map()` call that processes 500 files"
-5. "Rewrite this simulation inner loop in Rcpp"
+### Happy Path: Profile, identify bottleneck, vectorize fix
+
+**Prompt:** "This function is slow on 1M rows — find the bottleneck and fix it."
+
+```r
+# Input — profile reveals row-binding in a loop
+profvis::profvis({
+  result <- data.frame()
+  for (i in seq_len(nrow(df))) {
+    result <- rbind(result, transform_row(df[i, ]))  # O(n^2) copies
+  }
+})
+
+# Output — vectorized replacement (100x faster)
+result <- df |>
+  dplyr::mutate(score = value * weight + offset)
+
+# Prove the improvement
+bench::mark(
+  loop_version   = slow_fn(df),
+  vector_version = fast_fn(df),
+  check = TRUE
+)
+#>   expression          min   median `itr/sec` mem_alloc
+#>   loop_version      4.2s     4.5s      0.22    1.8GB
+#>   vector_version   42ms    48ms       21.       15MB
+```
+
+### Edge Case: setDT() mutates the caller's original data frame
+
+**Prompt:** "I converted my df to data.table but now my original df is also a data.table."
+
+```r
+# WRONG — setDT() modifies in place; original_df is silently mutated
+original_df <- data.frame(id = 1:5, value = rnorm(5))
+dt <- original_df
+data.table::setDT(dt)
+class(original_df)
+#> [1] "data.table" "data.frame"   # original_df is now a data.table!
+
+# CORRECT — use as.data.table() to create an independent copy
+original_df <- data.frame(id = 1:5, value = rnorm(5))
+dt <- data.table::as.data.table(original_df)
+class(original_df)
+#> [1] "data.frame"                  # original_df is untouched
+```
+
+**More example prompts:**
+- "This dplyr pipeline is too slow on 5M rows -- convert to data.table."
+- "Parallelize this purrr::map() call that processes 500 files."
+- "Rewrite this simulation inner loop in Rcpp."

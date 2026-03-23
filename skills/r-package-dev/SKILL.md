@@ -160,32 +160,16 @@ Tag the package-level documentation file with `@useDynLib mypkg, .registration =
 
 ---
 
-## Vignettes
+## Vignettes and pkgdown
 
 ```r
-usethis::use_vignette("getting-started")    # Rmarkdown vignette
-usethis::use_vignette("advanced-usage")
+usethis::use_vignette("getting-started")    # Creates vignettes/*.Rmd
+usethis::use_pkgdown()                      # Sets up pkgdown site
+pkgdown::build_site()                       # Build locally
 ```
 
-Creates `vignettes/getting-started.Rmd` with correct YAML header. Build with
-`devtools::build_vignettes()`. For quarto: create `.qmd` files in `vignettes/`
-and add `VignetteEngine: quarto::html` to the YAML header.
-
-**Tip:** Keep vignettes focused. One topic per vignette. Use `@seealso` in
-function docs to link to relevant vignettes.
-
----
-
-## pkgdown Site
-
-```r
-usethis::use_pkgdown()
-pkgdown::build_site()
-```
-
-Customize `_pkgdown.yml` with `reference:` sections (group by topic),
-`articles:` for vignettes, and `navbar:` for navigation. Use Bootstrap 5
-(`template: bootstrap: 5`). Deploy via GitHub Actions (see CI/CD section).
+One topic per vignette. Customize `_pkgdown.yml` with `reference:` sections
+(group by topic) and `articles:` for vignettes. Deploy via GitHub Actions.
 
 ---
 
@@ -249,8 +233,62 @@ usethis::use_github_actions_badge("R-CMD-check")
 
 ## Examples
 
-- "Create a new R package called tidyweather for weather data wrangling."
-- "Add a `fetch_forecast()` function with full roxygen2 docs and tests."
-- "Get this package ready for CRAN submission."
-- "Create a pkgdown site grouping functions by topic."
-- "The rolling_mean() function is too slow in pure R, use C++ via Rcpp."
+### Happy Path: Create package with roxygen2 docs and check
+
+**Prompt:** "Create a new R package called tidyweather with a documented function."
+
+```r
+# Input — scaffold and add a function
+usethis::create_package("~/tidyweather")
+usethis::use_testthat(3)
+usethis::use_pipe(type = "base")
+usethis::use_mit_license()
+usethis::use_package("httr2")
+
+# R/fetch_forecast.R
+#' Fetch weather forecast for a city
+#'
+#' @param city Character. City name to query.
+#' @param days Integer. Number of forecast days (1-7). Default `3`.
+#' @returns A tibble with columns `date`, `temp_high`, `temp_low`.
+#' @examples
+#' fetch_forecast("London", days = 5)
+#' @export
+fetch_forecast <- function(city, days = 3L) {
+  stopifnot(is.character(city), length(city) == 1L, days >= 1L, days <= 7L)
+  # ... implementation using httr2
+}
+
+# Output — build docs and run check
+devtools::document()   # generates man/fetch_forecast.Rd and updates NAMESPACE
+devtools::check()      # 0 errors, 0 warnings, 0 notes -> ready
+```
+
+### Edge Case: NAMESPACE conflict from @importFrom vs tidy eval
+
+**Prompt:** "R CMD check warns about .data not found in NAMESPACE after I added a dplyr function."
+
+```r
+# Input — .data[[var]] used in a function but NAMESPACE has no import
+# R CMD check: "no visible binding for global variable '.data'"
+filter_column <- function(data, col, min_val) {
+  data |> dplyr::filter(.data[[col]] >= min_val)  # .data not imported!
+}
+
+# Fix — import .data from rlang (NOT dplyr)
+usethis::use_import_from("rlang", ".data")
+devtools::document()
+
+# NAMESPACE now contains: importFrom(rlang,.data)
+# R CMD check passes cleanly
+
+# Also works for {{ }} (curly-curly) — no import needed, but requires
+# @param tag with <data-masking> for documentation:
+#' @param col <[`data-masking`][rlang::args_data_masking]> Column to filter.
+```
+
+**More example prompts:**
+- "Add a `fetch_forecast()` function with full roxygen2 docs and tests"
+- "Get this package ready for CRAN submission"
+- "Create a pkgdown site grouping functions by topic"
+- "The rolling_mean() function is too slow in pure R, use C++ via Rcpp"
