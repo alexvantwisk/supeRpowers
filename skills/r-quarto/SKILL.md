@@ -2,8 +2,13 @@
 name: r-quarto
 description: >
   Use when creating Quarto documents, presentations, websites, or books in R.
-  Covers YAML configuration, code chunks, cross-references, journal templates,
-  and multi-format publishing.
+  Provides expert guidance on YAML configuration, code chunk options,
+  cross-references, journal templates, revealjs slides, multi-format
+  publishing, and parameterized reports.
+  Triggers: Quarto, qmd, document, presentation, revealjs, website, book,
+  cross-reference, YAML header, code chunk, journal template, multi-format.
+  Do NOT use for R package vignettes — use r-package-dev instead.
+  Do NOT use for Shiny apps — use r-shiny instead.
 ---
 
 # R Quarto
@@ -179,24 +184,10 @@ Deploy: `quarto publish gh-pages`, `quarto publish quarto-pub`, `quarto publish 
 
 ## Books
 
-```yaml
-# _quarto.yml
-project:
-  type: book
-book:
-  title: "R Cookbook"
-  author: "Jane Smith"
-  date: today
-  chapters:
-    - index.qmd
-    - chapters/intro.qmd
-    - chapters/models.qmd
-  references: references.bib
-bibliography: references.bib
-```
-
-Cross-references work across chapters. Use `@sec-` for section refs,
-`@fig-` for figures. Add `bibliography:` for BibTeX citations (`[@key]`).
+In `_quarto.yml`, set `project: type: book` with a `book:` block containing
+`title`, `author`, `chapters:` (list of `.qmd` files), and `bibliography:`.
+Cross-references work across chapters: `@sec-`, `@fig-`, `@tbl-`. Use BibTeX
+citations via `[@key]`.
 
 ---
 
@@ -255,28 +246,12 @@ quarto render report.qmd -P region:South -P year:2023
 
 ## Multi-Format Output
 
-```yaml
-format:
-  html:
-    toc: true
-    theme: flatly
-    code-fold: true
-  pdf:
-    documentclass: scrartcl
-    cite-method: biblatex
-  docx:
-    reference-doc: custom-reference.docx
-```
-
-Format-conditional content:
+List multiple formats under `format:` (html, pdf, docx) with per-format options.
+Use `content-visible`/`content-hidden` divs for conditional content:
 
 ```markdown
 ::: {.content-visible when-format="html"}
-Interactive plot shown in HTML only.
-:::
-
-::: {.content-hidden when-format="pdf"}
-Not in PDF.
+Interactive content for HTML only.
 :::
 ```
 

@@ -2,7 +2,13 @@
 name: r-shiny
 description: >
   Use when building, structuring, testing, or deploying Shiny applications.
-  Covers reactivity, modules, golem/rhino, bslib, shinytest2, and deployment.
+  Provides expert guidance on reactivity, modules, UI layout with bslib,
+  production frameworks (golem, rhino), integration testing with shinytest2,
+  and deployment to Posit Connect, shinyapps.io, or Docker.
+  Triggers: Shiny, reactive, module, dashboard, golem, rhino, bslib,
+  shinytest2, deployment, server, ui, app, observe, render.
+  Do NOT use for standalone ggplot2 plots — use r-visualization instead.
+  Do NOT use for Quarto interactive documents — use r-quarto instead.
 ---
 
 # R Shiny
@@ -182,29 +188,12 @@ Key components: `page_sidebar()`, `page_navbar()`, `page_fillable()`,
 
 ## Dynamic UI
 
-```r
-# renderUI / uiOutput — fully dynamic (use session$ns in modules)
-output$dynamic_inputs <- renderUI({
-  purrr::map(seq_len(input$n), \(i) {
-    numericInput(session$ns(paste0("val_", i)), paste("Value", i), value = 0)
-  })
-})
-
-# update*() — preferred when only changing choices/values
-observeEvent(input$dataset, {
-  updateSelectInput(session, "column", choices = names(get(input$dataset, "package:datasets")))
-})
-
-# insertUI / removeUI — surgical additions/removals
-observeEvent(input$add, {
-  insertUI("#container", "beforeEnd", ui = div(textInput(paste0("x_", input$add), "New")))
-})
-
-# conditionalPanel — client-side show/hide
-conditionalPanel("input.advanced == true", numericInput("threshold", "Threshold", 0.05))
-```
-
-Prefer `update*()` over `renderUI()`. Use `renderUI()` when structure changes.
+| Method | When to use |
+|--------|-------------|
+| `update*()` | **Preferred.** Change choices/values/labels of existing inputs. |
+| `renderUI()` + `uiOutput()` | Structure changes. Use `session$ns()` in modules. |
+| `insertUI()` / `removeUI()` | Surgical additions/removals to DOM. |
+| `conditionalPanel()` | Client-side show/hide (no server round-trip). |
 
 ---
 
@@ -236,17 +225,8 @@ with `shinytest2::AppDriver`, snapshot outputs with `app$expect_values()`.
 
 ## JavaScript Integration
 
-```r
-session$sendCustomMessage("highlight", list(id = "myplot", color = "red"))
-
-tags$script("
-  Shiny.addCustomMessageHandler('highlight', function(msg) {
-    document.getElementById(msg.id).style.border = '2px solid ' + msg.color;
-  });
-  Shiny.setInputValue('js_result', {value: 42, nonce: Math.random()});
-")
-```
-
+Use `session$sendCustomMessage()` (R -> JS) and `Shiny.setInputValue()` (JS -> R)
+for custom communication. Register handlers with `Shiny.addCustomMessageHandler()`.
 For complex JS, use `htmltools::htmlDependency()` to manage external JS/CSS.
 
 ---

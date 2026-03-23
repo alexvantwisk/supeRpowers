@@ -3,7 +3,13 @@ name: r-package-skill-generator
 description: >
   Use when the user provides a GitHub link to an R package and wants to generate
   a Claude skill from it, or asks Claude to become an expert at using a specific
-  R package.
+  R package. Automates cloning, exploration via parallel sub-agents, and
+  assembly of a complete SKILL.md with references from any public R package
+  repository.
+  Triggers: generate skill, create skill from package, GitHub package, teach
+  Claude, learn package, reverse-engineer package, package skill, analyze R package.
+  Do NOT use for manually writing or editing skills — use skill-creator instead.
+  Do NOT use for general R package development — use r-package-dev instead.
 ---
 
 # R Package Skill Generator

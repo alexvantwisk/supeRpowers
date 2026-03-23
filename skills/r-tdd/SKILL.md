@@ -2,7 +2,13 @@
 name: r-tdd
 description: >
   Use when writing or running tests for R code, setting up testthat, or
-  following TDD workflow in R packages or scripts.
+  following TDD workflow in R packages or scripts. Provides expert guidance on
+  the red-green-refactor cycle, testthat 3rd edition, snapshot tests, mocking,
+  fixtures, test coverage, and test organization patterns.
+  Triggers: test, testthat, TDD, test-driven, unit test, snapshot test, test
+  coverage, expect_equal, test_that, mock, fixture.
+  Do NOT use for R CMD check or package-level quality gates — use r-package-dev instead.
+  Do NOT use for debugging existing code — use r-debugging instead.
 ---
 
 # R Test-Driven Development

@@ -2,8 +2,13 @@
 name: r-tables
 description: >
   Use when creating publication-quality tables in R with gt, gtsummary,
-  gtExtras, or reactable. Covers formatting, themes, journal styles, and
-  output to HTML, PDF, and Word.
+  gtExtras, or reactable. Provides expert guidance on summary tables,
+  regression tables, demographic Table 1 layouts, journal themes, conditional
+  formatting, sparklines, and multi-format output to HTML, PDF, and Word.
+  Triggers: table, gt, gtsummary, gtExtras, reactable, summary table,
+  regression table, Table 1, demographics table, publication table, formatting.
+  Do NOT use for plots or charts — use r-visualization instead.
+  Do NOT use for Shiny interactive tables embedded in apps — use r-shiny instead.
 ---
 
 # R Tables

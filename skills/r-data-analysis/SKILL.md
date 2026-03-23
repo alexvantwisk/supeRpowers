@@ -2,7 +2,13 @@
 name: r-data-analysis
 description: >
   Use when working with data wrangling, cleaning, transformation, or pipelines
-  in R using dplyr, tidyr, readr, lubridate, stringr, or forcats.
+  in R using dplyr, tidyr, readr, lubridate, stringr, or forcats. Provides
+  expert guidance on tidy data principles, column manipulation, reshaping,
+  joins, type conversion, string and date processing, and factor handling.
+  Triggers: data wrangling, data cleaning, data transformation, dplyr, tidyr,
+  readr, mutate, filter, pivot, join, reshape, stringr, forcats, lubridate, pipe.
+  Do NOT use for statistical modeling or hypothesis testing — use r-stats instead.
+  Do NOT use for performance optimization of large datasets — use r-performance instead.
 ---
 
 # R Data Analysis

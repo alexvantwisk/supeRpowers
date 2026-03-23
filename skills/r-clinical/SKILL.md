@@ -2,8 +2,15 @@
 name: r-clinical
 description: >
   Use when performing clinical trial analysis, biostatistics, regulatory
-  submissions, or biomedical research in R. Covers trial design, CDISC,
-  survival endpoints, biomarkers, meta-analysis, and MCP integration.
+  submissions, or biomedical research in R. Provides expert guidance on trial
+  design, CDISC standards (ADaM, SDTM), survival endpoints, Kaplan-Meier
+  analysis, biomarker evaluation, power analysis, meta-analysis, and TLF
+  generation for regulatory filings.
+  Triggers: clinical trial, biostatistics, CDISC, ADaM, SDTM, survival
+  endpoint, Kaplan-Meier, regulatory, FDA, biomarker, meta-analysis, trial
+  design, power analysis.
+  Do NOT use for general statistical methodology — use r-stats instead.
+  Do NOT use for general survival analysis outside clinical context — use r-stats instead.
 ---
 
 # R Clinical Trials & Biostatistics

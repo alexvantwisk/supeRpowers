@@ -2,8 +2,14 @@
 name: r-stats
 description: >
   Use when performing statistical modeling, hypothesis testing, or model
-  diagnostics in R. Covers linear models, GLMs, mixed models, survival
-  analysis, Bayesian methods, time series, and model comparison.
+  diagnostics in R. Provides expert guidance on linear models, GLMs, mixed
+  models, survival analysis, Bayesian methods, time series, model comparison,
+  assumption checking, and effect-size reporting.
+  Triggers: statistical model, hypothesis test, regression, ANOVA, t-test,
+  chi-squared, lm, glm, mixed model, survival analysis, p-value, confidence
+  interval, diagnostics.
+  Do NOT use for machine learning or predictive modeling — use r-tidymodels instead.
+  Do NOT use for clinical trial-specific analysis — use r-clinical instead.
 ---
 
 # R Statistics & Modeling

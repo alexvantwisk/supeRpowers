@@ -1,8 +1,14 @@
 ---
 name: r-debugging
 description: >
-  Use when diagnosing bugs, errors, or unexpected behavior in R code. Covers
-  browser(), traceback(), profiling, and common R pitfalls.
+  Use when diagnosing bugs, errors, or unexpected behavior in R code. Provides
+  a systematic reproduce-isolate-diagnose-fix-test workflow covering browser(),
+  traceback(), debug(), condition handling, and common R pitfalls for both
+  interactive scripts and package code.
+  Triggers: debug, error, bug, traceback, browser, breakpoint, unexpected
+  behavior, stack trace, warning, object not found, wrong results.
+  Do NOT use for performance profiling and optimization — use r-performance instead.
+  Do NOT use for writing tests — use r-tdd instead.
 ---
 
 # R Debugging
@@ -248,33 +254,14 @@ read with explicit encoding:
 When the bug is "it's too slow" or "it uses too much memory."
 
 ```r
-# Quick timing
-system.time({
-  result <- slow_function(data)
-})
-
-# Comparative benchmarks (multiple approaches)
-bench::mark(
-  base = vapply(x, my_fun, numeric(1)),
-  purrr = purrr::map_dbl(x, my_fun),
-  check = FALSE
-)
-
-# Flame graph profiling -- find the bottleneck visually
-profvis::profvis({
-  result <- slow_function(data)
-})
-
-# Memory inspection
-lobstr::obj_size(large_object)
-lobstr::obj_sizes(obj_a, obj_b)  # Compare multiple objects
+system.time({ result <- slow_function(data) })                # Quick timing
+bench::mark(base = vapply(x, f, numeric(1)), purrr = map_dbl(x, f))  # Compare
+profvis::profvis({ slow_function(data) })                     # Flame graph
+lobstr::obj_size(large_object)                                # Memory check
 ```
 
-**Common performance fixes:**
-- Replace row-wise loops with vectorized operations
-- Use `vapply()` over `sapply()` for type-safe apply
-- Pre-allocate output vectors instead of growing in a loop
-- For data >1M rows, consider `data.table` or `collapse`
+**Common fixes:** vectorize loops, `vapply()` over `sapply()`, pre-allocate
+outputs, `data.table`/`collapse` for >1M rows.
 
 ---
 

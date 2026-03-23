@@ -2,7 +2,13 @@
 name: r-visualization
 description: >
   Use when creating plots, charts, or visualizations in R using ggplot2, plotly,
-  or htmlwidgets. Includes publication-quality figures and domain-specific plots.
+  or htmlwidgets. Provides expert guidance on the grammar of graphics,
+  publication-quality figures, domain-specific plots, theming, and interactive
+  visualization.
+  Triggers: ggplot2, plot, chart, visualization, figure, plotly, htmlwidgets,
+  histogram, scatter, bar chart, heatmap, publication figure, facet, theme.
+  Do NOT use for interactive Shiny dashboards — use r-shiny instead.
+  Do NOT use for formatted data tables — use r-tables instead.
 ---
 
 # R Visualization
@@ -246,50 +252,8 @@ gwas_results |>
 
 ## Examples
 
-**"Create a scatterplot with trend line"**
-```r
-mtcars |>
-  ggplot(aes(x = wt, y = mpg, color = factor(cyl))) +
-  geom_point(size = 3) +
-  geom_smooth(method = "lm", color = "grey30", se = TRUE) +
-  scale_color_viridis_d(name = "Cylinders") +
-  labs(x = "Weight (1000 lbs)", y = "Miles per Gallon") +
-  theme_minimal()
-```
-
-**"Make a grouped bar chart"**
-```r
-survey_data |>
-  ggplot(aes(x = category, y = count, fill = group)) +
-  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
-  scale_fill_brewer(palette = "Set2") +
-  labs(x = NULL, y = "Count", fill = "Group") +
-  theme_minimal() +
-  theme(legend.position = "top")
-```
-
-**"Build a multi-panel figure for a paper"**
-```r
-library(patchwork)
-p_scatter <- ggplot(data, aes(x, y)) + geom_point() + theme_classic()
-p_dist <- ggplot(data, aes(x)) + geom_density(fill = "steelblue", alpha = 0.5) + theme_classic()
-p_box <- ggplot(data, aes(group, y)) + geom_boxplot() + theme_classic()
-
-(p_scatter | p_dist) / p_box +
-  plot_annotation(tag_levels = "A", title = "Figure 1")
-ggsave("figure1.pdf", width = 183, height = 160, units = "mm", device = cairo_pdf)
-```
-
-**"Plot a Kaplan-Meier curve with risk table"**
-```r
-fit <- survfit(Surv(time, status) ~ arm, data = trial_data)
-ggsurvplot(fit, data = trial_data, pval = TRUE, risk.table = TRUE,
-           palette = "jco", ggtheme = theme_minimal())
-```
-
-**"Create an interactive version of my ggplot"**
-```r
-p <- ggplot(data, aes(x, y, text = paste("ID:", id))) +
-  geom_point(aes(color = group)) + theme_minimal()
-plotly::ggplotly(p, tooltip = "text")
-```
+- "Create a scatterplot of wt vs mpg colored by cyl with a trend line"
+- "Make a grouped bar chart with dodged bars and Set2 palette"
+- "Build a multi-panel figure (scatter + density + boxplot) with patchwork for a paper"
+- "Plot a Kaplan-Meier survival curve with risk table using survminer"
+- "Convert my ggplot to an interactive plotly chart with custom tooltips"

@@ -1,8 +1,14 @@
 ---
 name: r-package-dev
 description: >
-  Use when creating, developing, documenting, or submitting R packages. Covers
-  usethis, devtools, roxygen2, pkgdown, CRAN submission, and CI/CD.
+  Use when creating, developing, documenting, or submitting R packages. Provides
+  full-lifecycle guidance on usethis, devtools, roxygen2, pkgdown, NAMESPACE
+  management, DESCRIPTION metadata, vignettes, CRAN submission, and CI/CD
+  workflows.
+  Triggers: R package, usethis, devtools, roxygen2, NAMESPACE, DESCRIPTION,
+  pkgdown, CRAN submission, vignette, R CMD check, package development.
+  Do NOT use for initial project scaffolding only — use r-project-setup instead.
+  Do NOT use for writing package tests — use r-tdd instead.
 ---
 
 # R Package Development
@@ -177,37 +183,9 @@ usethis::use_pkgdown()
 pkgdown::build_site()
 ```
 
-Customize `_pkgdown.yml`:
-
-```yaml
-url: https://username.github.io/mypkg/
-
-template:
-  bootstrap: 5
-
-reference:
-  - title: Core Functions
-    contents:
-      - weighted_summary
-      - fit_model
-  - title: Utilities
-    contents:
-      - starts_with("validate_")
-
-articles:
-  - title: Getting Started
-    contents:
-      - getting-started
-  - title: Advanced
-    contents:
-      - advanced-usage
-
-navbar:
-  structure:
-    left:  [intro, reference, articles, news]
-```
-
-Deploy automatically via GitHub Actions (see CI/CD section).
+Customize `_pkgdown.yml` with `reference:` sections (group by topic),
+`articles:` for vignettes, and `navbar:` for navigation. Use Bootstrap 5
+(`template: bootstrap: 5`). Deploy via GitHub Actions (see CI/CD section).
 
 ---
 
@@ -256,43 +234,8 @@ usethis::use_github_actions_badge("R-CMD-check")
 
 ## Examples
 
-### 1. Bootstrap a new package from scratch
-**Prompt:** "Create a new R package called tidyweather for weather data wrangling."
-
-```r
-usethis::create_package("~/projects/tidyweather")
-usethis::use_testthat(3)
-usethis::use_pipe(type = "base")
-usethis::use_roxygen_md()
-usethis::use_mit_license()
-usethis::use_git()
-usethis::use_github()
-usethis::use_readme_rmd()
-usethis::use_github_action("check-standard")
-```
-
-### 2. Add an exported function with full documentation
-**Prompt:** "Add a `fetch_forecast()` function that calls a weather API."
-
-Write test first (RED), implement in `R/fetch-forecast.R` with full roxygen2
-block (`@param`, `@returns`, `@examples`, `@family`), run `devtools::document()`
-then `devtools::check()`.
-
-### 3. Prepare for CRAN submission
-**Prompt:** "Get this package ready for CRAN."
-
-Run `devtools::check(cran = TRUE)`, fix all warnings, run `urlchecker::url_check()`,
-`spelling::spell_check_package()`, update `NEWS.md`, write `cran-comments.md`,
-then `devtools::submit_cran()`.
-
-### 4. Set up pkgdown with custom reference organization
-**Prompt:** "Create a pkgdown site grouping functions by topic."
-
-Run `usethis::use_pkgdown()`, configure `_pkgdown.yml` with `reference:` sections,
-`pkgdown::build_site()`, then `usethis::use_github_action("pkgdown")` for deploy.
-
-### 5. Add Rcpp for a performance-critical function
-**Prompt:** "The rolling_mean() function is too slow in pure R, use C++ via Rcpp."
-
-Run `usethis::use_rcpp()`, write `.cpp` in `src/`, `devtools::document()` to
-generate exports, test with `devtools::test()`, benchmark with `bench::mark()`.
+- "Create a new R package called tidyweather for weather data wrangling."
+- "Add a `fetch_forecast()` function with full roxygen2 docs and tests."
+- "Get this package ready for CRAN submission."
+- "Create a pkgdown site grouping functions by topic."
+- "The rolling_mean() function is too slow in pure R, use C++ via Rcpp."
