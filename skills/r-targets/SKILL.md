@@ -196,15 +196,20 @@ tar_option_set(
 
 ---
 
-## Anti-Patterns
+## Gotchas
 
-| Anti-Pattern | Fix |
-|-------------|-----|
-| One giant target that does everything | Break into small, focused targets |
-| Targets that return invisible side effects | Return the value or use `format = "file"` |
-| Hard-coded file paths inside functions | Pass paths as target inputs |
-| Functions defined inside `_targets.R` | Move to `R/` directory, use `tar_source()` |
-| `_targets/` committed to git | Add to `.gitignore` |
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| One giant target that does everything | No caching granularity; any change reruns the whole thing | Break into small, focused targets with single responsibilities |
+| Targets that return invisible side effects | targets caches return values; invisible side effects are not tracked | Return the value explicitly, or use `format = "file"` for side-effect targets |
+| Hard-coded file paths inside functions | targets cannot detect the dependency; file changes are invisible to the graph | Pass paths as target inputs so targets tracks them |
+| Functions defined inside `_targets.R` | `tar_make()` re-sources `_targets.R` each run; functions pollute the pipeline definition | Move functions to `R/` directory; `tar_source()` loads them |
+| `_targets/` committed to git | Cache is machine-specific and large; bloats repo, causes merge conflicts | Add `_targets/` to `.gitignore` |
+| Using `tar_load()` inside a target function | Breaks reproducibility — the loaded target is invisible to the dependency graph | Pass the value as a function argument; targets wires dependencies automatically |
+| Non-serializable objects (DB connections, R6 with env refs) | `format = "qs"` or `"rds"` cannot serialize them; target fails on cache write | Return data, not connections; reconnect inside the target that needs the connection |
+| NULL-returning targets silently skipped | A target returning `NULL` appears up-to-date but carries no value downstream | Return a sentinel value or empty tibble; use `tar_assert_*()` to guard |
+| `tar_source()` loading files in non-deterministic order | If `R/` files depend on load order (e.g., one sources another), results vary | Make each file self-contained; declare dependencies via function calls, not file order |
+| Redesigning entire pipeline when user asked to add one target | Scope creep wastes time and risks breaking a working pipeline | Add the requested target, verify with `tar_visnetwork()`, suggest improvements as follow-up |
 
 ---
 

@@ -178,3 +178,17 @@ Is it a Bioconductor package?
   YES -> Note BiocManager::install(), document special object classes
   NO  -> Standard
 ```
+
+---
+
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Generating a skill for a thin wrapper package | Package has <10 exports and trivial logic; the skill adds no value over `?pkg::fn` | Check export count in inventory first; if <10 exports with no complex patterns, advise the user it is too thin |
+| Missing non-exported helpers that are key to idioms | Agents only scan NAMESPACE exports; internal helpers like `.validate_input()` shape correct usage | Have the Architecture Agent also scan `R/` for frequently called internal functions |
+| Overloading skill with every function instead of primary workflows | SKILL.md becomes a copy of the man pages; too long, no insight | Rank by cross-reference count and vignette mentions; top 10-15 functions in SKILL.md, full catalog in `references/` |
+| Not checking if a skill already exists for the package | Generates a duplicate skill, wasting time and creating conflicts | Search `skills/` directory for existing `r-{package-name}` before starting |
+| Synthesis producing >300 lines in SKILL.md | Violates the 300-line budget; skill fails validation | Move detailed API reference, patterns, and gotchas into `references/` subdirectory |
+| Fabricating functions or parameters not in the package | Agents hallucinate plausible but non-existent API surface | Cross-check every function and argument against `man/` pages and NAMESPACE |
+| Writing the skill manually instead of using skill-creator | Bypasses the quality gates and structure the skill-creator enforces | Always hand off to skill-creator in Step 4; draft manually only if skill-creator is unavailable |

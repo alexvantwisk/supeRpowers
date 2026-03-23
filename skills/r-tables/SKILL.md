@@ -248,6 +248,18 @@ static/print contexts.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Using `gt()` on columns with spaces in names | `gt` can't resolve bare column names with spaces; errors in `cols_label()` and `fmt_*()` | Rename columns first with `rename()` or use backtick-quoted names |
+| Forgetting `as_gt()` when piping gtsummary to gt functions | `tbl_summary` objects are not gt objects; gt functions silently fail or error | Pipe through `as_gt()` before any `tab_*()`, `fmt_*()`, or `gt_*()` calls |
+| `tbl_summary()` defaulting to median for continuous variables | Default statistic is `"{median} ({p25}, {p75})"` — users often expect mean | Set `statistic = list(all_continuous() ~ "{mean} ({sd})")` explicitly if mean is wanted |
+| Forgetting `bold_labels()` for publication formatting | Labels look like plain text; reviewers and journals expect bold variable names | Add `bold_labels()` to every publication table pipeline |
+| `gtsave()` PNG requires webshot2/chromote; PDF requires tinytex | `gtsave("table.png")` errors with cryptic message if chromote is missing | Install `webshot2` + Chrome/Chromium for PNG; `tinytex::install_tinytex()` for PDF |
+| `theme_gtsummary_journal()` has global side effects | Theme persists across all subsequent tables in the session | Call `reset_gtsummary_theme()` after building the themed table |
+| Building full data pipeline when user asked to format one table | Scope creep — user wants table styling, not data wrangling | Format the data provided; suggest upstream changes only if asked |
+
 ## Examples
 
 ### 1. Table 1 for a clinical paper

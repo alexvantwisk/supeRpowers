@@ -176,6 +176,20 @@ After scaffold, dispatch to **r-dependency-manager** agent for renv review.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Creating package scaffold without `usethis::create_package()` | Missing DESCRIPTION, NAMESPACE, and `.Rbuildignore`; `devtools::load_all()` fails | Always use `usethis::create_package()` for packages; defer to r-package-dev skill |
+| Forgetting `renv::init()` for dependency management | Project works on your machine but breaks elsewhere; no lockfile for reproducibility | Run `renv::init()` immediately after scaffold; commit `renv.lock` |
+| Using `setwd()` instead of project-relative paths | Breaks on any other machine or when project directory moves; fragile and non-portable | Use `here::here()` or RStudio project root; never call `setwd()` in scripts |
+| Not initializing git | No version history from the start; first commit contains everything with no meaningful diff | Run `usethis::use_git()` as part of scaffold, or `git init` before first file creation |
+| Creating Quarto project without checking Quarto CLI installed | `quarto render` fails with "command not found"; user has no way to build the document | Check `Sys.which("quarto")` or `quarto::quarto_path()` first; advise installation if missing |
+| `.Rproj` BuildType set to "Package" for analysis projects | RStudio shows Build pane with `R CMD check` button; confuses users, triggers spurious check errors | Set `BuildType: Custom` or omit BuildType entirely for non-package projects |
+| Configuring full CI/CD when user asked to scaffold a project | Scope creep adds GitHub Actions, Docker, pkgdown before the user has any code | Scaffold the directory structure only; suggest CI/CD as a follow-up step |
+
+---
+
 ## Examples
 
 ```

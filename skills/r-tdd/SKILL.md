@@ -31,13 +31,6 @@ REFACTOR: Improve code quality while keeping tests green
 
 **REFACTOR:** Clean up implementation, run `devtools::test()` — all tests MUST still pass, check coverage with `covr::package_coverage()` — target 80%+.
 
-### Red Flags — STOP and Start Over
-
-- Implementation code written before its test
-- "I'll add tests after" — tests-after prove nothing about design
-- "Too simple to test" — simple code breaks too
-- Skipping RED phase (test that doesn't fail first)
-
 ---
 
 ## Setting Up testthat 3e
@@ -270,6 +263,21 @@ test_that("export_results writes correct CSV", {
   expect_equal(readr::read_csv(tmp, show_col_types = FALSE), data)
 })
 ```
+
+---
+
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Implementation written before its test | Tests-after prove nothing about design; you test what you built, not what you need | Write the test first — if it passes immediately, the test is wrong |
+| Skipping the RED phase (test never fails) | A test that never failed never proved anything; it may be tautological | Run the test before implementation, confirm failure, read the error message |
+| `test_active_file()` exits silently outside a package | `devtools::test_active_file()` requires a package context with DESCRIPTION | Use `testthat::test_file()` directly for standalone scripts, or wrap code in a package |
+| Tests pass alone but fail in `devtools::test()` | Fixture ordering or shared state between test files; `setup.R` side effects leak | Each test must be self-contained; use `withr::local_*()` for temporary state |
+| Snapshot collisions across branches | Two branches update the same `_snaps/*.md` file, causing merge conflicts | Accept snapshots on one branch, rebase, re-run `snapshot_review()` on the other |
+| "Too simple to test" | Simple code breaks too — off-by-one, NULL input, empty vector edge cases | If you wrote it, test it; trivial tests run in milliseconds and catch regressions |
+| Mocking the wrong binding scope | `local_mocked_bindings()` mocks in the test package namespace, not the target package | Set `.package = "targetpkg"` to mock where the function is actually called |
+| Writing exhaustive test suites when user asked for one test | Scope creep wastes time and overwhelms the user with unnecessary coverage | Deliver exactly what was requested; suggest additional tests as follow-up |
 
 ---
 

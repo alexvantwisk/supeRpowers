@@ -154,98 +154,18 @@ For scripts: create a lightweight test file or add to an existing test suite.
 
 ---
 
-## Common R Pitfalls
+## Gotchas
 
-### Factor Surprises
-
-**Symptom:** Unexpected levels, wrong coercion, "invalid factor level" warnings.
-
-```r
-# Factor-to-numeric trap: as.numeric(factor) gives codes, not values
-x <- factor(c("10", "20", "30"))
-as.numeric(x)               # Returns 1, 2, 3 (WRONG)
-as.numeric(as.character(x))  # Returns 10, 20, 30 (CORRECT)
-
-# Dropped levels after subsetting
-x <- factor(c("a", "b", "c"))
-x[x != "c"]              # Still has level "c"
-droplevels(x[x != "c"])  # Clean
-```
-
-### NSE Scoping
-
-**Symptom:** "object not found" inside dplyr verbs, or wrong variable captured.
-
-```r
-# WRONG: bare variable from outer scope not found
-col <- "mpg"
-mtcars |> filter(col > 20)  # Looks for column named "col"
-
-# CORRECT: use .data pronoun for string column names
-mtcars |> filter(.data[[col]] > 20)
-
-# CORRECT: use embrace for function arguments
-my_filter <- function(data, var) {
-  data |> filter({{ var }} > 20)
-}
-```
-
-### Silent Vector Recycling
-
-**Symptom:** No error, but wrong results. R silently recycles shorter vectors.
-
-```r
-x <- 1:6
-y <- c(1, 2)    # Length 2 recycles to match length 6
-x + y            # c(2, 4, 4, 6, 6, 8) -- probably not intended
-
-# Guard: check lengths explicitly
-stopifnot(length(x) == length(y))
-```
-
-### Copy-on-Modify Memory Spikes
-
-**Symptom:** Unexpected memory growth when modifying large objects.
-
-R copies on modify. Modifying a column of a large data frame triggers a full
-copy. Fix: build data frames in one step, or use `data.table` for in-place
-mutation.
-
-### NULL Propagation
-
-**Symptom:** No error, but downstream code breaks with cryptic messages.
-
-```r
-my_list <- list(a = 1, b = 2)
-my_list$c          # Returns NULL silently (no error!)
-my_list$c + 1      # NULL -- still no error in some contexts
-
-# Guard: use [[ ]] with explicit checks
-value <- my_list[["c"]]
-if (is.null(value)) {
-  cli::cli_abort("Expected element {.field c} not found in list.")
-}
-```
-
-### Floating Point Comparison
-
-**Symptom:** Equality checks fail on values that "should" be equal.
-
-```r
-0.1 + 0.2 == 0.3          # FALSE
-
-# Fix: use tolerance-aware comparison
-dplyr::near(0.1 + 0.2, 0.3)  # TRUE
-all.equal(0.1 + 0.2, 0.3)     # TRUE (returns string message on failure)
-```
-
-### Encoding Issues
-
-**Symptom:** Garbled text, especially on Windows; `nchar()` returns unexpected values.
-
-Diagnose with `Encoding(x)` and `validUTF8(x)`. Fix with `enc2utf8(x)` or
-read with explicit encoding:
-`readr::read_csv("file.csv", locale = readr::locale(encoding = "UTF-8"))`.
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `as.numeric(factor_var)` | Returns internal codes (1, 2, 3), not actual values | Use `as.numeric(as.character(x))` or `readr::parse_number()` |
+| NSE scoping: bare string var in `filter()` | `filter(col > 20)` looks for column named `col`, not the variable's value | Use `.data[[col]]` for strings, `{{ var }}` for function arguments |
+| Silent vector recycling | R recycles shorter vectors with no error, producing wrong results | Guard with `stopifnot(length(x) == length(y))` |
+| Copy-on-modify memory spikes | Modifying one column copies the entire data frame | Build data frames in one step, or use `data.table` for in-place mutation |
+| `list$missing_element` returns `NULL` | No error on missing list element; `NULL` propagates silently | Use `[["key"]]` with explicit `is.null()` check |
+| `0.1 + 0.2 == 0.3` is `FALSE` | Floating point representation; equality check fails | Use `dplyr::near()` or `all.equal()` with tolerance |
+| Encoding issues on Windows | Garbled text, unexpected `nchar()` values | Diagnose with `Encoding(x)`; fix with `enc2utf8()` or explicit locale in `read_csv()` |
+| Scope creep | Claude refactors surrounding code when asked to fix one bug | Fix only the identified bug; show minimal diff |
 
 ---
 

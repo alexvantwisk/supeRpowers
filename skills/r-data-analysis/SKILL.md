@@ -228,6 +228,21 @@ For most analysis under 1M rows, dplyr is clearer and preferred.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `%>%` instead of `|>` | Convention violation; base pipe is project standard | Always use `|>` — never `%>%` |
+| Omitting `col_types` in `read_csv()` | Silent type guessing causes subtle downstream bugs | Always specify `col_types` explicitly in production code |
+| `=` for assignment | Convention violation; `<-` is project standard | Use `<-` for assignment, `=` only in function arguments |
+| Joining without checking duplicates | Silent row multiplication when join keys are not unique | Run `count()` on join keys first; assert no duplicates |
+| `.` placeholder with `|>` | Base pipe does not support `.` placeholder like magrittr | Use anonymous function: `x |> (\(d) lm(y ~ x, data = d))()` |
+| Forgetting `ungroup()` | Grouped data frame silently changes downstream `mutate()`/`summarise()` behavior | Use `.by` argument instead, or call `ungroup()` explicitly |
+| `gather()`/`spread()` | Deprecated; superseded by `pivot_longer()`/`pivot_wider()` | Use `pivot_longer()` and `pivot_wider()` exclusively |
+| Scope creep | Claude rewrites entire pipeline when asked to fix one step | Fix only the identified issue; show minimal diff |
+
+---
+
 ## Examples
 
 ### 1. Clean and summarise survey data

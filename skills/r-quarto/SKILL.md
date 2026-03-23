@@ -257,6 +257,19 @@ Interactive content for HTML only.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| YAML indentation errors (tabs or wrong nesting) | Quarto YAML parser fails silently or produces unexpected output | Use spaces only (2-space indent); validate with `quarto check` before rendering |
+| Using knitr-style `{r, eval=FALSE}` chunk options | Quarto ignores old-style knitr options in `{}` header; code runs unexpectedly | Use `#| eval: false` (hashpipe syntax) inside the chunk body |
+| Cross-reference labels missing type prefix | `@fig-plot` only works if the chunk label is `fig-plot`; bare labels produce broken refs | Always prefix labels: `fig-` for figures, `tbl-` for tables, `sec-` for sections |
+| Forgetting `embed-resources: true` for self-contained HTML | Shared HTML files have broken images/CSS because assets are separate files | Add `embed-resources: true` under `format: html:` for portable single-file output |
+| PDF output fails without LaTeX installation | Quarto calls `pdflatex`/`xelatex` which is not bundled | Install TinyTeX: `quarto install tinytex` or `tinytex::install_tinytex()` |
+| Installing extensions via `install.packages()` instead of `quarto add` | Quarto extensions are not R packages; CRAN install does nothing | Use `quarto add <gh-org>/<repo>` from the terminal |
+| Cache not invalidating when data changes but chunk code stays the same | `cache: true` keys on chunk code only; stale results persist | Use `cache.extra` to depend on data hash, or use `freeze: auto` in `_quarto.yml` instead |
+| Rewriting entire document structure when user asked for one fix | Scope creep — user wants a YAML tweak, not a full document redesign | Make the minimal targeted change; suggest broader restructuring only if asked |
+
 ## Examples
 
 **1. Reproducible report:** "Create a Quarto report with EDA, model results,

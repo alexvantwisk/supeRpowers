@@ -250,6 +250,21 @@ gwas_results |>
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `+` at start of next line | ggplot2 thinks the expression ended; next line is a no-op | Always end the previous line with `+` |
+| `color` when `fill` is needed | Bar/area geoms use `fill` for interior; `color` is the border | Use `fill` for bars, areas, boxplots; `color` for points, lines |
+| `xlim()`/`ylim()` to zoom | Removes data outside range before stat computation | Use `coord_cartesian(xlim = ..., ylim = ...)` to zoom without dropping data |
+| No `fig.width`/`fig.height` set | Default dimensions produce poorly sized publication figures | Set explicit `width`/`height` in `ggsave()` or chunk options |
+| Discrete scale on continuous data | `scale_color_manual()` on a numeric column throws cryptic error | Match scale type to data type: `_continuous()` vs `_discrete()` |
+| Grouped bars stack by default | `geom_col()` stacks groups unless told otherwise | Add `position = "dodge"` or `position = position_dodge(width = 0.9)` |
+| Colorblind-unsafe palette | Default ggplot2 hue scale is hard to distinguish for ~8% of men | Use `scale_color_viridis_*()` or `scale_color_brewer(palette = "Set2")` |
+| Scope creep | Claude redesigns entire plot when asked to tweak one element | Fix only the identified issue; show minimal diff |
+
+---
+
 ## Examples
 
 - "Create a scatterplot of wt vs mpg colored by cyl with a trend line"

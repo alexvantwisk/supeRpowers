@@ -206,6 +206,20 @@ list(
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Leaking test data into preprocessing | Fitting the recipe on the full dataset causes data leakage; inflated metrics | Always `prep()` the recipe on training data only; `workflow()` handles this automatically |
+| Forgetting `prep()` and `bake()` outside workflows | A recipe object is a blueprint, not transformed data; using it raw gives the original data | Call `prep(rec, training = train)` then `bake(prepped, new_data = test)` for manual use |
+| Using `set_mode("regression")` on a classification task | Model trains but predictions are numeric, not class labels; metrics crash | Match `set_mode()` to the outcome type; check with `class(train$outcome)` |
+| Forgetting `finalize_workflow()` after tuning | `select_best()` returns a tibble of parameters, not a fitted model; calling `fit()` on unfinalized workflow uses `tune()` placeholders | Always call `finalize_workflow(wf, best_params)` before `last_fit()` or `fit()` |
+| Not setting seed before `vfold_cv()` | Folds are random; results differ every run, making comparisons meaningless | Call `set.seed()` before `vfold_cv()`, `initial_split()`, and any resampling |
+| Confusing `fit()` vs `fit_resamples()` | `fit()` trains one model on all data; `fit_resamples()` trains on each fold for evaluation only | Use `fit_resamples()` or `tune_grid()` for evaluation; use `fit()` only for the final model |
+| Building full ML pipeline when user asked to tune one model | Scope creep introduces unnecessary recipes, stacks, or workflow sets | Deliver what was requested; suggest pipeline extensions as follow-up |
+
+---
+
 ## Examples
 
 ```

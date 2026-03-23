@@ -222,16 +222,20 @@ or memory per worker exceeds available RAM.
 
 ---
 
-## Common Anti-Patterns
+## Gotchas
 
-| Anti-pattern | Problem | Fix |
-|---|---|---|
-| `result <- c(result, x)` in loop | O(n²) copies | Pre-allocate or use `purrr::map` |
-| `df <- rbind(df, row)` in loop | O(n²) copies | Collect list, then `bind_rows()` |
-| `apply()` on data frame columns | Coerces to matrix | `dplyr::across()` or `vapply()` |
-| `paste()` in tight loop | Slow for 1M+ items | `stringr::str_c()` vectorized |
-| `df$col <- ...` on large shared df | Triggers full copy | `data.table::setDT()` + `:=` |
-| `sapply()` over `vapply()` | Unpredictable return type | `vapply(x, f, FUN.VALUE = numeric(1))` |
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `result <- c(result, x)` in loop | O(n²) copies — each append copies the entire vector | Pre-allocate with `vector()` or use `purrr::map()` |
+| `df <- rbind(df, row)` in loop | O(n²) copies — same growth problem as above | Collect rows in a list, then `dplyr::bind_rows()` once |
+| `apply()` on data frame columns | Silently coerces entire data frame to matrix (all character if mixed types) | Use `dplyr::across()` or `vapply()` instead |
+| `paste()` in tight loop | Not vectorized across iterations; slow for 1M+ items | Use `stringr::str_c()` or vectorized `paste0()` outside the loop |
+| `df$col <- ...` on large shared df | Triggers full copy-on-modify of the entire data frame | Convert with `data.table::setDT()` and use `:=` for in-place modification |
+| `sapply()` instead of `vapply()` | Return type depends on input length — silently returns list or matrix | Always use `vapply(x, f, FUN.VALUE = numeric(1))` for type safety |
+| `bench::mark()` with `check = FALSE` | May compare non-equivalent operations; benchmark "wins" are meaningless | Keep `check = TRUE` (default); only disable after manually verifying equivalence |
+| `setDT()` mutates the original data frame | Caller's copy silently becomes a data.table — breaks downstream code expecting a data.frame | Use `as.data.table(df)` when the original must stay unchanged |
+| `profvis` not showing the real bottleneck | profvis only surfaces R-level code; C-level and compiled bottlenecks are invisible | Combine with `Rprof(line.profiling = TRUE)` or `bench::mark()` to isolate compiled-code time |
+| Rewriting entire codebase when user asked to speed up one function | Scope creep — premature optimization of non-bottleneck code wastes effort | Profile first, optimize only the measured hotspot, and prove the improvement with `bench::mark()` |
 
 ---
 

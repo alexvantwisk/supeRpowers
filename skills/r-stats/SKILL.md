@@ -230,6 +230,18 @@ collect_metrics(cv_results)
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Not checking model assumptions before interpreting | Coefficients/p-values are unreliable if normality, homoscedasticity, or linearity are violated | Run `plot(fit)` diagnostics and `car::vif()` before reporting results |
+| Using `anova()` for non-nested model comparison | `anova()` requires nested models; misleading on non-nested pairs | Use `AIC()` / `BIC()` for non-nested models; `anova()` only for nested |
+| Forgetting `na.action = na.exclude` in model fit | `predict()` / `augment()` return fewer rows than input data, breaking joins | Pass `na.action = na.exclude` to `lm()` / `glm()` so predictions align |
+| Interpreting p-values without multiple testing correction | 5% false positive rate per test compounds across many tests | Apply `p.adjust(method = "BH")` before filtering on significance |
+| Forgetting `family = binomial` for logistic regression | `glm()` defaults to `gaussian` — silently fits linear model on 0/1 outcome | Always specify `family = binomial(link = "logit")` for binary outcomes |
+| Confusing `predict(type = "response")` vs `type = "link"` in GLMs | `"link"` returns log-odds (logistic) or log-rate (Poisson); `"response"` returns probabilities or counts | Use `type = "response"` for interpretable predictions; `"link"` for CIs on transformed scale |
+| Producing full Bayesian analysis when user asked "is this significant?" | Scope creep wastes tokens and confuses the user | Match complexity to the question — start with `t.test()` or `lm()` and escalate only if asked |
+
 ## Examples
 
 ### 1. Linear model with diagnostics

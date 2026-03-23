@@ -262,6 +262,21 @@ Always use `renv` for reproducible deployments. Pin all package versions.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `renderUI()` for simple input changes | Full UI rebuild is slow; loses input state | Use `update*()` functions (e.g., `updateSelectInput()`) instead |
+| Missing `ns()` in module UI | Input IDs are not namespaced; server cannot find them | Wrap every input/output ID with `ns()` in module UI functions |
+| `reactiveVal()` inside `observe()` | Creates a new reactive value on every invalidation; previous value lost | Define `reactiveVal()` or `reactiveValues()` outside observers |
+| Missing `req()` for NULL inputs | `NULL` inputs propagate and cause cryptic downstream errors | Add `req(input$x)` at the start of reactive expressions |
+| Forgetting `session$ns()` in module server dynamic UI | `renderUI()` inside a module generates un-namespaced IDs | Use `session$ns("id")` when building UI in the server function |
+| No `isolate()` in `observe()` | Reading multiple inputs without isolation causes infinite reactive loops | Use `isolate()` on inputs you want to read but not depend on |
+| Side effects inside `reactive()` | `reactive()` is for computed values; side effects fire unpredictably | Move side effects (DB writes, logging, file I/O) to `observe()` or `observeEvent()` |
+| Scope creep | Claude restructures entire app when asked to fix one reactive | Fix only the identified issue; show minimal diff |
+
+---
+
 ## Examples
 
 ### 1. Quick dashboard prototype

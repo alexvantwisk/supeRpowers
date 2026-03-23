@@ -219,6 +219,18 @@ search_by_funder           — filter by funding source
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Using months instead of days for time-to-event | `Surv()` expects numeric time; months lose precision and break censoring intervals | Convert to days: `as.numeric(difftime(end_date, start_date, units = "days"))` |
+| Forgetting to censor at analysis cutoff date | Patients without events who are still on study appear as events or get dropped | Set `CNSR <- 1` and `AVAL <- cutoff_date - start_date` for patients without events before cutoff |
+| Confusing OS, PFS, and DFS endpoint definitions | Each has different event/censoring rules; mixing them corrupts the analysis | Define endpoint in the ADTTE derivation: OS = death only; PFS = progression or death; DFS = recurrence or death |
+| Not stratifying Kaplan-Meier by treatment arm | Single-arm KM hides the treatment comparison the user requested | Always use `survfit(Surv(time, event) ~ TRT01P, ...)` when comparing arms |
+| Using `survfit()` without `conf.type = "log-log"` | Default `"log"` CI can exceed [0, 1]; `"log-log"` is regulatory preference | Pass `conf.type = "log-log"` to `survfit()` for regulatory submissions |
+| Applying standard survival methods when competing risks apply | Death before progression biases PFS if treated as censored | Use `cmprsk::cuminc()` or `tidycmprsk::cuminc()` for competing risk endpoints |
+| Generating full TLF suite when user asked for one KM plot | Scope creep wastes tokens and overwhelms the user | Deliver exactly what was asked; mention TLF templates in `references/` if the user wants more |
+
 ## Examples
 
 ### 1. Power calculation for a Phase 2 trial

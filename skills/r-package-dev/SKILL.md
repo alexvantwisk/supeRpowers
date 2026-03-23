@@ -232,6 +232,21 @@ usethis::use_github_actions_badge("R-CMD-check")
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `@import pkg` instead of `@importFrom pkg fun` | Imports entire namespace; causes collisions with other packages | Use `@importFrom pkg fun` or `pkg::fun()` — never `@import` |
+| Forgetting `devtools::document()` after roxygen changes | `NAMESPACE` and man pages are stale; exports don't update | Run `devtools::document()` after every roxygen edit |
+| `library()` in package code | Attaches entire package to search path; violates CRAN policy | Use `pkg::fun()` or `@importFrom pkg fun` in `R/` files |
+| Missing `@export` tag | Function exists but users cannot access it after `library(pkg)` | Add `@export` to roxygen block, then `devtools::document()` |
+| Hardcoded file paths | Paths break on other machines and in `R CMD check` | Use `testthat::test_path()`, `system.file()`, or `fs::path_package()` |
+| Forgetting `usethis::use_package("dep")` | Dependency not in `DESCRIPTION`; `R CMD check` fails with "not available" | Run `usethis::use_package()` for every new dependency |
+| `Depends:` instead of `Imports:` | Forces package onto user's search path; pollutes namespace | Use `Imports:` for almost all deps; `Depends:` only for data packages or tight coupling |
+| Scope creep | Claude adds features or refactors unrelated code during a focused fix | Fix only the identified issue; show minimal diff |
+
+---
+
 ## Examples
 
 - "Create a new R package called tidyweather for weather data wrangling."
