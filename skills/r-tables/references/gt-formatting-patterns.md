@@ -273,47 +273,7 @@ tbl |>
 
 ## Integration with R Markdown / Quarto
 
-### Quarto chunk options
-
-````markdown
-```{r}
-#| label: tbl-demographics
-#| tbl-cap: "Baseline Demographics"
-#| echo: false
-
-trial |>
-  tbl_summary(by = trt) |>
-  add_p() |>
-  bold_labels() |>
-  as_gt()
-```
-````
-
-Reference in text: `@tbl-demographics`
-
-### Format-conditional output
-
-```r
-# Detect output format and choose renderer
-if (knitr::is_latex_output()) {
-  tbl |> as_gt() |> as_latex()
-} else if (knitr::is_html_output()) {
-  tbl |> as_gt()
-} else {
-  # Word / other
-  tbl |> as_flex_table()
-}
-```
-
-### Suppress gtsummary print method (use as_gt explicitly)
-
-```r
-# Force gt rendering (allows chaining gt functions)
-tbl |>
-  as_gt() |>
-  tab_options(table.font.size = 11) |>
-  opt_stylize(style = 3, color = "blue")
-```
+For Quarto document integration (chunk options, cross-references, format-conditional output), use the **r-quarto** skill.
 
 ---
 

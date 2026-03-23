@@ -19,6 +19,8 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 - Read `references/profiling-workflow.md` for systematic profiling and flame-graph interpretation
 - Read `references/data-table-translation.md` for complete dplyr ↔ data.table side-by-side syntax
 
+**Agent dispatch:** Dispatch to **r-code-reviewer** after optimization for code quality review.
+
 ---
 
 ## Decision Tree: When to Optimize What

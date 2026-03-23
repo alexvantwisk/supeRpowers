@@ -33,34 +33,12 @@ statistically appropriate.
 
 ## Core Packages
 
-| Package | Role |
-|---------|------|
-| rsample | Data splitting, resampling |
-| recipes | Feature engineering (preprocessing) |
-| parsnip | Model specification (unified interface) |
-| workflows | Bundle recipe + model |
-| tune | Hyperparameter tuning |
-| yardstick | Model evaluation metrics |
-| broom | Tidy model output |
-| stacks | Model ensembling |
+`library(tidymodels)` loads rsample, recipes, parsnip, workflows, tune, yardstick, broom. Add `stacks` separately for ensembling.
 
----
+## Data Splitting — Conventions
 
-## Data Splitting (rsample)
-
-```r
-library(tidymodels)
-
-data_split <- initial_split(df, prop = 0.75, strata = outcome)
-train <- training(data_split)
-test  <- testing(data_split)
-
-# Cross-validation folds
-folds <- vfold_cv(train, v = 10, strata = outcome)
-```
-
-Always stratify on the outcome for classification tasks.
-Other resampling: `bootstraps()`, `validation_split()`, `group_vfold_cv()`.
+**Always stratify** on the outcome for classification: `initial_split(df, strata = outcome)`.
+Use `group_vfold_cv()` when observations are clustered (e.g., repeated measures per patient).
 
 ---
 
@@ -152,24 +130,17 @@ Selection: `select_best()`, `select_by_one_std_err()`, `select_by_pct_loss()`.
 
 ## Evaluation (yardstick)
 
-| Task | Key Metrics |
-|------|------------|
-| Classification | `accuracy`, `roc_auc`, `f_meas`, `precision`, `recall` |
-| Regression | `rmse`, `rsq`, `mae`, `mape` |
-| Multi-class | `roc_auc(estimator = "macro")`, `bal_accuracy` |
+Standard metrics — Claude already knows these. Key patterns:
 
 ```r
-collect_metrics(tune_results)
-
-# Confusion matrix
-final_fit |> collect_predictions() |> conf_mat(truth = outcome, estimate = .pred_class)
-
-# ROC curve
-final_fit |> collect_predictions() |> roc_curve(truth = outcome, .pred_Yes) |> autoplot()
-
-# Custom metric set
+# Custom metric set — pass to tune_grid(metrics = my_metrics) for focused tuning
 my_metrics <- metric_set(rmse, rsq, mae)
+
+# Multi-class: must specify estimator
+roc_auc(data, truth = outcome, .pred_A:.pred_C, estimator = "macro")
 ```
+
+Use `collect_metrics()` on tune/fit results. Use `collect_predictions() |> conf_mat()` for confusion matrices.
 
 ---
 
@@ -217,6 +188,10 @@ list(
 | Building full ML pipeline when user asked to tune one model | Scope creep introduces unnecessary recipes, stacks, or workflow sets | Deliver what was requested; suggest pipeline extensions as follow-up |
 
 ---
+
+## Verification
+
+After tune: check `autoplot(tune_results)` for convergence. After finalize: compare test metrics vs CV estimates. After recipe: inspect `prep()` output for unexpected columns.
 
 ## Examples
 

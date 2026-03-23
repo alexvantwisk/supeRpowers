@@ -18,63 +18,19 @@ gtsummary, gtExtras, and reactable. All code uses base pipe `|>` and `<-`.
 
 > **Boundary:** Formatted publication tables. For plots and charts, use r-visualization instead. For regulatory TLFs in clinical context, use r-clinical instead.
 
+**Agent dispatch:** For statistical table review, dispatch to **r-statistician** agent. For code quality, dispatch to **r-code-reviewer** agent.
+
 **Lazy references:**
 - Read `references/gtsummary-themes.md` for journal themes, custom theme creation, and statistic display patterns
 - Read `references/gt-formatting-patterns.md` for conditional formatting, embedded plots, and export workflows
 
 ---
 
-## gt Fundamentals
+## gt Conventions
 
-```r
-library(gt)
+Pipeline: `data |> gt() |> cols_label() |> fmt_*() |> tab_header() |> tab_spanner() |> tab_footnote() |> tab_source_note()`. Use `fmt_*()` functions for all formatting — never pre-format data as character. Conditional styling uses `tab_style()` with `cells_body(rows = ..., columns = ...)` targeting.
 
-mtcars |>
-  head(10) |>
-  gt() |>
-  tab_header(
-    title    = "Motor Trend Car Road Tests",
-    subtitle = "First 10 observations"
-  ) |>
-  cols_label(mpg = "MPG", cyl = "Cylinders", wt = "Weight") |>
-  fmt_number(columns = c(mpg, wt), decimals = 1) |>
-  tab_spanner(label = "Performance", columns = c(mpg, hp, qsec)) |>
-  tab_footnote(
-    footnote  = "Miles per US gallon.",
-    locations = cells_column_labels(columns = mpg)
-  ) |>
-  tab_source_note("Source: Motor Trend, 1974")
-```
-
-### Formatting Functions
-
-| Function | Use |
-|----------|-----|
-| `fmt_number(decimals = 2)` | Numeric with decimal places |
-| `fmt_percent(decimals = 1)` | Proportions as % |
-| `fmt_currency(currency = "USD")` | Dollar amounts |
-| `fmt_integer()` | Whole numbers with comma sep |
-| `fmt_date(date_style = "yMMMd")` | Dates |
-| `fmt_missing(rows = everything())` | Replace NA display |
-
-### Styling
-
-```r
-tbl |>
-  tab_style(
-    style     = cell_fill(color = "#F0F0F0"),
-    locations = cells_body(rows = cyl == 6)
-  ) |>
-  tab_style(
-    style     = cell_text(weight = "bold", color = "#C00000"),
-    locations = cells_body(columns = mpg, rows = mpg < 15)
-  ) |>
-  tab_options(
-    table.font.size      = 12,
-    column_labels.font.weight = "bold",
-    heading.align        = "left"
-  )
-```
+Read `references/gt-formatting-patterns.md` for conditional formatting, embedded plots, and export workflows.
 
 ---
 
@@ -132,30 +88,13 @@ tbl_stack(
 )
 ```
 
-### Key Modifiers Quick Reference
-
-| Function | Purpose |
-|----------|---------|
-| `add_p()` | P-values for group comparisons |
-| `add_overall()` | Overall column (ignores `by =`) |
-| `add_difference()` | Mean/proportion difference + CI |
-| `add_n()` | Sample size per group |
-| `bold_labels()` | Bold row labels |
-| `italicize_levels()` | Italicize level labels |
-| `modify_spanning_header()` | Custom spanning headers |
+Always add `bold_labels()` to publication tables. Use `tbl_merge()` for side-by-side, `tbl_stack()` for vertical combination. Use `add_p()`, `add_overall()`, `add_difference()` as needed.
 
 ---
 
 ## gtExtras
 
-```r
-library(gtExtras)
-
-df |> gt() |> gt_sparkline(trend_col, type = "line")    # sparklines
-df |> gt() |> gt_plt_bar(value_col, color = "steelblue") # inline bars
-tbl |> gt_theme_538()                                     # themed tables
-tbl |> gt_color_rows(value, palette = c("#FFF5F0", "#C00000"))  # heatmap
-```
+Use gtExtras for inline visualizations in gt tables: `gt_sparkline()` for trends, `gt_plt_bar()` for bar charts, `gt_color_rows()` for heatmaps, `gt_theme_538()` / `gt_theme_espn()` for pre-built themes.
 
 ---
 
@@ -205,22 +144,13 @@ tbl |> as_gt()  # gt renders via knitr
 
 ## Interactive Tables (reactable)
 
-```r
-library(reactable)
-
-reactable(
-  mtcars,
-  filterable = TRUE, searchable = TRUE, defaultPageSize = 15,
-  columns = list(
-    mpg = colDef(name = "MPG", format = colFormat(digits = 1)),
-    cyl = colDef(name = "Cylinders", filterable = TRUE)
-  )
-)
-```
-
-Use `reactable` for Shiny/Quarto HTML; use gt/gtsummary for static/print.
+Use `reactable` for Shiny/Quarto HTML interactive tables (filtering, sorting, pagination). Use gt/gtsummary for static/print output. Do not mix the two — they have separate styling systems.
 
 ---
+
+## Verification
+
+After gtsummary theme: verify `reset_gtsummary_theme()` called. After export: confirm output renders in target format.
 
 ## Gotchas
 

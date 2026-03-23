@@ -10,8 +10,9 @@ description: >
   'run skill audit', or 'generate eval criteria for this skill'. Also activate
   when the user asks to compare skills against best practices or benchmark a
   skill. Do NOT use for creating new skills from scratch (use skill-creator
-  instead), reviewing R code quality (use r-code-reviewer agent), or general
-  code review.
+  instead), generating R package skills from GitHub repos (use
+  r-package-skill-generator instead), reviewing R code quality (use
+  r-code-reviewer agent), or general code review.
 disable-model-invocation: true
 ---
 
@@ -189,13 +190,58 @@ When mode is `eval`:
 
 **Orchestration needs ALL siblings.** You cannot audit O-section for a single skill in isolation. You must read all sibling skill descriptions to detect overlaps and missing boundaries.
 
-**Meta-skills need adapted criteria.** Skills that generate or operate on other skills (e.g., skill-creator, package-skill-generator) may need different E-section expectations — their "examples" might be generated skill outputs, not user-facing code.
+**Meta-skills need adapted criteria.** Skills that generate or operate on other skills (e.g., skill-creator, r-package-skill-generator) may need different E-section expectations — their "examples" might be generated skill outputs, not user-facing code. Use skill-auditor for auditing these skills, but use r-package-skill-generator (not skill-auditor) when the goal is to generate a new skill from a GitHub package repo.
 
 **Subagent arithmetic is unreliable.** All 5 subagents in the 15-skill audit miscounted P/F totals (e.g., 4 passes reported as "3/7"). Always recompute from individual P/F detail rows using `aggregate_report.py`, never trust subagent section totals.
 
 **Line budget management.** After adding Gotchas + Examples sections, skills approach line limits. Track remaining budget with `verify_batch.py --all` before starting content additions.
 
-## Example Prompts
+## Examples
+
+### Happy Path: Audit a single skill
+
+```
+> /skill-auditor audit r-stats
+
+## Skill: r-stats
+Score: 31/38
+
+D: Description Quality     ███████ 7/7
+C: Content Efficiency      █████░░ 5/7
+G: Gotchas                 ██████░ 6/6
+E: Examples                ████░░░ 4/5
+V: Scripts & Verification  ████░░░ 4/5
+O: Orchestration           ███░░░░ 3/4
+T: Testability             ██░░░░░ 2/4
+
+### Failures
+| Check | Finding                          | Impact |
+|-------|----------------------------------|--------|
+| C3    | Terminology inconsistency: mixed "model" / "fit" | MEDIUM |
+| T2    | No binary eval questions defined | LOW    |
+| ...   | ...                              | ...    |
+```
+
+### Edge Case: Fix mode with before/after diff
+
+```
+> /skill-auditor fix r-visualization
+
+Fixing D3 (negative boundaries missing from description)...
+
+- description: >
+-   Use when creating ggplot2 visualizations...
++ description: >
++   Use when creating ggplot2 visualizations...
++   Do NOT use for Shiny reactive plots (use r-shiny),
++   statistical model diagnostics (use r-stats), or
++   clinical forest plots (use r-clinical).
+
+Re-running deterministic checks... D3: PASS (was FAIL)
+Score: 34/38 → 35/38
+```
+
+**More example prompts:**
 
 - "Audit the r-stats skill against the full rubric"
 - "Run the skill auditor on all skills and generate a gap report"

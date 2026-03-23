@@ -57,32 +57,17 @@ code analysis — only outdated targets re-run on `tar_make()`.
 
 ---
 
-## Core Workflow Commands
+## Non-Obvious Commands
 
-| Command | Purpose |
-|---------|---------|
-| `tar_make()` | Run pipeline (only outdated targets) |
-| `tar_read(name)` | Load a target's cached value |
-| `tar_load(name)` | Load into current environment |
-| `tar_visnetwork()` | Visualize dependency graph |
-| `tar_outdated()` | List targets that need re-running |
-| `tar_manifest()` | List all targets with metadata |
-| `tar_progress()` | Check status of running pipeline |
-| `tar_invalidate(name)` | Force a target to re-run |
+```r
+tar_workspace(failed_target)   # Load failed target's deps for interactive debugging
+tar_invalidate(name)           # Force a target to re-run (cache override)
+tar_branches(target)           # Inspect individual dynamic branches
+```
 
----
+Standard workflow (`tar_make()`, `tar_read()`, `tar_visnetwork()`, etc.) — Claude already knows these.
 
-## Target Formats
-
-| Format | When to Use |
-|--------|------------|
-| `"qs"` | Default — fast R object serialization (recommended) |
-| `"rds"` | Fallback if qs not available |
-| `"feather"` | Arrow format for cross-language interop |
-| `"parquet"` | Columnar format for large datasets |
-| `"file"` | External files (plots, reports, data exports) |
-
-Set globally: `tar_option_set(format = "qs")`
+**Target formats:** Default to `format = "qs"` globally via `tar_option_set()`. Use `"file"` for side-effect targets (plots, reports, exports). Use `"parquet"` for cross-language interop on large datasets.
 
 ---
 

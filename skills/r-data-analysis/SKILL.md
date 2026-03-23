@@ -41,61 +41,21 @@ df <- read_csv("data/messy.csv",
   na = c("", "NA", "N/A", "null", "-"), skip = 2,
   locale = locale(encoding = "latin1")
 )
+```
 
 ---
 
-## dplyr Core Verbs
+## dplyr & tidyr Conventions
+
+Use `.by` argument (not `group_by()`) for per-operation grouping. Use `across()` with `where()` or tidyselect for column-wise operations. Use `reframe()` when a summary returns multiple rows per group.
 
 ```r
-result <- sales |>
-  filter(year >= 2023, !is.na(revenue)) |>
-  select(region, product, revenue, quantity) |>
-  mutate(unit_price = revenue / quantity) |>
-  summarise(total_revenue = sum(revenue), .by = c(region, product))
-
-# Top 3 products per region
-sales |>
-  summarise(total = sum(revenue), .by = c(region, product)) |>
-  arrange(region, desc(total)) |>
-  slice_head(n = 3, by = region)
-```
-
-### across, pick, reframe
-
-```r
+# .by replaces group_by() + ungroup() — avoids forgotten ungroup() bugs
+df |> summarise(total = sum(revenue), .by = c(region, product))
 df |> summarise(across(where(is.numeric), list(mean = mean, sd = sd), na.rm = TRUE), .by = group)
-df |> mutate(across(c(x, y, z), \(col) col / max(col), .names = "{.col}_scaled"))
-df |> reframe(quantile = c(0.25, 0.5, 0.75),
-              value = quantile(score, c(0.25, 0.5, 0.75)), .by = group)
 ```
 
----
-
-## tidyr Reshaping
-
-```r
-# Wide to long
-long_df <- wide_df |>
-  pivot_longer(cols = starts_with("q"), names_to = "quarter",
-               values_to = "sales", names_prefix = "q")
-
-# Long to wide
-wide_df <- long_df |>
-  pivot_wider(names_from = quarter, values_from = sales, values_fill = 0)
-
-# Split delimited columns
-df |> separate_wider_delim(full_name, delim = " ", names = c("first", "last"))
-
-# Nest / unnest for group-level operations
-nested <- df |>
-  nest(.by = group) |>
-  mutate(model = map(data, \(d) lm(y ~ x, data = d)))
-nested |> unnest(data)
-
-# Fill missing values downward / replace NAs
-df |> fill(category, .direction = "down")
-df |> replace_na(list(score = 0, label = "unknown"))
-```
+Use `pivot_longer()` / `pivot_wider()` exclusively — `gather()`/`spread()` are deprecated. Use `separate_wider_delim()` not `separate()`. Use `nest(.by =)` + `map()` for group-level modeling.
 
 ---
 
@@ -118,48 +78,11 @@ Read `references/join-guide.md` for inequality joins and complex strategies.
 
 ---
 
-## String Manipulation with stringr
+## stringr, forcats, lubridate Conventions
 
-```r
-df |> mutate(
-  clean_name = str_to_lower(name) |> str_trim() |> str_squish(),
-  has_email = str_detect(contact, "@"),
-  domain = str_extract(email, "(?<=@)[^.]+")
-) |> filter(str_starts(code, "PRD"))
-```
+Use stringr for all string ops (not base `grep`/`sub`). Use forcats for factor reordering/lumping (not manual `levels<-`). Use lubridate parsers (`ymd()`, `ymd_hms()`) and extractors (`year()`, `month()`).
 
----
-
-## Factor Handling with forcats
-
-```r
-df |>
-  mutate(
-    category = fct_reorder(category, revenue, .fun = median),       # by variable
-    category = fct_lump_n(category, n = 5, other_level = "Other"),  # lump rare
-    priority = fct_relevel(priority, "high", "medium", "low"),      # manual order
-    status = fct_recode(status, Active = "A", Inactive = "I")       # recode
-  )
-```
-
----
-
-## Date/Time with lubridate
-
-```r
-df |>
-  mutate(
-    date = ymd(date_string),
-    datetime = ymd_hms(timestamp),
-    year = year(date), month = month(date, label = TRUE),
-    weekday = wday(date, label = TRUE), quarter = quarter(date),
-    days_ago = as.integer(today() - date),
-    next_month = date + months(1),
-    interval_days = interval(start_date, end_date) / days(1)
-  )
-```
-
-Use `floor_date()` / `ceiling_date()` for rounding to periods.
+Key patterns: `fct_reorder()` by a summary stat for plot ordering, `fct_lump_n()` to collapse rare levels, `floor_date()`/`ceiling_date()` for period rounding, `interval() / days(1)` for duration arithmetic.
 
 ---
 
@@ -191,6 +114,10 @@ result <- dt[year >= 2023, .(total = sum(revenue)), by = .(region, product)]
 For most analysis under 1M rows, dplyr is clearer and preferred.
 
 ---
+
+## Verification
+
+After joins: compare row counts before/after. After type conversion: verify with `glimpse()`. After reshaping: check dimensions match expectation.
 
 ## Gotchas
 

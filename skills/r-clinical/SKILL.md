@@ -221,6 +221,10 @@ search_by_funder           — filter by funding source
 
 ---
 
+## Verification
+
+After Cox model: check `cox.zph()` for PH assumption. After CDISC derivation: validate variable names against spec. Re-run if issues found.
+
 ## Gotchas
 
 | Trap | Why It Fails | Fix |

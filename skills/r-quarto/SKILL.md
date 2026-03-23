@@ -19,6 +19,8 @@ and tidyverse/knitr conventions.
 
 > **Boundary:** Quarto documents, sites, and presentations. For R package vignettes, use r-package-dev instead.
 
+**Agent dispatch:** For R code quality in `.qmd` files, dispatch to **r-code-reviewer** agent.
+
 **Lazy references:**
 - Read `references/yaml-config-cheatsheet.md` for complete YAML option reference
 - Read `references/cross-reference-syntax.md` for figures, tables, equations, sections
@@ -209,20 +211,18 @@ Common extensions: `quarto-ext/fontawesome`, `quarto-ext/lightbox`,
 
 ---
 
-## Parameters
+## Parameters & Multi-Format Output
 
 Define in YAML with `params:`, access as `params$name` in R chunks.
 Override at render: `quarto render report.qmd -P region:South -P year:2023`.
-See Happy Path example below for a full parameterized report pattern.
-
----
-
-## Multi-Format Output
-
 List multiple formats under `format:` (html, pdf, docx) with per-format options.
 Use conditional divs: `::: {.content-visible when-format="html"}`.
 
 ---
+
+## Verification
+
+After render: check `quarto check` passes, cross-references resolve (no `?fig-` artifacts), multi-format output opens correctly.
 
 ## Gotchas
 

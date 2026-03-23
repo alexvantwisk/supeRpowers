@@ -26,80 +26,34 @@ complex outputs, dispatch to the **r-statistician** agent.
 
 ---
 
-## Linear Models
+## Linear Models & Diagnostics
 
-```r
-fit <- lm(y ~ x1 + x2 + x1:x2, data = df)
-summary(fit)
-confint(fit)                          # 95% CIs on coefficients
-broom::tidy(fit, conf.int = TRUE)     # tidy tibble output
-broom::glance(fit)                    # model-level stats (R², AIC, etc.)
-broom::augment(fit)                   # fitted values, residuals per row
-```
+Always use `broom::tidy(fit, conf.int = TRUE)` for tidy output, `broom::glance()` for model-level stats, `broom::augment()` for per-row fitted values.
 
-### Diagnostics
+**Assumption workflow (required before interpreting results):**
+1. `par(mfrow = c(2, 2)); plot(fit)` — residuals vs fitted, Q-Q, scale-location, leverage
+2. `car::vif(fit)` — VIF > 5 is concern, > 10 is severe multicollinearity
+3. `car::influencePlot(fit)` — identify high-leverage outliers
 
-```r
-# Base plots: residuals vs fitted, Q-Q, scale-location, leverage
-par(mfrow = c(2, 2)); plot(fit)
-
-# Multicollinearity — VIF > 5 is a concern, > 10 is severe
-car::vif(fit)
-
-# Influence measures
-car::influencePlot(fit)
-```
-
-Read `references/assumption-checklist.md` for the full linear model checklist.
+Read `references/assumption-checklist.md` for the full per-family checklist.
 
 ---
 
-## Generalized Linear Models
+## GLM Family Selection
 
-```r
-# Logistic regression (binary outcome)
-fit_logit <- glm(outcome ~ x1 + x2, family = binomial(link = "logit"), data = df)
+| Outcome | Family | Key detail |
+|---------|--------|------------|
+| Binary | `binomial(link = "logit")` | Always specify `family =`; default is gaussian |
+| Count | `poisson` | Check overdispersion: `deviance / df.residual >> 1` -> use `quasipoisson` or `MASS::glm.nb()` |
+| Count (overdispersed) | `MASS::glm.nb()` or `quasipoisson` | NB adds a dispersion parameter |
 
-# Poisson regression (count outcome)
-fit_pois <- glm(count ~ x1 + offset(log(exposure)), family = poisson, data = df)
-
-# Negative binomial (overdispersed counts)
-fit_nb <- MASS::glm.nb(count ~ x1 + x2, data = df)
-
-# Quasi families for overdispersion without NB
-fit_quasi <- glm(count ~ x1, family = quasipoisson, data = df)
-
-# Check overdispersion in Poisson: ratio >> 1 indicates problem
-fit_pois$deviance / fit_pois$df.residual
-
-# Odds ratios / rate ratios
-broom::tidy(fit_logit, exponentiate = TRUE, conf.int = TRUE)
-```
+Use `exponentiate = TRUE` in `broom::tidy()` for odds ratios (logistic) or rate ratios (Poisson). Use `offset(log(exposure))` for rate models.
 
 ---
 
-## Mixed Models
+## Mixed Models (lme4)
 
-```r
-library(lme4)
-
-# Random intercept
-fit_lmer <- lmer(y ~ x1 + x2 + (1 | subject), data = df)
-
-# Random intercept + slope
-fit_lmer2 <- lmer(y ~ time + (time | subject), data = df)
-
-# GLMM (binary outcome)
-fit_glmer <- glmer(outcome ~ x1 + (1 | site), family = binomial, data = df)
-
-summary(fit_lmer)
-lme4::ranef(fit_lmer)                  # BLUPs for random effects
-performance::icc(fit_lmer)            # intraclass correlation
-
-# Convergence troubleshooting
-lme4::allFit(fit_lmer)                 # try all optimisers; compare estimates
-# Simplify random effects structure if convergence warnings persist
-```
+Use `performance::icc()` to check if random effects are warranted. Convergence failures: try `lme4::allFit()` to compare optimizers, then simplify random effects structure if needed.
 
 ---
 
@@ -130,32 +84,13 @@ fit_tv <- coxph(Surv(tstart, tstop, event) ~ x_tv, data = df_tv)
 
 ---
 
-## Bayesian Models
+## Bayesian Models (brms / rstanarm)
 
-```r
-library(brms)
+**Prior guidance:** Start with weakly-informative priors (`normal(0, 1)` on scaled predictors, `exponential(1)` for scale). Use `prior_summary()` to inspect defaults. Use `brm(..., sample_prior = "only")` for prior predictive checks.
 
-# Linear model with default weakly-informative priors
-fit_brm <- brm(y ~ x1 + x2, data = df, family = gaussian(),
-               chains = 4, iter = 2000, cores = 4)
+**Convergence thresholds:** Rhat < 1.01, ESS > 400. Check with `posterior::summarise_draws()`. Diagnose with `pp_check()` (posterior predictive) and `bayesplot::mcmc_trace()` (mixing).
 
-# Custom priors
-priors <- c(prior(normal(0, 1), class = b),
-            prior(exponential(1), class = sigma))
-fit_brm2 <- brm(y ~ x1, data = df, prior = priors, family = gaussian())
-
-# Posterior checks
-pp_check(fit_brm)                     # overlay of data vs posterior predictive
-bayesplot::mcmc_trace(fit_brm)        # check mixing / convergence
-posterior::summarise_draws(fit_brm)   # Rhat < 1.01, ESS > 400
-
-# rstanarm (faster for standard models, same Stan backend)
-fit_stan <- rstanarm::stan_glm(y ~ x1 + x2, data = df, family = gaussian())
-```
-
-**Prior guidance:** Start with weakly-informative priors (normal(0,1) on scaled
-predictors, exponential(1) for scale parameters). Use `prior_summary()` to
-inspect defaults. Conduct prior predictive checks with `brm(..., sample_prior = "only")`.
+Use `rstanarm::stan_glm()` for standard models (faster compilation); `brms::brm()` for custom families and complex structures.
 
 ---
 
@@ -233,6 +168,10 @@ collect_metrics(cv_results)
 ```
 
 ---
+
+## Verification
+
+After model fit: check assumptions (`plot()` diagnostics). After fixing assumption violation: re-run diagnostics to confirm fix. After multiple testing: verify correction applied.
 
 ## Gotchas
 

@@ -58,38 +58,16 @@ Use golem unless the team already uses rhino or needs box-style imports.
 
 ---
 
-## Reactivity Fundamentals
+## Reactivity Decision Guide
 
-| Type | Creates | Purpose | Lazy? |
-|------|---------|---------|-------|
-| `input$x` | Source | User input | N/A |
-| `reactiveVal()` / `reactiveValues()` | Source | Mutable state | N/A |
-| `reactive()` | Conductor | Computed value, cached | Yes |
-| `observe()` / `observeEvent()` | Endpoint | Side effects | No |
-| `render*()` | Endpoint | Output rendering | Yes |
-
-```r
-server <- function(input, output, session) {
-  filtered_data <- reactive({ req(input$dataset); mtcars |> filter(cyl == input$cyl) })
-  click_count <- reactiveVal(0)
-  observeEvent(input$increment, { click_count(click_count() + 1) })
-  # bindEvent() — modern alternative to observeEvent
-  filtered_result <- reactive({ expensive_computation(input$params) }) |>
-    bindEvent(input$go_button)
-  # isolate() — read without taking dependency
-  observe({ message("Dataset: ", input$dataset, " Cyl: ", isolate(input$cyl)) })
-  # req() — short-circuit on NULL/FALSE/empty
-  output$plot <- renderPlot({ req(filtered_data()); plot(filtered_data()$mpg) })
-}
-```
-
-**Decision tree:**
 - Computed value for others? -> `reactive()`
 - Side effect? -> `observe()` / `observeEvent()`
 - Mutable state? -> `reactiveVal()` (single) or `reactiveValues()` (multiple)
-- Delay until button? -> `bindEvent()`
+- Delay until button? -> `bindEvent()` (modern) or `observeEvent()` (classic)
 - Read without dependency? -> `isolate()`
-- Input might be NULL? -> `req()`
+- Input might be NULL? -> `req()` at the top of reactive expressions
+
+Key: `reactive()` is lazy+cached, `observe()` is eager. Never put side effects in `reactive()`. Define `reactiveVal()`/`reactiveValues()` outside observers — not inside.
 
 Read `references/reactivity-guide.md` for anti-patterns, debugging, and
 advanced patterns (bindCache, debounce, throttle).
@@ -127,26 +105,7 @@ modules, testing, and common patterns.
 
 ## UI with bslib
 
-```r
-ui <- page_navbar(
-  title = "Dashboard",
-  theme = bs_theme(bootswatch = "flatly", primary = "#0073B7"),
-  nav_panel("Overview",
-    layout_columns(col_widths = c(4, 4, 4),
-      value_box("Users", textOutput("n_users")),
-      value_box("Revenue", textOutput("revenue")),
-      value_box("Growth", textOutput("growth"))
-    ),
-    layout_columns(col_widths = c(8, 4),
-      card(card_header("Trend"), plotOutput("trend_plot")),
-      card(card_header("Top Items"), tableOutput("top_table"))
-    )
-  )
-)
-```
-
-Key: `page_sidebar()`, `page_navbar()`, `page_fillable()`, `card()`,
-`value_box()`, `layout_columns()`, `accordion()`, `navset_card_tab()`.
+Use bslib page functions (`page_sidebar()`, `page_navbar()`, `page_fillable()`) — not `fluidPage()`. Compose with `card()`, `value_box()`, `layout_columns()`, `accordion()`, `navset_card_tab()`. Apply themes via `bs_theme(bootswatch = "flatly")`.
 
 ---
 
@@ -206,14 +165,7 @@ output$plot <- renderPlot({ create_expensive_plot(filtered_data()) }) |>
 
 ## Deployment
 
-| Target | Command | Notes |
-|--------|---------|-------|
-| shinyapps.io | `rsconnect::deployApp()` | Managed hosting, free tier |
-| Posit Connect | `rsconnect::deployApp(server = "...")` | Enterprise |
-| ShinyProxy | Docker + ShinyProxy config | Open source, multi-user |
-| Docker | `golem::add_dockerfile()` | Portable containers |
-
-Always use `renv` for reproducible deployments. Pin all package versions.
+Deploy via `rsconnect::deployApp()` (shinyapps.io / Posit Connect), Docker (`golem::add_dockerfile()`), or ShinyProxy. Always use `renv` for reproducible deployments — pin all package versions.
 
 ---
 

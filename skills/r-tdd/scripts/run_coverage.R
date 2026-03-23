@@ -9,7 +9,23 @@ if (!requireNamespace("covr", quietly = TRUE)) {
   cli::cli_abort("Package {.pkg covr} is required. Install with {.code install.packages('covr')}")
 }
 
-cov <- covr::package_coverage(path = pkg_path)
+cov <- tryCatch(
+  covr::package_coverage(path = pkg_path),
+  error = function(e) {
+    msg <- conditionMessage(e)
+    if (grepl("build|install|compile", msg, ignore.case = TRUE)) {
+      cat("ERROR: Package build failed. Check that the package installs cleanly.\n")
+      cat("Details:", msg, "\n")
+    } else if (grepl("test|testthat|expect", msg, ignore.case = TRUE)) {
+      cat("ERROR: Test execution failed. Check test files for syntax or runtime errors.\n")
+      cat("Details:", msg, "\n")
+    } else {
+      cat("ERROR: Coverage analysis failed.\n")
+      cat("Details:", msg, "\n")
+    }
+    quit(status = 1)
+  }
+)
 
 # Overall summary
 cat("\n=== Coverage Summary ===\n")

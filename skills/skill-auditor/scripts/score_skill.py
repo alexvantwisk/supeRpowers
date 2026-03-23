@@ -373,15 +373,14 @@ def check_example_pairs(content: str) -> dict:
     """E1: Check for 2+ code blocks in an Examples-like section."""
     lines = content.split("\n")
 
-    # Find the start of an examples section
+    # Find the start of an examples section (use LAST match — examples are at the end)
     example_section_start = None
     example_keywords = re.compile(
-        r"^#{1,3}\s+.*\b(examples?|usage|demo|recipes?)\b", re.IGNORECASE,
+        r"^#{1,3}\s+.*\b(examples?|usage|demo)\b", re.IGNORECASE,
     )
     for i, line in enumerate(lines):
         if example_keywords.match(line):
             example_section_start = i
-            break
 
     if example_section_start is None:
         # Fall back: count code blocks near example-related text
@@ -405,10 +404,17 @@ def check_example_pairs(content: str) -> dict:
 
     # Count code blocks within the examples section
     # Section extends until the next heading of equal or higher level or end of file
+    # Must skip lines inside fenced code blocks (R comments like `# Input` look like h1 headings)
     heading_match = re.match(r"^(#{1,3})\s+", lines[example_section_start])
     heading_level = len(heading_match.group(1)) if heading_match else 2
     section_end = len(lines)
+    in_fence = False
     for i in range(example_section_start + 1, len(lines)):
+        if lines[i].strip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
         m = re.match(r"^(#{1,%d})\s+" % heading_level, lines[i])
         if m:
             section_end = i
@@ -435,34 +441,42 @@ def check_convention_violations(content: str) -> dict:
             continue
 
         block_lines = block["text"].split("\n")
+        # Track cumulative paren depth across lines within each code block
+        # to correctly identify named arguments in multi-line function calls
+        cumulative_paren_depth = 0
         for j, line in enumerate(block_lines):
             line_num = block["start"] + 1 + j + 1  # +1 for 0-index, +1 for fence line
+
+            # Skip comment lines (they may mention %>% in explanatory text)
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                # Still update paren depth for commented-out code? No — skip entirely.
+                continue
 
             # Check for %>%
             if "%>%" in line:
                 violations.append({
                     "type": "magrittr_pipe",
                     "line": line_num,
-                    "text": line.strip()[:80],
+                    "text": stripped[:80],
                 })
 
             # Check for = used as assignment (not inside function calls)
-            # Pattern: identifier = value, but NOT inside function parens
-            # Heuristic: line has `=` not preceded by `(` context
-            # Look for `variable = value` at statement level
+            # Use cumulative paren depth to handle multi-line function calls
             assignment_match = re.search(r"^\s*[a-zA-Z_.][a-zA-Z0-9_.]*\s+=\s+", line)
             if assignment_match:
-                # Make sure it's not a named argument inside a function call
-                # Named args are typically preceded by `(` or `,` on the same line
+                # Check both single-line depth and cumulative depth
                 before_eq = line[:assignment_match.end()]
-                # Count open/close parens before the = sign
-                paren_depth = before_eq.count("(") - before_eq.count(")")
-                if paren_depth <= 0:
+                line_paren_depth = before_eq.count("(") - before_eq.count(")")
+                if cumulative_paren_depth + line_paren_depth <= 0:
                     violations.append({
                         "type": "equals_assignment",
                         "line": line_num,
-                        "text": line.strip()[:80],
+                        "text": stripped[:80],
                     })
+
+            # Update cumulative paren depth for next line
+            cumulative_paren_depth += line.count("(") - line.count(")")
 
     if not violations:
         return {"pass": True, "reason": "No convention violations in code blocks"}

@@ -18,6 +18,8 @@ graphics, with extensions for interactivity and domain-specific plots.
 
 **Core pipeline:** `ggplot()` + `aes()` -> geom layers -> scales -> coords -> facets -> theme
 
+**Agent dispatch:** Dispatch to **r-code-reviewer** for complex multi-panel figure review.
+
 ---
 
 ## ggplot2 Grammar of Graphics
@@ -46,47 +48,19 @@ mtcars |>
 
 ---
 
-## Common Geoms
+## Geom Selection — Non-Obvious Guidance
 
-| Geom | Use Case | Key Aesthetics |
-|------|----------|---------------|
-| `geom_point()` | Scatterplots | x, y, color, size, shape, alpha |
-| `geom_line()` | Time series, trends | x, y, color, linetype, linewidth |
-| `geom_col()` | Bar charts (values) | x, y, fill |
-| `geom_boxplot()` | Distributions by group | x, y, fill, color |
-| `geom_violin()` | Distribution shape | x, y, fill, trim, scale |
-| `geom_histogram()` | Single-variable distribution | x, fill, bins/binwidth |
-| `geom_density()` | Smooth distribution | x, fill, alpha, bw |
-| `geom_smooth()` | Trend lines | x, y, method, se |
-| `geom_tile()` | Heatmaps | x, y, fill |
-| `geom_sf()` | Spatial/map data | geometry, fill, color |
+Standard geoms — Claude already knows these. Key conventions:
 
-Prefer `geom_col()` over `geom_bar(stat = "identity")`.
-
-Read `references/ggplot2-layers.md` for detailed geom/stat/position reference.
+- Prefer `geom_col()` over `geom_bar(stat = "identity")`
+- Use `geom_sf()` for spatial data (not manual lat/lon mapping)
+- Read `references/ggplot2-layers.md` for detailed geom/stat/position reference
 
 ---
 
-## Scales
-
-```r
-scale_x_continuous(labels = scales::comma)
-scale_y_log10(labels = scales::label_log())
-scale_x_date(date_breaks = "3 months", date_labels = "%b %Y")
-scale_color_manual(values = c("A" = "#E69F00", "B" = "#56B4E9"))
-```
-
-### Colorblind-Safe Palettes
+## Colorblind-Safe Palettes (Required for Publication)
 
 **Always prefer colorblind-safe palettes for published figures.**
-
-| Function | Type | Use |
-|----------|------|-----|
-| `scale_color_viridis_c()` | Continuous | Heatmaps, gradients |
-| `scale_color_viridis_d()` | Discrete | Categorical color |
-| `scale_fill_brewer(palette = "Set2")` | Discrete | Up to 8 categories |
-
-Viridis options: `"viridis"`, `"magma"`, `"plasma"`, `"inferno"`, `"cividis"`.
 
 ```r
 # Okabe-Ito palette (8 colors, highly accessible)
@@ -95,34 +69,17 @@ okabe_ito <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442",
 scale_color_manual(values = okabe_ito)
 ```
 
+Alternatives: `scale_color_viridis_d()` (discrete), `scale_color_viridis_c()` (continuous), `scale_fill_brewer(palette = "Set2")` (up to 8 categories).
+
 ---
 
-## Faceting
+## Faceting and Labels — Non-Obvious Patterns
 
 ```r
-# Wrap — auto-arrange panels by one variable
-facet_wrap(~ group, ncol = 3, scales = "free_y")
-
-# Grid — rows x columns by two variables
+# space = "free_x" makes panel widths proportional to data range
 facet_grid(row_var ~ col_var, scales = "free", space = "free_x")
 
-# Custom labels
-facet_wrap(~ group, labeller = labeller(group = c(a = "Group A", b = "Group B")))
-```
-
-`scales = "free"` gives each panel its own axis range.
-
----
-
-## Labels and Annotations
-
-```r
-labs(title = "Main Title", subtitle = "Context", x = "X", y = "Y",
-     color = "Legend", caption = "Source: dataset")
-
-annotate("text", x = 5, y = 10, label = "Notable", fontface = "italic")
-
-# Non-overlapping labels
+# Non-overlapping labels (essential for dense scatterplots)
 ggrepel::geom_text_repel(aes(label = name), max.overlaps = 10)
 ```
 
@@ -228,7 +185,9 @@ de_results |>
   geom_vline(xintercept = c(-1, 1), linetype = "dashed") + theme_minimal()
 ```
 
----
+## Verification
+
+After publication figure: verify dimensions match journal spec, colorblind safety with `colorblindr::cvd_grid()`, font sizes within spec.
 
 ## Gotchas
 

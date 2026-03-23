@@ -19,7 +19,7 @@ author:
     email: jane@example.com
   - name: Bob Jones
     affiliation: R Institute
-date: today           # or "2024-01-15" or last-modified
+date: today           # or "2025-01-15" or last-modified
 date-format: "MMMM D, YYYY"
 abstract: |
   Multi-line abstract
@@ -82,8 +82,8 @@ format:
     fig-align: center
     fig-width: 7
     fig-height: 5
-    self-contained: true        # Embed assets in single HTML file
-    embed-resources: true       # Quarto 1.4+ alias for self-contained
+    self-contained: true        # Embed assets in single HTML file (deprecated)
+    embed-resources: true       # Preferred — embed all assets in single HTML file
     smooth-scroll: true
     anchor-sections: true
     citations-hover: true
@@ -223,7 +223,7 @@ website:
             - guide/install.qmd
 
   page-footer:
-    center: "© 2024 My Site"
+    center: "© Your Name"
 
 format:
   html:
