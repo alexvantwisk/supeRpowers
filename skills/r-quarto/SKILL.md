@@ -2,8 +2,13 @@
 name: r-quarto
 description: >
   Use when creating Quarto documents, presentations, websites, or books in R.
-  Covers YAML configuration, code chunks, cross-references, journal templates,
-  and multi-format publishing.
+  Provides expert guidance on YAML configuration, code chunk options,
+  cross-references, journal templates, revealjs slides, multi-format
+  publishing, and parameterized reports.
+  Triggers: Quarto, qmd, document, presentation, revealjs, website, book,
+  cross-reference, YAML header, code chunk, journal template, multi-format.
+  Do NOT use for R package vignettes — use r-package-dev instead.
+  Do NOT use for Shiny apps — use r-shiny instead.
 ---
 
 # R Quarto
@@ -11,6 +16,8 @@ description: >
 Quarto publishing system for R: documents, presentations, websites, books,
 and multi-format output. All code uses base pipe `|>`, `<-` for assignment,
 and tidyverse/knitr conventions.
+
+> **Boundary:** Quarto documents, sites, and presentations. For R package vignettes, use r-package-dev instead.
 
 **Lazy references:**
 - Read `references/yaml-config-cheatsheet.md` for complete YAML option reference
@@ -115,32 +122,18 @@ format:
 ```markdown
 ## Slide Title
 
-Content here.
-
 ::: {.incremental}
 - Point one
 - Point two reveals after click
 :::
 
 ::: {.notes}
-Speaker notes here — not shown to audience.
+Speaker notes — not shown to audience.
 :::
-
----
-
-## Columns Layout
-
-:::: {.columns}
-::: {.column width="60%"}
-Left content
-:::
-::: {.column width="40%"}
-Right content
-:::
-::::
 ```
 
-Use `##` for slide breaks. `---` for a blank slide break.
+Use `##` for slide breaks, `---` for blank breaks. Use `:::: {.columns}` /
+`::: {.column width="60%"}` for side-by-side layouts.
 
 ---
 
@@ -179,24 +172,10 @@ Deploy: `quarto publish gh-pages`, `quarto publish quarto-pub`, `quarto publish 
 
 ## Books
 
-```yaml
-# _quarto.yml
-project:
-  type: book
-book:
-  title: "R Cookbook"
-  author: "Jane Smith"
-  date: today
-  chapters:
-    - index.qmd
-    - chapters/intro.qmd
-    - chapters/models.qmd
-  references: references.bib
-bibliography: references.bib
-```
-
-Cross-references work across chapters. Use `@sec-` for section refs,
-`@fig-` for figures. Add `bibliography:` for BibTeX citations (`[@key]`).
+In `_quarto.yml`, set `project: type: book` with a `book:` block containing
+`title`, `author`, `chapters:` (list of `.qmd` files), and `bibliography:`.
+Cross-references work across chapters: `@sec-`, `@fig-`, `@tbl-`. Use BibTeX
+citations via `[@key]`.
 
 ---
 
@@ -232,68 +211,89 @@ Common extensions: `quarto-ext/fontawesome`, `quarto-ext/lightbox`,
 
 ## Parameters
 
-```yaml
----
-params:
-  region: "North"
-  year: 2024
----
-```
-
-```r
-#| label: setup
-params$region  # "North"
-params$year    # 2024
-```
-
-Render with overrides:
-```bash
-quarto render report.qmd -P region:South -P year:2023
-```
+Define in YAML with `params:`, access as `params$name` in R chunks.
+Override at render: `quarto render report.qmd -P region:South -P year:2023`.
+See Happy Path example below for a full parameterized report pattern.
 
 ---
 
 ## Multi-Format Output
 
-```yaml
-format:
-  html:
-    toc: true
-    theme: flatly
-    code-fold: true
-  pdf:
-    documentclass: scrartcl
-    cite-method: biblatex
-  docx:
-    reference-doc: custom-reference.docx
-```
-
-Format-conditional content:
-
-```markdown
-::: {.content-visible when-format="html"}
-Interactive plot shown in HTML only.
-:::
-
-::: {.content-hidden when-format="pdf"}
-Not in PDF.
-:::
-```
+List multiple formats under `format:` (html, pdf, docx) with per-format options.
+Use conditional divs: `::: {.content-visible when-format="html"}`.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| YAML indentation errors (tabs or wrong nesting) | Quarto YAML parser fails silently or produces unexpected output | Use spaces only (2-space indent); validate with `quarto check` before rendering |
+| Using knitr-style `{r, eval=FALSE}` chunk options | Quarto ignores old-style knitr options in `{}` header; code runs unexpectedly | Use `#| eval: false` (hashpipe syntax) inside the chunk body |
+| Cross-reference labels missing type prefix | `@fig-plot` only works if the chunk label is `fig-plot`; bare labels produce broken refs | Always prefix labels: `fig-` for figures, `tbl-` for tables, `sec-` for sections |
+| Forgetting `embed-resources: true` for self-contained HTML | Shared HTML files have broken images/CSS because assets are separate files | Add `embed-resources: true` under `format: html:` for portable single-file output |
+| PDF output fails without LaTeX installation | Quarto calls `pdflatex`/`xelatex` which is not bundled | Install TinyTeX: `quarto install tinytex` or `tinytex::install_tinytex()` |
+| Installing extensions via `install.packages()` instead of `quarto add` | Quarto extensions are not R packages; CRAN install does nothing | Use `quarto add <gh-org>/<repo>` from the terminal |
+| Cache not invalidating when data changes but chunk code stays the same | `cache: true` keys on chunk code only; stale results persist | Use `cache.extra` to depend on data hash, or use `freeze: auto` in `_quarto.yml` instead |
+| Rewriting entire document structure when user asked for one fix | Scope creep — user wants a YAML tweak, not a full document redesign | Make the minimal targeted change; suggest broader restructuring only if asked |
+
 ## Examples
 
-**1. Reproducible report:** "Create a Quarto report with EDA, model results,
-and figures that renders to both HTML and PDF."
+### Happy Path: Parameterized report with render command
 
-**2. Presentation:** "Convert this Rmd analysis into a revealjs presentation
-with incremental bullets, speaker notes, and ggplot figures."
+**Prompt:** "Generate region-specific summaries from a single .qmd template."
 
-**3. Documentation site:** "Set up a Quarto website for this R package with
-a navbar, sidebar, and GitHub Pages deployment."
+```yaml
+# Input — report.qmd YAML header
+---
+title: "Regional Summary"
+params:
+  region: "North"
+  year: 2024
+format:
+  html:
+    toc: true
+    embed-resources: true
+execute:
+  echo: false
+---
+```
 
-**4. Journal manuscript:** "Format this analysis as an Elsevier submission
-using quarto-journals extension with cross-references and bibliography."
+```r
+# In code chunk — access params
+df_filtered <- sales |>
+  dplyr::filter(region == params$region, year == params$year)
+```
 
-**5. Parameterized report:** "Generate region-specific summaries from a single .qmd template using Quarto parameters."
+```bash
+# Output — render for each region
+quarto render report.qmd -P region:North -P year:2024
+quarto render report.qmd -P region:South -P year:2024
+```
+
+### Edge Case: Cross-reference broken by missing fig- prefix
+
+**Prompt:** "My @fig-scatter reference shows '?fig-scatter' in the output."
+
+```markdown
+# WRONG — chunk label missing required fig- prefix; cross-ref breaks
+{r scatter}
+#| fig-cap: "MPG vs weight"
+plot(mtcars$wt, mtcars$mpg)
+
+See @fig-scatter for details.
+<!-- renders as: See ?fig-scatter for details. -->
+
+# CORRECT — label starts with fig- so Quarto links it
+{r fig-scatter}
+#| fig-cap: "MPG vs weight"
+plot(mtcars$wt, mtcars$mpg)
+
+See @fig-scatter for details.
+<!-- renders as: See Figure 1 for details. -->
+```
+
+**More example prompts:**
+- "Create a Quarto report rendering to both HTML and PDF."
+- "Convert this Rmd into a revealjs presentation with speaker notes."
+- "Format this analysis for Elsevier using quarto-journals extension."

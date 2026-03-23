@@ -3,7 +3,13 @@ name: r-package-skill-generator
 description: >
   Use when the user provides a GitHub link to an R package and wants to generate
   a Claude skill from it, or asks Claude to become an expert at using a specific
-  R package.
+  R package. Automates cloning, exploration via parallel sub-agents, and
+  assembly of a complete SKILL.md with references from any public R package
+  repository.
+  Triggers: generate skill, create skill from package, GitHub package, teach
+  Claude, learn package, reverse-engineer package, package skill, analyze R package.
+  Do NOT use for manually writing or editing skills — use skill-creator instead.
+  Do NOT use for general R package development — use r-package-dev instead.
 ---
 
 # R Package Skill Generator
@@ -172,3 +178,84 @@ Is it a Bioconductor package?
   YES -> Note BiocManager::install(), document special object classes
   NO  -> Standard
 ```
+
+---
+
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Generating a skill for a thin wrapper package | Package has <10 exports and trivial logic; the skill adds no value over `?pkg::fn` | Check export count in inventory first; if <10 exports with no complex patterns, advise the user it is too thin |
+| Missing non-exported helpers that are key to idioms | Agents only scan NAMESPACE exports; internal helpers like `.validate_input()` shape correct usage | Have the Architecture Agent also scan `R/` for frequently called internal functions |
+| Overloading skill with every function instead of primary workflows | SKILL.md becomes a copy of the man pages; too long, no insight | Rank by cross-reference count and vignette mentions; top 10-15 functions in SKILL.md, full catalog in `references/` |
+| Not checking if a skill already exists for the package | Generates a duplicate skill, wasting time and creating conflicts | Search `skills/` directory for existing `r-{package-name}` before starting |
+| Synthesis producing >300 lines in SKILL.md | Violates the 300-line budget; skill fails validation | Move detailed API reference, patterns, and gotchas into `references/` subdirectory |
+| Fabricating functions or parameters not in the package | Agents hallucinate plausible but non-existent API surface | Cross-check every function and argument against `man/` pages and NAMESPACE |
+| Writing the skill manually instead of using skill-creator | Bypasses the quality gates and structure the skill-creator enforces | Always hand off to skill-creator in Step 4; draft manually only if skill-creator is unavailable |
+
+---
+
+## Examples
+
+### Happy Path: Generate a Skill from a GitHub URL
+
+**Prompt:** "Generate a Claude skill for the pointblank R package: https://github.com/rstudio/pointblank"
+
+```
+Step 0 — Accept Input
+  $ python3 scripts/setup_workspace.py https://github.com/rstudio/pointblank
+  Created workspace: /tmp/skill-gen-pointblank/
+  Cloned to: /tmp/skill-gen-pointblank/pkg-source/
+  Inventory: /tmp/skill-gen-pointblank/pkg-inventory.json
+
+Step 1 — Scan & Inventory
+  Package: pointblank  Version: 0.12.1  Exports: 87
+  Has vignettes: 6  Has tests: yes  Has src/: no
+
+Step 2 — Dispatch Exploration Agents (parallel)
+  API Agent       -> reports/api-surface.md     (87 exports catalogued)
+  Architecture    -> reports/architecture.md     (agent/validation/reporting layers)
+  Idiom Agent     -> reports/idioms.md           (pipe-based validation workflow)
+  Edge-Case Agent -> reports/edge-cases.md       (common YAML config pitfalls)
+
+Step 3 — Synthesise
+  Top functions: create_agent, col_vals_gt, col_vals_between, interrogate, ...
+  Key patterns: agent pipeline, YAML-driven validation, informant reports
+  Gotchas: agent vs informant confusion, YAML multiline quoting
+
+Step 4 — Hand Off to skill-creator
+  Output: skills/r-pointblank/SKILL.md (182 lines)
+          skills/r-pointblank/references/api-reference.md
+          skills/r-pointblank/references/patterns.md
+```
+
+### Edge Case: Package with >100 Exports
+
+**Prompt:** "Generate a skill for data.table: https://github.com/Rdatatable/data.table"
+
+```
+Step 1 — Scan & Inventory
+  Package: data.table  Version: 1.16.0  Exports: 214
+  WARNING: >100 exports detected.
+
+Step 2 — Agent Strategy (adapted for large API)
+  API Agent focuses on top 20 functions by vignette/README cross-reference:
+    [, :=, fread, fwrite, merge, setkey, .SD, .N, fifelse, ...
+  Remaining 194 exports -> references/api-reference.md only.
+
+Step 3 — Synthesise
+  SKILL.md covers top 20 functions + 5 patterns + gotchas.
+  Full 214-export catalogue in references/api-reference.md.
+  Line count: SKILL.md = 278 lines (under 300 budget).
+
+Step 4 — Hand Off to skill-creator
+  Output: skills/r-data-table/SKILL.md (278 lines)
+          skills/r-data-table/references/api-reference.md (420 lines)
+          skills/r-data-table/references/patterns.md
+          skills/r-data-table/references/gotchas.md
+```
+
+**More example prompts:**
+- "Generate a Claude skill for the gt package from its GitHub repo"
+- "Teach Claude to be an expert at the polars R package"
+- "Create a skill from https://github.com/tidyverse/dplyr"

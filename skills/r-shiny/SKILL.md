@@ -2,7 +2,13 @@
 name: r-shiny
 description: >
   Use when building, structuring, testing, or deploying Shiny applications.
-  Covers reactivity, modules, golem/rhino, bslib, shinytest2, and deployment.
+  Provides expert guidance on reactivity, modules, UI layout with bslib,
+  production frameworks (golem, rhino), integration testing with shinytest2,
+  and deployment to Posit Connect, shinyapps.io, or Docker.
+  Triggers: Shiny, reactive, module, dashboard, golem, rhino, bslib,
+  shinytest2, deployment, server, ui, app, observe, render.
+  Do NOT use for standalone ggplot2 plots — use r-visualization instead.
+  Do NOT use for Quarto interactive documents — use r-quarto instead.
 ---
 
 # R Shiny
@@ -64,35 +70,16 @@ Use golem unless the team already uses rhino or needs box-style imports.
 
 ```r
 server <- function(input, output, session) {
-  # reactive() — lazy computed value, cached
-  filtered_data <- reactive({
-    req(input$dataset)
-    mtcars |> filter(cyl == input$cyl)
-  })
-
-  # reactiveVal() — mutable single value
+  filtered_data <- reactive({ req(input$dataset); mtcars |> filter(cyl == input$cyl) })
   click_count <- reactiveVal(0)
-
-  # observeEvent() — side effect on trigger
   observeEvent(input$increment, { click_count(click_count() + 1) })
-
   # bindEvent() — modern alternative to observeEvent
-
-  filtered_result <- reactive({
-    expensive_computation(input$params)
-  }) |> bindEvent(input$go_button)
-
+  filtered_result <- reactive({ expensive_computation(input$params) }) |>
+    bindEvent(input$go_button)
   # isolate() — read without taking dependency
-  observe({
-    message("Dataset: ", input$dataset)
-    message("Cyl (no dep): ", isolate(input$cyl))
-  })
-
+  observe({ message("Dataset: ", input$dataset, " Cyl: ", isolate(input$cyl)) })
   # req() — short-circuit on NULL/FALSE/empty
-  output$plot <- renderPlot({
-    req(filtered_data(), nrow(filtered_data()) > 0)
-    plot(filtered_data()$mpg)
-  })
+  output$plot <- renderPlot({ req(filtered_data()); plot(filtered_data()$mpg) })
 }
 ```
 
@@ -114,42 +101,27 @@ advanced patterns (bindCache, debounce, throttle).
 Modules encapsulate UI + server logic with namespaced IDs.
 
 ```r
-# R/mod_filter.R
 mod_filter_ui <- function(id) {
   ns <- NS(id)
-  tagList(
-    selectInput(ns("column"), "Filter column", choices = NULL),
-    sliderInput(ns("range"), "Range", min = 0, max = 100, value = c(0, 100))
-  )
+  tagList(selectInput(ns("column"), "Column", choices = NULL),
+          sliderInput(ns("range"), "Range", min = 0, max = 100, value = c(0, 100)))
 }
-
 mod_filter_server <- function(id, data) {
   moduleServer(id, function(input, output, session) {
-    observe({
-      cols <- data() |> select(where(is.numeric)) |> names()
-      updateSelectInput(session, "column", choices = cols)
-    })
-    # Return filtered data as reactive
+    observe({ updateSelectInput(session, "column",
+      choices = data() |> dplyr::select(where(is.numeric)) |> names()) })
     reactive({
       req(input$column, input$range)
-      data() |> filter(
-        .data[[input$column]] >= input$range[1],
-        .data[[input$column]] <= input$range[2]
-      )
+      data() |> dplyr::filter(.data[[input$column]] >= input$range[1],
+                               .data[[input$column]] <= input$range[2])
     })
   })
 }
-
-# Wire modules in app_server.R
-app_server <- function(input, output, session) {
-  raw_data <- reactive({ mtcars })
-  filtered <- mod_filter_server("filter1", data = raw_data)
-  mod_table_server("table1", data = filtered)
-}
+# Wire: filtered <- mod_filter_server("filter1", data = reactive(mtcars))
 ```
 
 Read `references/modules-patterns.md` for inter-module communication, nested
-modules, testing, and common patterns (CRUD, form, display).
+modules, testing, and common patterns.
 
 ---
 
@@ -160,14 +132,12 @@ ui <- page_navbar(
   title = "Dashboard",
   theme = bs_theme(bootswatch = "flatly", primary = "#0073B7"),
   nav_panel("Overview",
-    layout_columns(
-      col_widths = c(4, 4, 4),
-      value_box("Users", textOutput("n_users"), showcase = bsicons::bs_icon("people")),
-      value_box("Revenue", textOutput("revenue"), showcase = bsicons::bs_icon("currency-dollar")),
-      value_box("Growth", textOutput("growth"), showcase = bsicons::bs_icon("graph-up"))
+    layout_columns(col_widths = c(4, 4, 4),
+      value_box("Users", textOutput("n_users")),
+      value_box("Revenue", textOutput("revenue")),
+      value_box("Growth", textOutput("growth"))
     ),
-    layout_columns(
-      col_widths = c(8, 4),
+    layout_columns(col_widths = c(8, 4),
       card(card_header("Trend"), plotOutput("trend_plot")),
       card(card_header("Top Items"), tableOutput("top_table"))
     )
@@ -175,36 +145,19 @@ ui <- page_navbar(
 )
 ```
 
-Key components: `page_sidebar()`, `page_navbar()`, `page_fillable()`,
-`card()`, `value_box()`, `layout_columns()`, `accordion()`, `navset_card_tab()`.
+Key: `page_sidebar()`, `page_navbar()`, `page_fillable()`, `card()`,
+`value_box()`, `layout_columns()`, `accordion()`, `navset_card_tab()`.
 
 ---
 
 ## Dynamic UI
 
-```r
-# renderUI / uiOutput — fully dynamic (use session$ns in modules)
-output$dynamic_inputs <- renderUI({
-  purrr::map(seq_len(input$n), \(i) {
-    numericInput(session$ns(paste0("val_", i)), paste("Value", i), value = 0)
-  })
-})
-
-# update*() — preferred when only changing choices/values
-observeEvent(input$dataset, {
-  updateSelectInput(session, "column", choices = names(get(input$dataset, "package:datasets")))
-})
-
-# insertUI / removeUI — surgical additions/removals
-observeEvent(input$add, {
-  insertUI("#container", "beforeEnd", ui = div(textInput(paste0("x_", input$add), "New")))
-})
-
-# conditionalPanel — client-side show/hide
-conditionalPanel("input.advanced == true", numericInput("threshold", "Threshold", 0.05))
-```
-
-Prefer `update*()` over `renderUI()`. Use `renderUI()` when structure changes.
+| Method | When to use |
+|--------|-------------|
+| `update*()` | **Preferred.** Change choices/values/labels of existing inputs. |
+| `renderUI()` + `uiOutput()` | Structure changes. Use `session$ns()` in modules. |
+| `insertUI()` / `removeUI()` | Surgical additions/removals to DOM. |
+| `conditionalPanel()` | Client-side show/hide (no server round-trip). |
 
 ---
 
@@ -234,37 +187,19 @@ with `shinytest2::AppDriver`, snapshot outputs with `app$expect_values()`.
 
 ---
 
-## JavaScript Integration
+## Plots and Outputs
 
-```r
-session$sendCustomMessage("highlight", list(id = "myplot", color = "red"))
+> **Boundary:** Plots rendered within Shiny reactivity. For standalone publication plots without Shiny reactivity, use r-visualization instead.
 
-tags$script("
-  Shiny.addCustomMessageHandler('highlight', function(msg) {
-    document.getElementById(msg.id).style.border = '2px solid ' + msg.color;
-  });
-  Shiny.setInputValue('js_result', {value: 42, nonce: Math.random()});
-")
-```
-
-For complex JS, use `htmltools::htmlDependency()` to manage external JS/CSS.
-
----
-
-## Performance
+## Performance and JS Integration
 
 ```r
 # bindCache — cache expensive computations by input keys
 output$plot <- renderPlot({ create_expensive_plot(filtered_data()) }) |>
   bindCache(input$dataset, input$cyl)
 
-# Async with promises + future
-library(promises); library(future); plan(multisession)
-output$result <- renderTable({ future_promise({ slow_computation(isolate(input$params)) }) })
-
-# Dev tools
-shiny::devmode()                    # auto-reload, enhanced logging
-profvis::profvis({ runApp() })      # profile bottlenecks
+# Async: library(promises); library(future); plan(multisession)
+# JS: session$sendCustomMessage() (R->JS), Shiny.setInputValue() (JS->R)
 ```
 
 ---
@@ -282,22 +217,83 @@ Always use `renv` for reproducible deployments. Pin all package versions.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `renderUI()` for simple input changes | Full UI rebuild is slow; loses input state | Use `update*()` functions (e.g., `updateSelectInput()`) instead |
+| Missing `ns()` in module UI | Input IDs are not namespaced; server cannot find them | Wrap every input/output ID with `ns()` in module UI functions |
+| `reactiveVal()` inside `observe()` | Creates a new reactive value on every invalidation; previous value lost | Define `reactiveVal()` or `reactiveValues()` outside observers |
+| Missing `req()` for NULL inputs | `NULL` inputs propagate and cause cryptic downstream errors | Add `req(input$x)` at the start of reactive expressions |
+| Forgetting `session$ns()` in module server dynamic UI | `renderUI()` inside a module generates un-namespaced IDs | Use `session$ns("id")` when building UI in the server function |
+| No `isolate()` in `observe()` | Reading multiple inputs without isolation causes infinite reactive loops | Use `isolate()` on inputs you want to read but not depend on |
+| Side effects inside `reactive()` | `reactive()` is for computed values; side effects fire unpredictably | Move side effects (DB writes, logging, file I/O) to `observe()` or `observeEvent()` |
+| Scope creep | Claude restructures entire app when asked to fix one reactive | Fix only the identified issue; show minimal diff |
+
+---
+
 ## Examples
 
-### 1. Quick dashboard prototype
-**Prompt:** "Create a Shiny dashboard showing mtcars data with sidebar filters
-for cylinders and a scatter plot."
+### Happy Path: Basic module with ns() wrapping
 
-### 2. Module extraction
-**Prompt:** "Refactor this 400-line server function into Shiny modules with
-proper namespacing and inter-module communication."
+**Prompt:** "Create a reusable chart module with namespace-safe inputs."
 
-### 3. Reactivity debugging
-**Prompt:** "My Shiny app updates the plot twice when I change the dropdown.
-Help me find and fix the unnecessary invalidation."
+```r
+# Module UI — every ID wrapped in ns()
+mod_chart_ui <- function(id) {
+  ns <- NS(id)
+  tagList(
+    selectInput(ns("metric"), "Metric", choices = c("mpg", "hp", "wt")),
+    plotOutput(ns("plot"))
+  )
+}
 
-### 4. Production deployment
-**Prompt:** "Convert this single-file Shiny app to a golem package with shinytest2 tests and Docker deployment."
+# Module server — returns nothing, renders output
+mod_chart_server <- function(id, data) {
+  moduleServer(id, function(input, output, session) {
+    output$plot <- renderPlot({
+      req(input$metric)
+      ggplot2::ggplot(data(), ggplot2::aes(x = .data[[input$metric]])) +
+        ggplot2::geom_histogram(bins = 20)
+    })
+  })
+}
 
-### 5. Performance optimization
-**Prompt:** "This Shiny app is slow when many users connect. Add caching and async processing for the expensive database query."
+# Wire in app — each call creates an independent instance
+app_server <- function(input, output, session) {
+  raw <- reactive(mtcars)
+  mod_chart_server("chart1", data = raw)
+  mod_chart_server("chart2", data = raw)
+}
+```
+
+### Edge Case: Dynamic UI in module needing session$ns()
+
+**Prompt:** "My renderUI inside a module creates inputs that the server cannot find."
+
+```r
+# BAD — renderUI without session$ns(): IDs are not namespaced
+mod_dynamic_server <- function(id, choices) {
+  moduleServer(id, function(input, output, session) {
+    output$controls <- renderUI({
+      selectInput("dynamic_var", "Variable", choices = choices())
+      # input$dynamic_var is NULL — ID not namespaced!
+    })
+  })
+}
+
+# GOOD — use session$ns() inside renderUI
+mod_dynamic_server <- function(id, choices) {
+  moduleServer(id, function(input, output, session) {
+    output$controls <- renderUI({
+      selectInput(session$ns("dynamic_var"), "Variable", choices = choices())
+    })
+    observe({ req(input$dynamic_var); message("Selected: ", input$dynamic_var) })
+  })
+}
+```
+
+**More example prompts:**
+- "Refactor this 400-line server function into Shiny modules"
+- "My app updates the plot twice when I change the dropdown — fix the invalidation"
+- "Convert this single-file app to a golem package with shinytest2 tests"

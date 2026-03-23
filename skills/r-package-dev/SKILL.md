@@ -1,8 +1,14 @@
 ---
 name: r-package-dev
 description: >
-  Use when creating, developing, documenting, or submitting R packages. Covers
-  usethis, devtools, roxygen2, pkgdown, CRAN submission, and CI/CD.
+  Use when creating, developing, documenting, or submitting R packages. Provides
+  full-lifecycle guidance on usethis, devtools, roxygen2, pkgdown, NAMESPACE
+  management, DESCRIPTION metadata, vignettes, CRAN submission, and CI/CD
+  workflows.
+  Triggers: R package, usethis, devtools, roxygen2, NAMESPACE, DESCRIPTION,
+  pkgdown, CRAN submission, vignette, R CMD check, package development.
+  Do NOT use for initial project scaffolding only — use r-project-setup instead.
+  Do NOT use for writing package tests — use r-tdd instead.
 ---
 
 # R Package Development
@@ -23,6 +29,8 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 ---
 
 ## Package Scaffold
+
+> **Boundary:** Package scaffold as part of ongoing development. For initial project scaffolding only, use r-project-setup instead.
 
 ```r
 usethis::create_package("path/to/mypkg")
@@ -154,62 +162,22 @@ Tag the package-level documentation file with `@useDynLib mypkg, .registration =
 
 ---
 
-## Vignettes
+## Vignettes and pkgdown
 
 ```r
-usethis::use_vignette("getting-started")    # Rmarkdown vignette
-usethis::use_vignette("advanced-usage")
+usethis::use_vignette("getting-started")    # Creates vignettes/*.Rmd
+usethis::use_pkgdown()                      # Sets up pkgdown site
+pkgdown::build_site()                       # Build locally
 ```
 
-Creates `vignettes/getting-started.Rmd` with correct YAML header. Build with
-`devtools::build_vignettes()`. For quarto: create `.qmd` files in `vignettes/`
-and add `VignetteEngine: quarto::html` to the YAML header.
-
-**Tip:** Keep vignettes focused. One topic per vignette. Use `@seealso` in
-function docs to link to relevant vignettes.
+One topic per vignette. Customize `_pkgdown.yml` with `reference:` sections
+(group by topic) and `articles:` for vignettes. Deploy via GitHub Actions.
 
 ---
 
-## pkgdown Site
+## Testing in Packages
 
-```r
-usethis::use_pkgdown()
-pkgdown::build_site()
-```
-
-Customize `_pkgdown.yml`:
-
-```yaml
-url: https://username.github.io/mypkg/
-
-template:
-  bootstrap: 5
-
-reference:
-  - title: Core Functions
-    contents:
-      - weighted_summary
-      - fit_model
-  - title: Utilities
-    contents:
-      - starts_with("validate_")
-
-articles:
-  - title: Getting Started
-    contents:
-      - getting-started
-  - title: Advanced
-    contents:
-      - advanced-usage
-
-navbar:
-  structure:
-    left:  [intro, reference, articles, news]
-```
-
-Deploy automatically via GitHub Actions (see CI/CD section).
-
----
+> **Boundary:** R CMD check and package-level quality gates. For TDD workflow and test-first methodology, use r-tdd instead.
 
 ## CRAN Submission
 
@@ -254,45 +222,78 @@ usethis::use_github_actions_badge("R-CMD-check")
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `@import pkg` instead of `@importFrom pkg fun` | Imports entire namespace; causes collisions with other packages | Use `@importFrom pkg fun` or `pkg::fun()` — never `@import` |
+| Forgetting `devtools::document()` after roxygen changes | `NAMESPACE` and man pages are stale; exports don't update | Run `devtools::document()` after every roxygen edit |
+| `library()` in package code | Attaches entire package to search path; violates CRAN policy | Use `pkg::fun()` or `@importFrom pkg fun` in `R/` files |
+| Missing `@export` tag | Function exists but users cannot access it after `library(pkg)` | Add `@export` to roxygen block, then `devtools::document()` |
+| Hardcoded file paths | Paths break on other machines and in `R CMD check` | Use `testthat::test_path()`, `system.file()`, or `fs::path_package()` |
+| Forgetting `usethis::use_package("dep")` | Dependency not in `DESCRIPTION`; `R CMD check` fails with "not available" | Run `usethis::use_package()` for every new dependency |
+| `Depends:` instead of `Imports:` | Forces package onto user's search path; pollutes namespace | Use `Imports:` for almost all deps; `Depends:` only for data packages or tight coupling |
+| Scope creep | Claude adds features or refactors unrelated code during a focused fix | Fix only the identified issue; show minimal diff |
+
+---
+
 ## Examples
 
-### 1. Bootstrap a new package from scratch
-**Prompt:** "Create a new R package called tidyweather for weather data wrangling."
+### Happy Path: Create package with roxygen2 docs and check
+
+**Prompt:** "Create a new R package called tidyweather with a documented function."
 
 ```r
-usethis::create_package("~/projects/tidyweather")
+# Input — scaffold and add a function
+usethis::create_package("~/tidyweather")
 usethis::use_testthat(3)
 usethis::use_pipe(type = "base")
-usethis::use_roxygen_md()
 usethis::use_mit_license()
-usethis::use_git()
-usethis::use_github()
-usethis::use_readme_rmd()
-usethis::use_github_action("check-standard")
+usethis::use_package("httr2")
+
+# R/fetch_forecast.R
+#' Fetch weather forecast for a city
+#'
+#' @param city Character. City name to query.
+#' @param days Integer. Number of forecast days (1-7). Default `3`.
+#' @returns A tibble with columns `date`, `temp_high`, `temp_low`.
+#' @examples
+#' fetch_forecast("London", days = 5)
+#' @export
+fetch_forecast <- function(city, days = 3L) {
+  stopifnot(is.character(city), length(city) == 1L, days >= 1L, days <= 7L)
+  # ... implementation using httr2
+}
+
+# Output — build docs and run check
+devtools::document()   # generates man/fetch_forecast.Rd and updates NAMESPACE
+devtools::check()      # 0 errors, 0 warnings, 0 notes -> ready
 ```
 
-### 2. Add an exported function with full documentation
-**Prompt:** "Add a `fetch_forecast()` function that calls a weather API."
+### Edge Case: NAMESPACE conflict from @importFrom vs tidy eval
 
-Write test first (RED), implement in `R/fetch-forecast.R` with full roxygen2
-block (`@param`, `@returns`, `@examples`, `@family`), run `devtools::document()`
-then `devtools::check()`.
+**Prompt:** "R CMD check warns about .data not found in NAMESPACE after I added a dplyr function."
 
-### 3. Prepare for CRAN submission
-**Prompt:** "Get this package ready for CRAN."
+```r
+# Input — .data[[var]] used in a function but NAMESPACE has no import
+# R CMD check: "no visible binding for global variable '.data'"
+filter_column <- function(data, col, min_val) {
+  data |> dplyr::filter(.data[[col]] >= min_val)  # .data not imported!
+}
 
-Run `devtools::check(cran = TRUE)`, fix all warnings, run `urlchecker::url_check()`,
-`spelling::spell_check_package()`, update `NEWS.md`, write `cran-comments.md`,
-then `devtools::submit_cran()`.
+# Fix — import .data from rlang (NOT dplyr)
+usethis::use_import_from("rlang", ".data")
+devtools::document()
 
-### 4. Set up pkgdown with custom reference organization
-**Prompt:** "Create a pkgdown site grouping functions by topic."
+# NAMESPACE now contains: importFrom(rlang,.data)
+# R CMD check passes cleanly
 
-Run `usethis::use_pkgdown()`, configure `_pkgdown.yml` with `reference:` sections,
-`pkgdown::build_site()`, then `usethis::use_github_action("pkgdown")` for deploy.
+# Also works for {{ }} (curly-curly) — no import needed, but requires
+# @param tag with <data-masking> for documentation:
+#' @param col <[`data-masking`][rlang::args_data_masking]> Column to filter.
+```
 
-### 5. Add Rcpp for a performance-critical function
-**Prompt:** "The rolling_mean() function is too slow in pure R, use C++ via Rcpp."
-
-Run `usethis::use_rcpp()`, write `.cpp` in `src/`, `devtools::document()` to
-generate exports, test with `devtools::test()`, benchmark with `bench::mark()`.
+**More example prompts:**
+- "Add a `fetch_forecast()` function with full roxygen2 docs and tests"
+- "Get this package ready for CRAN submission"
+- "Create a pkgdown site grouping functions by topic"

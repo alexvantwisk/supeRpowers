@@ -2,14 +2,21 @@
 name: r-tables
 description: >
   Use when creating publication-quality tables in R with gt, gtsummary,
-  gtExtras, or reactable. Covers formatting, themes, journal styles, and
-  output to HTML, PDF, and Word.
+  gtExtras, or reactable. Provides expert guidance on summary tables,
+  regression tables, demographic Table 1 layouts, journal themes, conditional
+  formatting, sparklines, and multi-format output to HTML, PDF, and Word.
+  Triggers: table, gt, gtsummary, gtExtras, reactable, summary table,
+  regression table, Table 1, demographics table, publication table, formatting.
+  Do NOT use for plots or charts — use r-visualization instead.
+  Do NOT use for Shiny interactive tables embedded in apps — use r-shiny instead.
 ---
 
 # R Tables
 
 Publication-quality tables for manuscripts, reports, and dashboards using gt,
 gtsummary, gtExtras, and reactable. All code uses base pipe `|>` and `<-`.
+
+> **Boundary:** Formatted publication tables. For plots and charts, use r-visualization instead. For regulatory TLFs in clinical context, use r-clinical instead.
 
 **Lazy references:**
 - Read `references/gtsummary-themes.md` for journal themes, custom theme creation, and statistic display patterns
@@ -144,29 +151,10 @@ tbl_stack(
 ```r
 library(gtExtras)
 
-# Sparkline column
-df |>
-  gt() |>
-  gt_sparkline(trend_col, type = "line", same_limit = FALSE)
-
-# Inline bar chart
-df |>
-  gt() |>
-  gt_plt_bar(value_col, color = "steelblue", scale_type = "number")
-
-# Built-in themes
-tbl |> gt_theme_538()
-tbl |> gt_theme_nytimes()
-tbl |> gt_theme_espn()
-tbl |> gt_theme_guardian()
-
-# Color-scale column
-tbl |>
-  gt_color_rows(
-    columns  = value,
-    palette  = c("#FFF5F0", "#C00000"),
-    domain   = c(0, 100)
-  )
+df |> gt() |> gt_sparkline(trend_col, type = "line")    # sparklines
+df |> gt() |> gt_plt_bar(value_col, color = "steelblue") # inline bars
+tbl |> gt_theme_538()                                     # themed tables
+tbl |> gt_color_rows(value, palette = c("#FFF5F0", "#C00000"))  # heatmap
 ```
 
 ---
@@ -222,45 +210,83 @@ library(reactable)
 
 reactable(
   mtcars,
-  filterable  = TRUE,
-  searchable  = TRUE,
-  pagination  = TRUE,
-  defaultPageSize = 15,
+  filterable = TRUE, searchable = TRUE, defaultPageSize = 15,
   columns = list(
     mpg = colDef(name = "MPG", format = colFormat(digits = 1)),
     cyl = colDef(name = "Cylinders", filterable = TRUE)
-  ),
-  theme = reactableTheme(
-    borderColor     = "#dfe2e5",
-    stripedColor    = "#f6f8fa",
-    highlightColor  = "#f0f5ff"
   )
 )
 ```
 
-Use `reactable` for Shiny and Quarto HTML output; use gt/gtsummary for
-static/print contexts.
+Use `reactable` for Shiny/Quarto HTML; use gt/gtsummary for static/print.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Using `gt()` on columns with spaces in names | `gt` can't resolve bare column names with spaces; errors in `cols_label()` and `fmt_*()` | Rename columns first with `rename()` or use backtick-quoted names |
+| Forgetting `as_gt()` when piping gtsummary to gt functions | `tbl_summary` objects are not gt objects; gt functions silently fail or error | Pipe through `as_gt()` before any `tab_*()`, `fmt_*()`, or `gt_*()` calls |
+| `tbl_summary()` defaulting to median for continuous variables | Default statistic is `"{median} ({p25}, {p75})"` — users often expect mean | Set `statistic = list(all_continuous() ~ "{mean} ({sd})")` explicitly if mean is wanted |
+| Forgetting `bold_labels()` for publication formatting | Labels look like plain text; reviewers and journals expect bold variable names | Add `bold_labels()` to every publication table pipeline |
+| `gtsave()` PNG requires webshot2/chromote; PDF requires tinytex | `gtsave("table.png")` errors with cryptic message if chromote is missing | Install `webshot2` + Chrome/Chromium for PNG; `tinytex::install_tinytex()` for PDF |
+| `theme_gtsummary_journal()` has global side effects | Theme persists across all subsequent tables in the session | Call `reset_gtsummary_theme()` after building the themed table |
+| Building full data pipeline when user asked to format one table | Scope creep — user wants table styling, not data wrangling | Format the data provided; suggest upstream changes only if asked |
+
 ## Examples
 
-### 1. Table 1 for a clinical paper
-**Prompt:** "Create a demographics Table 1 comparing treatment vs control with
-p-values, styled for JAMA submission."
+### Happy Path: Demographics Table 1 with gtsummary
 
-### 2. Regression table with multiple models
-**Prompt:** "Make a publication table showing unadjusted and adjusted odds
-ratios side by side from two logistic regression models."
+**Prompt:** "Create a demographics Table 1 comparing treatment vs control with p-values for JAMA."
 
-### 3. Summary statistics with sparklines
-**Prompt:** "Build a gt table of monthly sales by region with sparkline
-trend columns using gtExtras."
+```r
+# Input
+library(gtsummary)
+theme_gtsummary_journal("jama")
 
-### 4. Export table to Word
-**Prompt:** "I have a gtsummary tbl_summary — export it to a Word document
-for my manuscript."
+tbl1 <- trial |>
+  tbl_summary(
+    by        = trt,
+    include   = c(age, grade, stage),
+    statistic = list(all_continuous() ~ "{mean} ({sd})",
+                     all_categorical() ~ "{n} ({p}%)"),
+    missing   = "no"
+  ) |>
+  add_overall() |>
+  add_p() |>
+  bold_labels()
 
-### 5. Conditional formatting
-**Prompt:** "Color the p-value column red when < 0.05 and add data bars to
-the effect size column."
+# Output — rendered gt table with JAMA styling
+tbl1
+
+reset_gtsummary_theme()
+```
+
+### Edge Case: Merging two gtsummary tables with duplicate column names
+
+**Prompt:** "Combine unadjusted and adjusted regression tables side by side."
+
+```r
+# Input — two models produce tables with identical stat column names
+tbl_unadj <- glm(response ~ trt, data = trial, family = binomial) |>
+  tbl_regression(exponentiate = TRUE)
+
+tbl_adj <- glm(response ~ trt + age + grade, data = trial, family = binomial) |>
+  tbl_regression(exponentiate = TRUE)
+
+# WRONG — piping gtsummary directly to gt functions without as_gt()
+# tbl_unadj |> tab_header(title = "Model")   # ERROR
+
+# CORRECT — tbl_merge handles column deduplication automatically
+tbl_merged <- tbl_merge(
+  tbls        = list(tbl_unadj, tbl_adj),
+  tab_spanner = c("**Unadjusted**", "**Adjusted**")
+)
+tbl_merged
+```
+
+**More example prompts:**
+- "Build a gt table with sparkline trend columns using gtExtras."
+- "Export a gtsummary table to Word for my manuscript."
+- "Color p-values red when < 0.05 and add data bars to effect sizes."

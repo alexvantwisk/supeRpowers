@@ -3,6 +3,13 @@ name: r-targets
 description: >
   Use when creating reproducible analysis pipelines, managing computational
   workflows, or using the targets package for pipeline orchestration in R.
+  Provides expert guidance on target definitions, static and dynamic branching,
+  dependency graphs, caching, cloud storage backends, and integration with
+  renv for fully reproducible workflows.
+  Triggers: targets, pipeline, workflow, reproducible, tar_make, tar_read,
+  tar_target, branching, dependency graph, pipeline orchestration, make-like.
+  Do NOT use for initial project setup — use r-project-setup instead.
+  Do NOT use for general data wrangling within a target — use r-data-analysis instead.
 ---
 
 # R Targets — Pipeline Orchestration
@@ -10,6 +17,8 @@ description: >
 Reproducible analysis pipelines with the targets package. Define targets once,
 re-run only what changed. All code uses base pipe `|>`, `<-` for assignment,
 and tidyverse style.
+
+> **Boundary:** Pipeline design and execution with targets. For initial project scaffolding, use r-project-setup instead.
 
 **Lazy references:**
 - Read `references/branching-patterns.md` for static vs dynamic branching decision tree and recipes
@@ -166,12 +175,7 @@ list(
 
 ## Integration: targets + renv
 
-Full reproducibility stack:
-
-- `renv.lock` — pinned package versions (version controlled)
-- `_targets.R` — pipeline definition (version controlled)
-- `R/` — function definitions (version controlled)
-- `_targets/` — pipeline cache (**gitignored**)
+Version-control `renv.lock`, `_targets.R`, and `R/`. Gitignore `_targets/` (machine-specific cache).
 
 ---
 
@@ -189,24 +193,106 @@ tar_option_set(
 
 ---
 
-## Anti-Patterns
+## Gotchas
 
-| Anti-Pattern | Fix |
-|-------------|-----|
-| One giant target that does everything | Break into small, focused targets |
-| Targets that return invisible side effects | Return the value or use `format = "file"` |
-| Hard-coded file paths inside functions | Pass paths as target inputs |
-| Functions defined inside `_targets.R` | Move to `R/` directory, use `tar_source()` |
-| `_targets/` committed to git | Add to `.gitignore` |
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| One giant target that does everything | No caching granularity; any change reruns the whole thing | Break into small, focused targets with single responsibilities |
+| Targets that return invisible side effects | targets caches return values; side effects not tracked | Return the value explicitly, or use `format = "file"` for side-effect targets |
+| Hard-coded file paths inside functions | targets cannot detect the dependency | Pass paths as target inputs so targets tracks them |
+| Functions defined inside `_targets.R` | Functions pollute the pipeline definition | Move functions to `R/`; `tar_source()` loads them |
+| `_targets/` committed to git | Cache is machine-specific and large | Add `_targets/` to `.gitignore` |
+| Using `tar_load()` inside a target function | Loaded target is invisible to the dependency graph | Pass the value as a function argument |
+| Non-serializable objects (DB connections, R6) | `format = "qs"` or `"rds"` cannot serialize them | Return data, not connections; reconnect inside the target |
+| NULL-returning targets silently skipped | Target appears up-to-date but carries no value | Return a sentinel value or empty tibble |
+| Redesigning entire pipeline when user asked to add one target | Scope creep risks breaking a working pipeline | Add the requested target, suggest improvements as follow-up |
 
 ---
 
 ## Examples
 
+### Happy Path: Convert a Script to a Targets Pipeline
+
+**Prompt:** "Convert my analysis script into a reproducible targets pipeline."
+
+```r
+# Before: monolithic script (R/analysis.R)
+# data <- read_csv("data/raw/sales.csv")
+# clean <- data |> filter(!is.na(revenue))
+# model <- lm(revenue ~ region + quarter, data = clean)
+# saveRDS(model, "output/model.rds")
+
+# After: _targets.R
+library(targets)
+tar_option_set(packages = c("dplyr", "readr"), format = "qs")
+tar_source()
+
+list(
+  tar_target(data_raw, read_csv("data/raw/sales.csv", col_types = cols())),
+  tar_target(data_clean, clean_sales(data_raw)),
+  tar_target(model, fit_revenue_model(data_clean)),
+  tar_target(model_file, save_model(model, "output/model.rds"), format = "file")
+)
+
+# R/functions.R — extracted pipeline functions
+clean_sales <- function(df) {
+  df |> dplyr::filter(!is.na(revenue))
+}
+
+fit_revenue_model <- function(df) {
+  lm(revenue ~ region + quarter, data = df)
+}
+
+save_model <- function(model, path) {
+  saveRDS(model, path)
+  path
+}
+
+# Run: tar_make()
+# Inspect: tar_read(model)
+# Visualize: tar_visnetwork()
 ```
-"Set up a targets pipeline for my data analysis project"
-"Convert my analysis scripts into a reproducible pipeline with targets"
-"Add Quarto report rendering as a target in my pipeline"
-"Set up parallel execution for my branched targets"
-"Debug a failing target in my pipeline"
+
+### Edge Case: Dynamic Branching with pattern = map() on Grouped Data
+
+**Prompt:** "Fit a separate model for each region in my data using dynamic branching."
+
+```r
+# _targets.R
+library(targets)
+tar_option_set(packages = c("dplyr", "readr"), format = "qs")
+tar_source()
+
+list(
+  tar_target(data_raw, read_csv("data/sales.csv", col_types = cols())),
+  tar_target(
+    regions,
+    data_raw |> dplyr::distinct(region) |> dplyr::pull(region)
+  ),
+  tar_target(
+    region_data,
+    data_raw |> dplyr::filter(region == regions),
+    pattern = map(regions)
+  ),
+  tar_target(
+    region_model,
+    lm(revenue ~ quarter, data = region_data),
+    pattern = map(region_data)
+  ),
+  tar_target(
+    combined,
+    bind_region_results(region_model),
+    # Aggregate all branches back into one target
+    pattern = map(region_model)
+  )
+)
+
+# tar_make() runs one branch per region.
+# tar_read(region_model, branches = 1) reads a single branch.
+# tar_read(combined) returns aggregated results.
 ```
+
+**More example prompts:**
+- "Add Quarto report rendering as a target in my pipeline"
+- "Set up parallel execution for my branched targets"
+- "Debug a failing target in my pipeline"

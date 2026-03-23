@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -L \"Use when\" skills/*/SKILL.md)",
+      "Bash(grep -L \"Do NOT use\" skills/*/SKILL.md)",
+      "Bash(grep -L \"Triggers:\" skills/*/SKILL.md)",
+      "Bash(echo \"=== %>% check ===\")",
+      "Bash(python:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python skills/skill-auditor/scripts/score_skill.py skills/r-data-analysis --siblings-dir skills)",
+      "Bash(python -c \"import py_compile; py_compile.compile\\(''skills/skill-auditor/scripts/verify_batch.py'', doraise=True\\); print\\(''verify_batch.py OK''\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\(''skills/skill-auditor/scripts/extract_frontmatter.py'', doraise=True\\); print\\(''extract_frontmatter.py OK''\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\(''skills/skill-auditor/scripts/aggregate_report.py'', doraise=True\\); print\\(''aggregate_report.py OK''\\)\")",
+      "Bash(python skills/skill-auditor/scripts/extract_frontmatter.py skills/)"
+    ]
+  }
+}

@@ -2,8 +2,14 @@
 name: r-stats
 description: >
   Use when performing statistical modeling, hypothesis testing, or model
-  diagnostics in R. Covers linear models, GLMs, mixed models, survival
-  analysis, Bayesian methods, time series, and model comparison.
+  diagnostics in R. Provides expert guidance on linear models, GLMs, mixed
+  models, survival analysis, Bayesian methods, time series, model comparison,
+  assumption checking, and effect-size reporting.
+  Triggers: statistical model, hypothesis test, regression, ANOVA, t-test,
+  chi-squared, lm, glm, mixed model, survival analysis, p-value, confidence
+  interval, diagnostics.
+  Do NOT use for machine learning or predictive modeling — use r-tidymodels instead.
+  Do NOT use for clinical trial-specific analysis — use r-clinical instead.
 ---
 
 # R Statistics & Modeling
@@ -98,6 +104,8 @@ lme4::allFit(fit_lmer)                 # try all optimisers; compare estimates
 ---
 
 ## Survival Analysis
+
+> **Boundary:** General survival methodology (Cox, KM, time-varying covariates). For clinical trial endpoints (OS, PFS, DFS), use r-clinical instead.
 
 ```r
 library(survival)
@@ -203,6 +211,8 @@ results |>
 
 ## Model Comparison
 
+> **Boundary:** Inference-focused model comparison (AIC, BIC, LRT). For ML prediction/tuning workflows, use r-tidymodels instead.
+
 ```r
 # AIC / BIC (lower is better; ΔAIC > 2 is meaningful)
 AIC(fit1, fit2, fit3)
@@ -224,51 +234,63 @@ collect_metrics(cv_results)
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Not checking model assumptions before interpreting | Coefficients/p-values are unreliable if normality, homoscedasticity, or linearity are violated | Run `plot(fit)` diagnostics and `car::vif()` before reporting results |
+| Using `anova()` for non-nested model comparison | `anova()` requires nested models; misleading on non-nested pairs | Use `AIC()` / `BIC()` for non-nested models; `anova()` only for nested |
+| Forgetting `na.action = na.exclude` in model fit | `predict()` / `augment()` return fewer rows than input data, breaking joins | Pass `na.action = na.exclude` to `lm()` / `glm()` so predictions align |
+| Interpreting p-values without multiple testing correction | 5% false positive rate per test compounds across many tests | Apply `p.adjust(method = "BH")` before filtering on significance |
+| Forgetting `family = binomial` for logistic regression | `glm()` defaults to `gaussian` — silently fits linear model on 0/1 outcome | Always specify `family = binomial(link = "logit")` for binary outcomes |
+| Confusing `predict(type = "response")` vs `type = "link"` in GLMs | `"link"` returns log-odds (logistic) or log-rate (Poisson); `"response"` returns probabilities or counts | Use `type = "response"` for interpretable predictions; `"link"` for CIs on transformed scale |
+| Producing full Bayesian analysis when user asked "is this significant?" | Scope creep wastes tokens and confuses the user | Match complexity to the question — start with `t.test()` or `lm()` and escalate only if asked |
+
 ## Examples
 
-### 1. Linear model with diagnostics
-**Prompt:** "Fit a linear model of salary on years_exp and department, check assumptions."
+### Happy Path: Linear model with diagnostics and tidy output
+
+**Prompt:** "Fit a linear model of salary on years_exp and department, check assumptions, and report results."
 
 ```r
+# Input
 fit <- lm(salary ~ years_exp + department, data = employees)
-car::vif(fit)
-par(mfrow = c(2, 2)); plot(fit)
+
+# Check assumptions
+car::vif(fit)                            # VIF < 5 = OK
+par(mfrow = c(2, 2)); plot(fit)          # residual diagnostics
+
+# Output — tidy summary with CIs
 broom::tidy(fit, conf.int = TRUE)
+#> # A tibble: 4 x 7
+#>   term              estimate std.error statistic  p.value conf.low conf.high
+#>   <chr>                <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
+#> 1 (Intercept)        32000.     1200.      26.7  1.2e-45   29600.    34400.
+#> 2 years_exp           2150.      180.      11.9  3.4e-22    1790.     2510.
+#> 3 departmentSales    -1800.      950.      -1.89 6.0e-02   -3680.      80.
+#> 4 departmentEng       4200.      980.       4.29 3.1e-05    2260.     6140.
 ```
 
-### 2. Logistic regression with odds ratios
-**Prompt:** "Predict churn (binary) from usage and plan_type, report ORs."
+### Edge Case: Logistic regression forgetting family = binomial
+
+**Prompt:** "Predict churn (binary) from usage and plan_type."
 
 ```r
+# WRONG — glm() defaults to gaussian; silently fits linear model on 0/1
+fit_bad <- glm(churn ~ usage + plan_type, data = customers)
+
+# CORRECT — specify family for binary outcome
 fit <- glm(churn ~ usage + plan_type, family = binomial, data = customers)
 broom::tidy(fit, exponentiate = TRUE, conf.int = TRUE)
+#> # A tibble: 3 x 7
+#>   term           estimate std.error statistic p.value conf.low conf.high
+#>   <chr>             <dbl>     <dbl>     <dbl>   <dbl>    <dbl>     <dbl>
+#> 1 (Intercept)       0.12      0.45     -4.72  2.3e-06   0.049      0.28
+#> 2 usage             1.03      0.008     3.91  9.2e-05   1.02       1.05
+#> 3 plan_typePro      0.54      0.21     -2.93  3.4e-03   0.36       0.82
 ```
 
-### 3. Mixed model for repeated measures
-**Prompt:** "Test treatment effect on pain score with repeated measurements per patient."
-
-```r
-fit <- lmer(pain ~ time * treatment + (time | patient_id), data = trial_df)
-summary(fit)
-lmerTest::anova(fit)     # F-tests with Satterthwaite df
-```
-
-### 4. Kaplan-Meier + Cox PH
-**Prompt:** "Compare survival by treatment arm and fit a Cox model with age adjustment."
-
-```r
-km <- survfit(Surv(os_time, os_event) ~ treatment, data = trial_df)
-survminer::ggsurvplot(km, data = trial_df, pval = TRUE, risk.table = TRUE)
-fit_cox <- coxph(Surv(os_time, os_event) ~ treatment + age, data = trial_df)
-broom::tidy(fit_cox, exponentiate = TRUE, conf.int = TRUE)
-cox.zph(fit_cox)          # verify PH assumption
-```
-
-### 5. Correct for multiple comparisons
-**Prompt:** "We ran 50 tests; apply FDR correction."
-
-```r
-results |>
-  mutate(p_fdr = p.adjust(p_value, method = "BH"),
-         significant = p_fdr < 0.05)
-```
+**More example prompts:**
+- "Test treatment effect on pain score with repeated measurements per patient."
+- "Compare survival by treatment arm and fit a Cox model with age."
+- "We ran 50 tests; apply FDR correction."

@@ -31,7 +31,7 @@ plans/                   # Implementation plans and design spec (historical)
 ### Skills (`skills/*/SKILL.md`)
 
 - YAML frontmatter with exactly two fields: `name` and `description`
-- `description` starts with "Use when..." and describes triggering conditions only
+- `description` starts with "Use when..." followed by third-person capability description, 5+ trigger phrases, and negative boundaries referencing sibling skills. Target 500 chars, hard limit 1024 chars.
 - Body: max 300 lines (including frontmatter)
 - Optional `references/` subdirectory for deep-dive content (lazy-loaded)
 - Optional `scripts/` subdirectory for helper scripts

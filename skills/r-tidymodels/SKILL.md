@@ -1,8 +1,16 @@
 ---
 name: r-tidymodels
 description: >
-  Use when building machine learning models, predictive modeling, or model tuning
-  in R using tidymodels, recipes, workflows, tune, or yardstick.
+  Use when building machine learning models, predictive modeling, or model
+  tuning in R using tidymodels, recipes, workflows, tune, or yardstick.
+  Provides expert guidance on the split-preprocess-model-tune-evaluate
+  pipeline, feature engineering with recipes, hyperparameter tuning,
+  cross-validation, and model performance assessment.
+  Triggers: tidymodels, machine learning, predictive model, recipes, parsnip,
+  workflows, tune, yardstick, cross-validation, hyperparameter, rsample,
+  model tuning, feature engineering.
+  Do NOT use for inferential statistics or hypothesis testing — use r-stats instead.
+  Do NOT use for clinical trial endpoints — use r-clinical instead.
 ---
 
 # R Tidymodels — Machine Learning
@@ -19,9 +27,7 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 This skill covers *how* to implement models with tidymodels, not *which* model is
 statistically appropriate.
 
-**Boundary:** `r-tidymodels` = prediction performance. `r-stats` = inferential statistics.
-Overlap on linear/logistic regression: use `r-stats` for coefficient interpretation,
-`r-tidymodels` for prediction workflows.
+> **Boundary:** Prediction performance and ML tuning workflows. For inferential statistics and coefficient interpretation, use r-stats instead. For clinical trial endpoints, use r-clinical instead.
 
 ---
 
@@ -198,12 +204,91 @@ list(
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Leaking test data into preprocessing | Fitting the recipe on the full dataset causes data leakage; inflated metrics | Always `prep()` the recipe on training data only; `workflow()` handles this automatically |
+| Forgetting `prep()` and `bake()` outside workflows | A recipe object is a blueprint, not transformed data; using it raw gives the original data | Call `prep(rec, training = train)` then `bake(prepped, new_data = test)` for manual use |
+| Using `set_mode("regression")` on a classification task | Model trains but predictions are numeric, not class labels; metrics crash | Match `set_mode()` to the outcome type; check with `class(train$outcome)` |
+| Forgetting `finalize_workflow()` after tuning | `select_best()` returns a tibble of parameters, not a fitted model; calling `fit()` on unfinalized workflow uses `tune()` placeholders | Always call `finalize_workflow(wf, best_params)` before `last_fit()` or `fit()` |
+| Not setting seed before `vfold_cv()` | Folds are random; results differ every run, making comparisons meaningless | Call `set.seed()` before `vfold_cv()`, `initial_split()`, and any resampling |
+| Confusing `fit()` vs `fit_resamples()` | `fit()` trains one model on all data; `fit_resamples()` trains on each fold for evaluation only | Use `fit_resamples()` or `tune_grid()` for evaluation; use `fit()` only for the final model |
+| Building full ML pipeline when user asked to tune one model | Scope creep introduces unnecessary recipes, stacks, or workflow sets | Deliver what was requested; suggest pipeline extensions as follow-up |
+
+---
+
 ## Examples
 
+### Happy Path: Full Split-Recipe-Model-Tune-Evaluate Workflow
+
+**Prompt:** "Build a classification model to predict customer churn with tuning."
+
+```r
+library(tidymodels)
+
+set.seed(42)
+data_split <- initial_split(churn_df, prop = 0.75, strata = churn)
+train <- training(data_split)
+test  <- testing(data_split)
+
+# Recipe — preprocessing blueprint
+rec <- recipe(churn ~ ., data = train) |>
+  step_impute_median(all_numeric_predictors()) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_zv(all_predictors())
+
+# Model spec with tunable parameters
+xgb_spec <- boost_tree(trees = tune(), learn_rate = tune()) |>
+  set_engine("xgboost") |>
+  set_mode("classification")
+
+# Bundle into workflow
+wf <- workflow() |> add_recipe(rec) |> add_model(xgb_spec)
+
+# Tune with cross-validation
+folds <- vfold_cv(train, v = 5, strata = churn)
+tune_results <- wf |> tune_grid(resamples = folds, grid = 20)
+
+# Finalize and evaluate on held-out test set
+best_params <- select_best(tune_results, metric = "roc_auc")
+final_fit <- finalize_workflow(wf, best_params) |> last_fit(data_split)
+collect_metrics(final_fit)
+# # A tibble: 2 x 4
+#   .metric  .estimator .estimate .config
+#   accuracy binary         0.841 Preprocessor1_Model1
+#   roc_auc  binary         0.897 Preprocessor1_Model1
 ```
-"Build a classification model to predict customer churn"
-"Set up a tidymodels workflow with xgboost and hyperparameter tuning"
-"Create a recipe for preprocessing survey data with missing values"
-"Compare random forest vs gradient boosting on this dataset"
-"Tune an elastic net model with cross-validation"
+
+### Edge Case: Data Leakage from Preprocessing Outside the Recipe
+
+**Prompt:** "Why are my cross-validation metrics suspiciously high?"
+
+```r
+# WRONG — normalizing BEFORE splitting leaks test info into training
+# all_data_scaled <- all_data |>
+#   mutate(across(where(is.numeric), scale))
+# split <- initial_split(all_data_scaled, strata = outcome)
+# Metrics will be inflated because test data influenced scaling parameters.
+
+# CORRECT — all preprocessing inside the recipe
+set.seed(99)
+split <- initial_split(raw_data, strata = outcome)
+train <- training(split)
+
+rec <- recipe(outcome ~ ., data = train) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_dummy(all_nominal_predictors())
+
+# workflow() handles prep(train) + bake(test) automatically
+wf <- workflow() |> add_recipe(rec) |> add_model(logistic_reg())
+final_fit <- wf |> last_fit(split)
+collect_metrics(final_fit)
+# Metrics now reflect true out-of-sample performance.
 ```
+
+**More example prompts:**
+- "Create a recipe for preprocessing survey data with missing values"
+- "Compare random forest vs gradient boosting on this dataset"
+- "Tune an elastic net model with cross-validation"

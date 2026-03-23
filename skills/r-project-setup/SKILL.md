@@ -2,7 +2,13 @@
 name: r-project-setup
 description: >
   Use when setting up, initializing, or scaffolding a new R project, package,
-  Shiny app, or Quarto document.
+  Shiny app, or Quarto document. Provides best-practice templates for
+  directory structure, renv dependency management, .Rprofile configuration,
+  git setup, and CI scaffolding for any R project type.
+  Triggers: new project, initialize, scaffold, project setup, create project,
+  start project, new package, new Shiny app, new Quarto, bootstrap.
+  Do NOT use for ongoing package development — use r-package-dev instead.
+  Do NOT use for pipeline setup beyond initial scaffold — use r-targets instead.
 ---
 
 # R Project Setup
@@ -64,6 +70,8 @@ See `references/scaffold-templates.md` for `.lintr`, `.gitignore`, `.Rprofile`, 
 
 ## Scaffold: R Package
 
+> **Boundary:** Initial package creation only. For ongoing package development after scaffold, use r-package-dev instead.
+
 Defer to the **r-package-dev** skill for the authoritative package scaffold workflow.
 It uses `usethis::create_package()`, `use_testthat(3)`, `use_pipe(type = "base")`,
 `use_roxygen_md()`, and the full modern toolchain.
@@ -109,6 +117,10 @@ renv::init()
 ```
 
 ---
+
+## Scaffold: Pipeline (targets)
+
+> **Boundary:** Initial `_targets.R` scaffold only. For pipeline design beyond initial scaffold, use r-targets instead.
 
 ## Scaffold: Quarto Project
 
@@ -170,11 +182,95 @@ After scaffold, dispatch to **r-dependency-manager** agent for renv review.
 
 ---
 
+## Gotchas
+
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| Creating package scaffold without `usethis::create_package()` | Missing DESCRIPTION, NAMESPACE, and `.Rbuildignore`; `devtools::load_all()` fails | Always use `usethis::create_package()` for packages; defer to r-package-dev skill |
+| Forgetting `renv::init()` for dependency management | Project works on your machine but breaks elsewhere; no lockfile for reproducibility | Run `renv::init()` immediately after scaffold; commit `renv.lock` |
+| Using `setwd()` instead of project-relative paths | Breaks on any other machine or when project directory moves; fragile and non-portable | Use `here::here()` or RStudio project root; never call `setwd()` in scripts |
+| Not initializing git | No version history from the start; first commit contains everything with no meaningful diff | Run `usethis::use_git()` as part of scaffold, or `git init` before first file creation |
+| Creating Quarto project without checking Quarto CLI installed | `quarto render` fails with "command not found"; user has no way to build the document | Check `Sys.which("quarto")` or `quarto::quarto_path()` first; advise installation if missing |
+| `.Rproj` BuildType set to "Package" for analysis projects | RStudio shows Build pane with `R CMD check` button; confuses users, triggers spurious check errors | Set `BuildType: Custom` or omit BuildType entirely for non-package projects |
+| Configuring full CI/CD when user asked to scaffold a project | Scope creep adds GitHub Actions, Docker, pkgdown before the user has any code | Scaffold the directory structure only; suggest CI/CD as a follow-up step |
+
+---
+
 ## Examples
 
+### Happy Path: Scaffold an Analysis Project with renv, git, and README
+
+**Prompt:** "Set up a new analysis project for exploring the mtcars dataset."
+
+```r
+# 1. Create directory structure
+dir.create("mtcars-analysis", recursive = TRUE)
+setwd("mtcars-analysis")
+
+dirs <- c("R", "data/raw", "data/processed", "output", "docs")
+lapply(dirs, dir.create, recursive = TRUE)
+
+# 2. Create starter analysis script
+writeLines(c(
+  "library(dplyr)",
+  "library(ggplot2)",
+  "",
+  'raw <- readr::read_csv(here::here("data", "raw", "mtcars.csv"))',
+  "clean <- raw |> filter(!is.na(mpg))"
+), "R/01-import.R")
+
+# 3. Initialize renv and git
+renv::init()
+usethis::use_git()
+
+# 4. Verify scaffold
+fs::dir_tree()
+# mtcars-analysis/
+# ├── .Rprofile           <- source("renv/activate.R")
+# ├── .gitignore
+# ├── R/
+# │   └── 01-import.R
+# ├── data/
+# │   ├── processed/
+# │   └── raw/
+# ├── docs/
+# ├── output/
+# ├── renv/
+# ├── renv.lock
+# └── README.md
 ```
-"Set up a new analysis project for exploring the mtcars dataset"
-"Create an R package called tidywidgets"
-"Scaffold a Shiny dashboard with golem"
-"Start a Quarto website for my research group"
+
+### Edge Case: Add renv to an Existing Project Mid-Development
+
+**Prompt:** "I have a project that's been running for weeks without renv. Add it now."
+
+```r
+# In an existing project with packages already installed system-wide:
+renv::init()
+# renv detects packages used in R/ and .qmd files via renv::dependencies().
+# It creates renv.lock capturing current versions from your library.
+
+# If renv misses a package (e.g., loaded via `library()` in an un-scanned file):
+renv::install("janitor")
+renv::snapshot()
+
+# Common pitfall: renv::init() may find version conflicts.
+# Check the lockfile for unexpected versions:
+renv::status()
+# The following package(s) are out of sync:
+#   janitor  [installed 2.2.0, lockfile 2.1.0]
+
+# Fix with:
+renv::snapshot()   # update lockfile to match installed
+# or
+renv::restore()    # downgrade installed to match lockfile
+
+# Add renv files to git
+# .gitignore already includes renv/library/ (machine-specific)
+# Commit: renv.lock, .Rprofile, renv/activate.R, renv/settings.json
 ```
+
+**More example prompts:**
+- "Create an R package called tidywidgets"
+- "Scaffold a Shiny dashboard with golem"
+- "Start a Quarto website for my research group"

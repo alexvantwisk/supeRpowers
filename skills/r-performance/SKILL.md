@@ -1,8 +1,13 @@
 ---
 name: r-performance
 description: >
-  Use when optimizing R code for speed or memory. Covers profiling, benchmarking,
-  data.table, vectorization, Rcpp, and parallel processing.
+  Use when optimizing R code for speed or memory. Provides a profile-first
+  methodology covering bench, profvis, data.table, vectorization, Rcpp,
+  parallel processing, memory management, and proof-of-improvement benchmarks.
+  Triggers: performance, optimization, profiling, benchmarking, data.table,
+  vectorization, Rcpp, parallel, memory, speed, slow code, large dataset.
+  Do NOT use for general data wrangling at normal scale — use r-data-analysis instead.
+  Do NOT use for debugging errors — use r-debugging instead.
 ---
 
 # R Performance Optimization
@@ -70,6 +75,8 @@ Read `references/profiling-workflow.md` for the full 5-step workflow.
 ---
 
 ## data.table
+
+> **Boundary:** Optimization-focused data.table usage for large-scale data. For general data wrangling at normal scale, use r-data-analysis instead.
 
 Use when: dataset >1M rows, memory-constrained, or performance-critical loops.
 
@@ -217,23 +224,73 @@ or memory per worker exceeds available RAM.
 
 ---
 
-## Common Anti-Patterns
+## Gotchas
 
-| Anti-pattern | Problem | Fix |
-|---|---|---|
-| `result <- c(result, x)` in loop | O(n²) copies | Pre-allocate or use `purrr::map` |
-| `df <- rbind(df, row)` in loop | O(n²) copies | Collect list, then `bind_rows()` |
-| `apply()` on data frame columns | Coerces to matrix | `dplyr::across()` or `vapply()` |
-| `paste()` in tight loop | Slow for 1M+ items | `stringr::str_c()` vectorized |
-| `df$col <- ...` on large shared df | Triggers full copy | `data.table::setDT()` + `:=` |
-| `sapply()` over `vapply()` | Unpredictable return type | `vapply(x, f, FUN.VALUE = numeric(1))` |
+| Trap | Why It Fails | Fix |
+|------|-------------|-----|
+| `result <- c(result, x)` in loop | O(n²) copies — each append copies the entire vector | Pre-allocate with `vector()` or use `purrr::map()` |
+| `df <- rbind(df, row)` in loop | O(n²) copies — same growth problem as above | Collect rows in a list, then `dplyr::bind_rows()` once |
+| `apply()` on data frame columns | Silently coerces entire data frame to matrix (all character if mixed types) | Use `dplyr::across()` or `vapply()` instead |
+| `paste()` in tight loop | Not vectorized across iterations; slow for 1M+ items | Use `stringr::str_c()` or vectorized `paste0()` outside the loop |
+| `df$col <- ...` on large shared df | Triggers full copy-on-modify of the entire data frame | Convert with `data.table::setDT()` and use `:=` for in-place modification |
+| `sapply()` instead of `vapply()` | Return type depends on input length — silently returns list or matrix | Always use `vapply(x, f, FUN.VALUE = numeric(1))` for type safety |
+| `bench::mark()` with `check = FALSE` | May compare non-equivalent operations; benchmark "wins" are meaningless | Keep `check = TRUE` (default); only disable after manually verifying equivalence |
+| `setDT()` mutates the original data frame | Caller's copy silently becomes a data.table — breaks downstream code expecting a data.frame | Use `as.data.table(df)` when the original must stay unchanged |
+| `profvis` not showing the real bottleneck | profvis only surfaces R-level code; C-level and compiled bottlenecks are invisible | Combine with `Rprof(line.profiling = TRUE)` or `bench::mark()` to isolate compiled-code time |
+| Rewriting entire codebase when user asked to speed up one function | Scope creep — premature optimization of non-bottleneck code wastes effort | Profile first, optimize only the measured hotspot, and prove the improvement with `bench::mark()` |
 
 ---
 
-## Example Prompts
+## Examples
 
-1. "This dplyr pipeline is too slow on 5M rows — convert to data.table"
-2. "Profile why my Shiny app takes 8 seconds to load"
-3. "Benchmark three approaches to computing rolling averages"
-4. "Parallelize this `purrr::map()` call that processes 500 files"
-5. "Rewrite this simulation inner loop in Rcpp"
+### Happy Path: Profile, identify bottleneck, vectorize fix
+
+**Prompt:** "This function is slow on 1M rows — find the bottleneck and fix it."
+
+```r
+# Input — profile reveals row-binding in a loop
+profvis::profvis({
+  result <- data.frame()
+  for (i in seq_len(nrow(df))) {
+    result <- rbind(result, transform_row(df[i, ]))  # O(n^2) copies
+  }
+})
+
+# Output — vectorized replacement (100x faster)
+result <- df |>
+  dplyr::mutate(score = value * weight + offset)
+
+# Prove the improvement
+bench::mark(
+  loop_version   = slow_fn(df),
+  vector_version = fast_fn(df),
+  check = TRUE
+)
+#>   expression          min   median `itr/sec` mem_alloc
+#>   loop_version      4.2s     4.5s      0.22    1.8GB
+#>   vector_version   42ms    48ms       21.       15MB
+```
+
+### Edge Case: setDT() mutates the caller's original data frame
+
+**Prompt:** "I converted my df to data.table but now my original df is also a data.table."
+
+```r
+# WRONG — setDT() modifies in place; original_df is silently mutated
+original_df <- data.frame(id = 1:5, value = rnorm(5))
+dt <- original_df
+data.table::setDT(dt)
+class(original_df)
+#> [1] "data.table" "data.frame"   # original_df is now a data.table!
+
+# CORRECT — use as.data.table() to create an independent copy
+original_df <- data.frame(id = 1:5, value = rnorm(5))
+dt <- data.table::as.data.table(original_df)
+class(original_df)
+#> [1] "data.frame"                  # original_df is untouched
+```
+
+**More example prompts:**
+- "This dplyr pipeline is too slow on 5M rows -- convert to data.table."
+- "Parallelize this purrr::map() call that processes 500 files."
+- "Rewrite this simulation inner loop in Rcpp."
