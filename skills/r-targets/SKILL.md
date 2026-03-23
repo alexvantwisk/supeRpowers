@@ -18,6 +18,8 @@ Reproducible analysis pipelines with the targets package. Define targets once,
 re-run only what changed. All code uses base pipe `|>`, `<-` for assignment,
 and tidyverse style.
 
+> **Boundary:** Pipeline design and execution with targets. For initial project scaffolding, use r-project-setup instead.
+
 **Lazy references:**
 - Read `references/branching-patterns.md` for static vs dynamic branching decision tree and recipes
 - Read `references/targets-integration-recipes.md` for copy-paste pipeline patterns (ML, reports, simulations)

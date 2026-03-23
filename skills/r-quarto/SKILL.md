@@ -17,6 +17,8 @@ Quarto publishing system for R: documents, presentations, websites, books,
 and multi-format output. All code uses base pipe `|>`, `<-` for assignment,
 and tidyverse/knitr conventions.
 
+> **Boundary:** Quarto documents, sites, and presentations. For R package vignettes, use r-package-dev instead.
+
 **Lazy references:**
 - Read `references/yaml-config-cheatsheet.md` for complete YAML option reference
 - Read `references/cross-reference-syntax.md` for figures, tables, equations, sections

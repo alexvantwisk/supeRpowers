@@ -27,9 +27,7 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 This skill covers *how* to implement models with tidymodels, not *which* model is
 statistically appropriate.
 
-**Boundary:** `r-tidymodels` = prediction performance. `r-stats` = inferential statistics.
-Overlap on linear/logistic regression: use `r-stats` for coefficient interpretation,
-`r-tidymodels` for prediction workflows.
+> **Boundary:** Prediction performance and ML tuning workflows. For inferential statistics and coefficient interpretation, use r-stats instead. For clinical trial endpoints, use r-clinical instead.
 
 ---
 

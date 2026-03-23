@@ -176,6 +176,8 @@ df |> mutate(score = replace_na(score, 0),                  # replace NAs
 
 ## When to Use data.table
 
+> **Boundary:** data.table mentioned here as an alternative syntax. For performance optimization of large datasets, use r-performance instead.
+
 Consider `data.table` when: dataset >1M rows, memory-constrained, or
 performance-critical inner loops. `fread()`/`fwrite()` are significantly
 faster for file I/O.

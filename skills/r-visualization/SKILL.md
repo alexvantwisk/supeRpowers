@@ -176,6 +176,8 @@ ggsave("figure.tiff", width = 89, height = 89, units = "mm", dpi = 300,
 
 ## Interactive Plots
 
+> **Boundary:** Standalone interactive plots with plotly/htmlwidgets. For interactive plots within Shiny apps, use r-shiny instead.
+
 ```r
 # Convert any ggplot to interactive with plotly
 p <- ggplot(data, aes(x, y, color = group, text = label)) + geom_point()

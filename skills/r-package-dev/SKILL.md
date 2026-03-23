@@ -30,6 +30,8 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 
 ## Package Scaffold
 
+> **Boundary:** Package scaffold as part of ongoing development. For initial project scaffolding only, use r-project-setup instead.
+
 ```r
 usethis::create_package("path/to/mypkg")
 
@@ -172,6 +174,10 @@ One topic per vignette. Customize `_pkgdown.yml` with `reference:` sections
 (group by topic) and `articles:` for vignettes. Deploy via GitHub Actions.
 
 ---
+
+## Testing in Packages
+
+> **Boundary:** R CMD check and package-level quality gates. For TDD workflow and test-first methodology, use r-tdd instead.
 
 ## CRAN Submission
 

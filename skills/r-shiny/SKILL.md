@@ -187,6 +187,10 @@ with `shinytest2::AppDriver`, snapshot outputs with `app$expect_values()`.
 
 ---
 
+## Plots and Outputs
+
+> **Boundary:** Plots rendered within Shiny reactivity. For standalone publication plots without Shiny reactivity, use r-visualization instead.
+
 ## Performance and JS Integration
 
 ```r

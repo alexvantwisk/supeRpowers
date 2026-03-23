@@ -70,6 +70,8 @@ See `references/scaffold-templates.md` for `.lintr`, `.gitignore`, `.Rprofile`, 
 
 ## Scaffold: R Package
 
+> **Boundary:** Initial package creation only. For ongoing package development after scaffold, use r-package-dev instead.
+
 Defer to the **r-package-dev** skill for the authoritative package scaffold workflow.
 It uses `usethis::create_package()`, `use_testthat(3)`, `use_pipe(type = "base")`,
 `use_roxygen_md()`, and the full modern toolchain.
@@ -115,6 +117,10 @@ renv::init()
 ```
 
 ---
+
+## Scaffold: Pipeline (targets)
+
+> **Boundary:** Initial `_targets.R` scaffold only. For pipeline design beyond initial scaffold, use r-targets instead.
 
 ## Scaffold: Quarto Project
 

@@ -105,6 +105,8 @@ lme4::allFit(fit_lmer)                 # try all optimisers; compare estimates
 
 ## Survival Analysis
 
+> **Boundary:** General survival methodology (Cox, KM, time-varying covariates). For clinical trial endpoints (OS, PFS, DFS), use r-clinical instead.
+
 ```r
 library(survival)
 
@@ -208,6 +210,8 @@ results |>
 ---
 
 ## Model Comparison
+
+> **Boundary:** Inference-focused model comparison (AIC, BIC, LRT). For ML prediction/tuning workflows, use r-tidymodels instead.
 
 ```r
 # AIC / BIC (lower is better; ΔAIC > 2 is meaningful)

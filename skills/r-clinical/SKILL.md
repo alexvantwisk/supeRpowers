@@ -57,6 +57,8 @@ Key packages: `pwr`, `gsDesign`, `rpact` (adaptive designs), `PowerTOST`
 
 ## Survival Endpoints (OS, PFS, DFS)
 
+> **Boundary:** Clinical trial survival endpoints with CDISC conventions. For general survival methodology outside clinical context, use r-stats instead.
+
 ```r
 library(survival)
 library(survminer)

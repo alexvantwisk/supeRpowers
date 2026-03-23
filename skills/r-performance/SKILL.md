@@ -76,6 +76,8 @@ Read `references/profiling-workflow.md` for the full 5-step workflow.
 
 ## data.table
 
+> **Boundary:** Optimization-focused data.table usage for large-scale data. For general data wrangling at normal scale, use r-data-analysis instead.
+
 Use when: dataset >1M rows, memory-constrained, or performance-critical loops.
 
 ```r

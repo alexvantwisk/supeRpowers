@@ -15,6 +15,8 @@ description: >
 
 Write tests first, implement second. TDD for R packages using testthat 3rd edition.
 
+> **Boundary:** Test writing and TDD workflow. For R CMD check and package-level quality gates, use r-package-dev instead.
+
 ## TDD Cycle
 
 ```
@@ -39,9 +41,7 @@ REFACTOR: Improve code quality while keeping tests green
 usethis::use_testthat(3)
 ```
 
-Creates `tests/testthat/`, `tests/testthat.R`, sets `Config/testthat/edition: 3` in DESCRIPTION.
-
-Edition 3 key changes: `expect_identical()` default, snapshot testing, `expect_error(class=)` preferred, warnings not suppressed, `context()` deprecated.
+Creates `tests/testthat/`, `tests/testthat.R`, sets `Config/testthat/edition: 3` in DESCRIPTION. Edition 3 key changes: `expect_identical()` default, snapshot testing, `expect_error(class=)` preferred, warnings not suppressed, `context()` deprecated.
 
 ---
 
@@ -295,6 +295,5 @@ test_that("write_report respects mypkg.delim option for TSV", {
 ```
 
 **More example prompts:**
-- "Add `validate_input()` that checks a data frame has required columns and at least one row."
 - "Bug: `summarise_groups()` drops groups with all NA values — write a failing test first."
 - "Test `fetch_weather()` calling an external API using mocked bindings."

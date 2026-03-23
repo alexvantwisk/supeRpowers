@@ -16,6 +16,8 @@ description: >
 Publication-quality tables for manuscripts, reports, and dashboards using gt,
 gtsummary, gtExtras, and reactable. All code uses base pipe `|>` and `<-`.
 
+> **Boundary:** Formatted publication tables. For plots and charts, use r-visualization instead. For regulatory TLFs in clinical context, use r-clinical instead.
+
 **Lazy references:**
 - Read `references/gtsummary-themes.md` for journal themes, custom theme creation, and statistic display patterns
 - Read `references/gt-formatting-patterns.md` for conditional formatting, embedded plots, and export workflows
