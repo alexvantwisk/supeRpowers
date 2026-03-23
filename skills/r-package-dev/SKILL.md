@@ -297,4 +297,3 @@ devtools::document()
 - "Add a `fetch_forecast()` function with full roxygen2 docs and tests"
 - "Get this package ready for CRAN submission"
 - "Create a pkgdown site grouping functions by topic"
-- "The rolling_mean() function is too slow in pure R, use C++ via Rcpp"
