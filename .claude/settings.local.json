@@ -12,7 +12,8 @@
       "Bash(python -c \"import py_compile; py_compile.compile\\(''skills/skill-auditor/scripts/verify_batch.py'', doraise=True\\); print\\(''verify_batch.py OK''\\)\")",
       "Bash(python -c \"import py_compile; py_compile.compile\\(''skills/skill-auditor/scripts/extract_frontmatter.py'', doraise=True\\); print\\(''extract_frontmatter.py OK''\\)\")",
       "Bash(python -c \"import py_compile; py_compile.compile\\(''skills/skill-auditor/scripts/aggregate_report.py'', doraise=True\\); print\\(''aggregate_report.py OK''\\)\")",
-      "Bash(python skills/skill-auditor/scripts/extract_frontmatter.py skills/)"
+      "Bash(python skills/skill-auditor/scripts/extract_frontmatter.py skills/)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
