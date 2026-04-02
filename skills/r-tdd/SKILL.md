@@ -9,6 +9,7 @@ description: >
   coverage, expect_equal, test_that, mock, fixture.
   Do NOT use for R CMD check or package-level quality gates — use r-package-dev instead.
   Do NOT use for debugging existing code — use r-debugging instead.
+  For a guided Red-Green-Refactor cycle, invoke /r-cmd-tdd-cycle instead.
 ---
 
 # R Test-Driven Development

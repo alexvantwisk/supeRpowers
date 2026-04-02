@@ -112,6 +112,10 @@ Markdown report with state assessment, issues found, and recommended actions.
 | HIGH | Version conflicts blocking install, missing key deps, out-of-sync lock file |
 | MEDIUM | Unused deps, heavy packages with lighter alternatives, dev packages in Imports |
 
+## Escalation
+
+This is a **terminal agent** — it does not escalate to other agents. All dependency, renv, and version management issues are resolved here. If a dependency problem has code-level implications beyond the dependency itself, note this in the report for the user to address separately.
+
 ## Examples
 
 **Input:** "Set up renv for my new R project at ./analysis"

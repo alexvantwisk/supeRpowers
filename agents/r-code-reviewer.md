@@ -88,6 +88,17 @@ Sort by severity (CRITICAL first). Include specific file:line references and con
 | HIGH | Violates core conventions (pipe, naming, docs), maintainability risk |
 | MEDIUM | Style improvement, minor performance, optional enhancement |
 
+## Escalation
+
+When findings cross into another agent's domain, escalate rather than attempt a fix outside your expertise.
+
+| Condition | Escalate to | Pass along |
+|-----------|-------------|------------|
+| Statistical methodology concern (wrong test, violated assumptions, questionable model choice) | r-statistician | Code block + specific statistical concern + data context |
+| Dependency issue (version conflict, missing import, heavy package with lighter alternative) | r-dependency-manager | Package names + error messages + renv.lock excerpt if available |
+
+When escalating, include a one-line summary of why you're handing off. The receiving agent reports back to the user with a chain summary.
+
 ## Examples
 
 **Input:** "Review `R/clean-data.R` for style and correctness"

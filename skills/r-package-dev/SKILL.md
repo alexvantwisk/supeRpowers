@@ -9,6 +9,7 @@ description: >
   pkgdown, CRAN submission, vignette, R CMD check, package development.
   Do NOT use for initial project scaffolding only — use r-project-setup instead.
   Do NOT use for writing package tests — use r-tdd instead.
+  For a guided release workflow, invoke /r-cmd-pkg-release instead.
 ---
 
 # R Package Development

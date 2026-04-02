@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# SessionStart hook for supeRpowers plugin
+# Detects R project type and surfaces relevant skills and agents.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# --- Detection flags ---
+is_r_package=false
+is_shiny=false
+is_quarto=false
+is_targets=false
+is_clinical=false
+is_r_project=false
+
+# R Package: DESCRIPTION + (R/ or NAMESPACE)
+if [ -f "DESCRIPTION" ] && { [ -d "R" ] || [ -f "NAMESPACE" ]; }; then
+  is_r_package=true
+fi
+
+# Shiny App: app.R, ui.R+server.R, golem, or rhino
+if [ -f "app.R" ] || { [ -f "ui.R" ] && [ -f "server.R" ]; }; then
+  is_shiny=true
+fi
+if [ "$is_r_package" = true ] && [ -f "inst/golem-config.yml" ]; then
+  is_shiny=true
+fi
+if [ -f "rhino.yml" ]; then
+  is_shiny=true
+fi
+
+# Quarto project
+if [ -f "_quarto.yml" ]; then
+  is_quarto=true
+fi
+
+# Targets pipeline
+if [ -f "_targets.R" ]; then
+  is_targets=true
+fi
+
+# Clinical/Pharma: admiral/pharmaverse in DESCRIPTION, or adam/sdtm dirs
+if [ "$is_r_package" = true ] && [ -f "DESCRIPTION" ]; then
+  if grep -qiE 'admiral|pharmaverse|sdtm\.oak|sdtm\b|adam' "DESCRIPTION" 2>/dev/null; then
+    is_clinical=true
+  fi
+fi
+if [ -d "adam" ] || [ -d "sdtm" ] || [ -d "ADAM" ] || [ -d "SDTM" ]; then
+  is_clinical=true
+fi
+
+# General R project: .Rproj, .R files, or R/ dir (but not already a package)
+if compgen -G "*.Rproj" >/dev/null 2>&1 || compgen -G "*.R" >/dev/null 2>&1 || [ -d "R" ]; then
+  is_r_project=true
+fi
+
+# --- Build context ---
+skills=""
+if [ "$is_r_package" = true ]; then
+  skills="${skills}R package detected. Key skills: /r-package-dev, /r-tdd, /r-cmd-pkg-release, /r-cmd-tdd-cycle. Agents: r-pkg-check, r-code-reviewer, r-dependency-manager.\\n"
+fi
+if [ "$is_shiny" = true ]; then
+  skills="${skills}Shiny app detected. Key skills: /r-shiny, /r-cmd-shiny-app. Agent: r-shiny-architect.\\n"
+fi
+if [ "$is_quarto" = true ]; then
+  skills="${skills}Quarto project detected. Key skill: /r-quarto.\\n"
+fi
+if [ "$is_targets" = true ]; then
+  skills="${skills}Targets pipeline detected. Key skill: /r-targets.\\n"
+fi
+if [ "$is_clinical" = true ]; then
+  skills="${skills}Clinical/pharma project detected. Key skill: /r-clinical. Agent: r-statistician.\\n"
+fi
+if [ "$is_r_project" = true ] && [ "$is_r_package" = false ]; then
+  skills="${skills}R project detected. Key skills: /r-data-analysis, /r-visualization, /r-stats, /r-cmd-analysis. Agent: r-statistician.\\n"
+fi
+
+# Nothing detected — exit silently
+if [ -z "$skills" ]; then
+  echo '{}'
+  exit 0
+fi
+
+# --- Escape for JSON ---
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+context="supeRpowers R plugin active.\\n${skills}Use /r-cmd-* workflow skills to start guided workflows, or /r-* knowledge skills for reference."
+escaped_context=$(escape_for_json "$context")
+
+# Platform-aware JSON output
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{\n  "additional_context": "%s"\n}\n' "$escaped_context"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -z "${COPILOT_CLI:-}" ]; then
+  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$escaped_context"
+else
+  printf '{\n  "additionalContext": "%s"\n}\n' "$escaped_context"
+fi
+
+exit 0

@@ -9,6 +9,7 @@ description: >
   readr, mutate, filter, pivot, join, reshape, stringr, forcats, lubridate, pipe.
   Do NOT use for statistical modeling or hypothesis testing — use r-stats instead.
   Do NOT use for performance optimization of large datasets — use r-performance instead.
+  For a guided analysis pipeline, invoke /r-cmd-analysis instead.
 ---
 
 # R Data Analysis

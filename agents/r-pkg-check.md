@@ -93,6 +93,15 @@ For every structural fix, give the exact command:
 - roxygen → `usethis::use_roxygen_md()`
 - GitHub Action → `usethis::use_github_action("check-standard")`
 
+## Escalation
+
+| Condition | Escalate to | Pass along |
+|-----------|-------------|------------|
+| Version conflict between packages that renv cannot resolve | r-dependency-manager | Conflicting package names + version requirements + full error text |
+| Code quality finding from check output (e.g., `no visible binding`, style issues in flagged files) | r-code-reviewer | File paths + specific findings from check output |
+
+When escalating, include the relevant R CMD check output section. The receiving agent reports back with a chain summary.
+
 ## Severity Guide
 
 | Category | Impact | Action Required |

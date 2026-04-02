@@ -114,6 +114,14 @@ Severity:
 
 **Basic apps:** Suggest migration to golem for non-trivial apps (>3 modules or production deployment).
 
+## Escalation
+
+| Condition | Escalate to | Pass along |
+|-----------|-------------|------------|
+| Implementation-level code quality issue (style violations, incorrect NSE usage, missing documentation) in module code | r-code-reviewer | File paths of modules with issues + specific concerns |
+
+Architecture-level issues (reactivity design, module boundaries, performance patterns) remain with this agent. Only escalate concrete code-level findings.
+
 ## Severity Guide
 
 | Severity | Criteria |

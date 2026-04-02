@@ -9,6 +9,7 @@ description: >
   shinytest2, deployment, server, ui, app, observe, render.
   Do NOT use for standalone ggplot2 plots — use r-visualization instead.
   Do NOT use for Quarto interactive documents — use r-quarto instead.
+  For a guided app scaffold workflow, invoke /r-cmd-shiny-app instead.
 ---
 
 # R Shiny
