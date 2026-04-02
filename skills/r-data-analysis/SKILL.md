@@ -26,6 +26,11 @@ hypothesis testing, mixed models), hand off to the **r-statistician** agent.
 If the r-statistician agent is not yet available, provide basic modeling
 guidance inline.
 
+**MCP integration (when R session available):**
+- Before joins or transformations: `btw_tool_env_describe_data_frame` to inspect column names, types, and dimensions of input data frames
+- Before referencing specific columns: verify they exist in the actual data, not just assumed from context
+- When uncertain about a function's arguments: `btw_tool_docs_help_page` to read installed docs
+
 ---
 
 ## Data Import with readr

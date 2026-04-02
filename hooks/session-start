@@ -56,6 +56,38 @@ if compgen -G "*.Rproj" >/dev/null 2>&1 || compgen -G "*.R" >/dev/null 2>&1 || [
   is_r_project=true
 fi
 
+# --- R session info ---
+# Capture R version, platform, and key package versions when Rscript is available.
+# This gives skills concrete version info so they know the actual API surface.
+r_session_info=""
+r_platform=""
+r_pkg_versions=""
+if command -v Rscript >/dev/null 2>&1; then
+  r_version=$(Rscript --vanilla -e 'cat(R.version$major, R.version$minor, sep=".")' 2>/dev/null || true)
+  if [ -n "$r_version" ]; then
+    r_platform=$(Rscript --vanilla -e 'cat(R.version$platform)' 2>/dev/null || true)
+    r_session_info="R ${r_version} detected. Platform: ${r_platform:-unknown}."
+    # Capture key tidyverse + infrastructure package versions
+    r_pkg_versions=$(Rscript --vanilla -e '
+      pkgs <- c("dplyr", "ggplot2", "tidyr", "purrr", "readr", "stringr",
+                "forcats", "lubridate", "shiny", "testthat", "gt", "targets")
+      installed <- pkgs[pkgs %in% rownames(installed.packages())]
+      if (length(installed) > 0) {
+        versions <- vapply(installed, \(p) as.character(packageVersion(p)), character(1))
+        cat(paste(installed, versions, sep = " "), sep = ", ")
+      }
+    ' 2>/dev/null || true)
+    if [ -n "$r_pkg_versions" ]; then
+      r_session_info="${r_session_info}\\n  Key packages: ${r_pkg_versions}"
+    fi
+  fi
+fi
+
+# Check for renv.lock to surface package versions hint
+if [ -f "renv.lock" ]; then
+  r_session_info="${r_session_info}\\n  renv.lock found — package versions locked."
+fi
+
 # --- Build context ---
 skills=""
 if [ "$is_r_package" = true ]; then
@@ -94,7 +126,11 @@ escape_for_json() {
   printf '%s' "$s"
 }
 
-context="supeRpowers R plugin active.\\n${skills}Use /r-cmd-* workflow skills to start guided workflows, or /r-* knowledge skills for reference."
+r_info=""
+if [ -n "$r_session_info" ]; then
+  r_info="${r_session_info}\\n"
+fi
+context="supeRpowers R plugin active.\\n${r_info}${skills}Use /r-cmd-* workflow skills to start guided workflows, or /r-* knowledge skills for reference.\\nTip: btw/mcptools MCP enhances all skills with live R session awareness."
 escaped_context=$(escape_for_json "$context")
 
 # Platform-aware JSON output

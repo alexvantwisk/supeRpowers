@@ -26,6 +26,10 @@ tidyverse/shiny conventions.
 review and reactivity audit. If the agent is not yet available, provide
 guidance inline.
 
+**MCP integration (when R session available):**
+- Before building UI for data display: `btw_tool_env_describe_data_frame` to inspect the data that will be rendered
+- When uncertain about Shiny or bslib functions: `btw_tool_docs_help_page` to check current API
+
 ---
 
 ## App Structure

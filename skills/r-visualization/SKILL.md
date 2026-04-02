@@ -20,6 +20,10 @@ graphics, with extensions for interactivity and domain-specific plots.
 
 **Agent dispatch:** Dispatch to **r-code-reviewer** for complex multi-panel figure review.
 
+**MCP integration (when R session available):**
+- Before writing ggplot code: `btw_tool_env_describe_data_frame` to check variable types and choose appropriate geoms (continuous vs discrete vs date)
+- When uncertain about a geom or scale function: `btw_tool_docs_help_page` to read current argument signatures
+
 ---
 
 ## ggplot2 Grammar of Graphics
