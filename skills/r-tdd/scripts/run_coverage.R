@@ -6,7 +6,7 @@ args <- commandArgs(trailingOnly = TRUE)
 pkg_path <- if (length(args) > 0) args[1] else "."
 
 if (!requireNamespace("covr", quietly = TRUE)) {
-  cli::cli_abort("Package {.pkg covr} is required. Install with {.code install.packages('covr')}")
+  stop("Package \"covr\" is required. Install with: install.packages(\"covr\")")
 }
 
 cov <- tryCatch(

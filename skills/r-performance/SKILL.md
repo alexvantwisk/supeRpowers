@@ -5,9 +5,11 @@ description: >
   methodology covering bench, profvis, data.table, vectorization, Rcpp,
   parallel processing, memory management, and proof-of-improvement benchmarks.
   Triggers: performance, optimization, profiling, benchmarking, data.table,
-  vectorization, Rcpp, parallel, memory, speed, slow code, large dataset.
+  vectorization, Rcpp, parallel, memory, speed, slow code, large dataset,
+  profile, bottleneck, too slow, out of memory.
   Do NOT use for general data wrangling at normal scale — use r-data-analysis instead.
   Do NOT use for debugging errors — use r-debugging instead.
+  Do NOT use for ML model performance metrics (accuracy, ROC, AUC) — use r-tidymodels instead.
 ---
 
 # R Performance Optimization

@@ -26,7 +26,7 @@ if (is.na(iterations) || iterations < 1) {
 tryCatch(
   {
     if (!requireNamespace("bench", quietly = TRUE)) {
-      stop("Package 'bench' is required. Install with: install.packages(\"bench\")")
+      stop("Package \"bench\" is required. Install with: install.packages(\"bench\")")
     }
     expr1 <- parse(text = expr1_str)
     expr2 <- parse(text = expr2_str)

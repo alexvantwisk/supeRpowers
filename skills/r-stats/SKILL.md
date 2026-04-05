@@ -7,7 +7,8 @@ description: >
   assumption checking, and effect-size reporting.
   Triggers: statistical model, hypothesis test, regression, ANOVA, t-test,
   chi-squared, lm, glm, mixed model, survival analysis, p-value, confidence
-  interval, diagnostics.
+  interval, diagnostics, significantly different, statistical test, odds ratio,
+  effect size, model assumptions, Cox model.
   Do NOT use for machine learning or predictive modeling — use r-tidymodels instead.
   Do NOT use for clinical trial-specific analysis — use r-clinical instead.
 ---

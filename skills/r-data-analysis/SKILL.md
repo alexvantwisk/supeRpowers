@@ -6,7 +6,8 @@ description: >
   expert guidance on tidy data principles, column manipulation, reshaping,
   joins, type conversion, string and date processing, and factor handling.
   Triggers: data wrangling, data cleaning, data transformation, dplyr, tidyr,
-  readr, mutate, filter, pivot, join, reshape, stringr, forcats, lubridate, pipe.
+  readr, mutate, filter, pivot, join, reshape, stringr, forcats, lubridate,
+  pipe, purrr, data manipulation, tidy data, clean data.
   Do NOT use for statistical modeling or hypothesis testing — use r-stats instead.
   Do NOT use for performance optimization of large datasets — use r-performance instead.
 ---

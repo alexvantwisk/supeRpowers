@@ -1,8 +1,7 @@
-# Synthesis & Skill-Creator Handoff Guide
+# Synthesis & Skill Drafting Guide
 
-How to take the four agent reports and prepare them as input for the
-**skill-creator** skill, which handles the actual skill drafting, testing,
-and iteration.
+How to take the four agent reports and synthesise them into a complete
+skill, following the SKILL.md format documented in CLAUDE.md.
 
 ## Synthesis Checklist
 
@@ -77,21 +76,22 @@ Create `reports/synthesis.md` with this structure:
 - references/patterns.md: extended workflow recipes
 - references/gotchas.md: complete edge-case + error message list
 
-## Quality Criteria for Skill-Creator Validation
+## Quality Criteria for Validation
 - All code examples match actual function signatures
 - Examples use the package's own idioms (pipe style, NSE)
 - No fabricated functions or parameters
 - Gotchas include real error messages
 ```
 
-### 5. Hand Off to Skill-Creator
+### 5. Draft the Skill
 
-Once `reports/synthesis.md` is ready, invoke the skill-creator skill with:
+Once `reports/synthesis.md` is ready, draft the skill manually using:
 
 1. The synthesis brief as the primary context
 2. All four agent reports as supplementary material
 3. The `pkg-inventory.json` for structured metadata
 4. The quality criteria listed in the synthesis brief
+5. The SKILL.md format and conventions from CLAUDE.md
 
-The skill-creator will handle: drafting, structuring, test case generation,
-evaluation, iteration, and packaging. Do not duplicate its work.
+After drafting, validate with the skill-auditor to ensure compliance with
+the 38-check rubric.

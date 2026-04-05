@@ -7,9 +7,11 @@ description: >
   assembly of a complete SKILL.md with references from any public R package
   repository.
   Triggers: generate skill, create skill from package, GitHub package, teach
-  Claude, learn package, reverse-engineer package, package skill, analyze R package.
-  Do NOT use for manually writing or editing skills — use skill-creator instead.
+  Claude a package from GitHub, learn package from repo, reverse-engineer package,
+  package skill, analyze R package.
+  Do NOT use for manually writing or editing skills — write the skill manually following the SKILL.md format in CLAUDE.md instead.
   Do NOT use for general R package development — use r-package-dev instead.
+  Do NOT use for learning how to use an R package — use the relevant domain skill (r-data-analysis, r-visualization, etc.) instead.
 ---
 
 # R Package Skill Generator
@@ -112,17 +114,10 @@ guidance.
 
 ## Step 4 — Hand Off to the Skill Creator
 
-**Do not write the skill manually.** Use the **skill-creator** skill to
-create and validate it. In Claude Code, invoke it via the Skill tool:
+Draft the skill manually using the synthesis brief and the structure below,
+following the SKILL.md format documented in CLAUDE.md.
 
-```
-Skill: example-skills:skill-creator
-```
-
-If the skill-creator is unavailable, draft the skill manually using the
-synthesis brief and the structure below.
-
-Pass the skill-creator the following context:
+Include the following context when drafting the skill:
 
 1. **What the skill should do**: "Teach Claude to be an expert at using
    the {package-name} R package. Claude should be able to write correct,
@@ -137,7 +132,7 @@ Pass the skill-creator the following context:
    - `$WORKDIR/reports/synthesis.md`
    - `$WORKDIR/pkg-inventory.json`
 
-3. **Suggested skill structure** (the skill-creator will refine):
+3. **Suggested skill structure**:
    - SKILL.md body: package overview, core concepts, top 10-15 functions,
      common patterns, gotchas, ecosystem notes
    - `references/api-reference.md`: full function catalogue
@@ -191,7 +186,7 @@ Is it a Bioconductor package?
 | Not checking if a skill already exists for the package | Generates a duplicate skill, wasting time and creating conflicts | Search `skills/` directory for existing `r-{package-name}` before starting |
 | Synthesis producing >300 lines in SKILL.md | Violates the 300-line budget; skill fails validation | Move detailed API reference, patterns, and gotchas into `references/` subdirectory |
 | Fabricating functions or parameters not in the package | Agents hallucinate plausible but non-existent API surface | Cross-check every function and argument against `man/` pages and NAMESPACE |
-| Writing the skill manually instead of using skill-creator | Bypasses the quality gates and structure the skill-creator enforces | Always hand off to skill-creator in Step 4; draft manually only if skill-creator is unavailable |
+| Skipping validation after manual drafting | Without review, the skill may violate line limits, conventions, or frontmatter format | Run the skill-auditor after drafting to validate against the 38-check rubric |
 
 ---
 
@@ -223,7 +218,7 @@ Step 3 — Synthesise
   Key patterns: agent pipeline, YAML-driven validation, informant reports
   Gotchas: agent vs informant confusion, YAML multiline quoting
 
-Step 4 — Hand Off to skill-creator
+Step 4 — Draft Skill
   Output: skills/r-pointblank/SKILL.md (182 lines)
           skills/r-pointblank/references/api-reference.md
           skills/r-pointblank/references/patterns.md
@@ -248,7 +243,7 @@ Step 3 — Synthesise
   Full 214-export catalogue in references/api-reference.md.
   Line count: SKILL.md = 278 lines (under 300 budget).
 
-Step 4 — Hand Off to skill-creator
+Step 4 — Draft Skill
   Output: skills/r-data-table/SKILL.md (278 lines)
           skills/r-data-table/references/api-reference.md (420 lines)
           skills/r-data-table/references/patterns.md
