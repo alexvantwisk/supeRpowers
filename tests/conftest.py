@@ -128,8 +128,8 @@ def extract_reference_pointers(skill_dir: Path) -> list[str]:
 def extract_agent_mentions(skill_dir: Path) -> list[str]:
     """Extract agent names mentioned in a SKILL.md (pattern: r-<name> agent)."""
     content = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
-    # Matches patterns like "r-code-reviewer agent", "r-statistician agent"
-    mentions = re.findall(r"\b(r-[\w-]+)\s+agent\b", content)
+    # Matches patterns like "r-code-reviewer agent", "**r-statistician** agent"
+    mentions = re.findall(r"\*{0,2}(r-[\w-]+)\*{0,2}\s+agent\b", content)
     return list(set(mentions))
 
 

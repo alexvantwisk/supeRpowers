@@ -9,6 +9,13 @@ import re
 from fnmatch import fnmatch
 from pathlib import Path
 
+# Valid optional frontmatter fields recognized by Claude Code skill system
+RECOGNIZED_OPTIONAL_FIELDS = {
+    "disable-model-invocation", "argument-hint", "user-invocable",
+    "allowed-tools", "model", "effort", "context", "agent", "hooks",
+    "paths", "shell",
+}
+
 from conftest import (
     AGENTS_DIR,
     CONVENTIONS_FILE,
@@ -49,11 +56,12 @@ def run_structural_tests() -> TestSuite:
         if not fm["found"]:
             continue
 
-        # Has exactly name + description (no extra fields)
+        # Has name + description, and any extra fields are recognized optional fields
+        unrecognized = [f for f in fm["other_fields"] if f not in RECOGNIZED_OPTIONAL_FIELDS]
         suite.add(
             f"frontmatter-fields/{skill_name}",
-            len(fm["other_fields"]) == 0 and fm["name"] is not None and fm["description"] is not None,
-            f"Extra fields: {fm['other_fields']}" if fm["other_fields"] else "Missing name or description",
+            len(unrecognized) == 0 and fm["name"] is not None and fm["description"] is not None,
+            f"Unrecognized fields: {unrecognized}" if unrecognized else "Missing name or description",
         )
 
         # Name matches directory

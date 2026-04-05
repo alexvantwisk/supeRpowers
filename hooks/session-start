@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# supeRpowers session-start hook
+# Detects R project type and prints context about relevant skills and agents.
+# Fires on: startup, resume, clear, compact.
+
+set -euo pipefail
+
+project_type="script"
+skills_hint=""
+agents_hint=""
+
+# Detect R package (has DESCRIPTION with Package: field)
+if [ -f "DESCRIPTION" ] && grep -q "^Package:" DESCRIPTION 2>/dev/null; then
+  project_type="package"
+  skills_hint="r-package-dev, r-tdd, r-debugging"
+  agents_hint="r-pkg-check, r-code-reviewer, r-dependency-manager"
+fi
+
+# Detect RStudio project
+if ls ./*.Rproj 1>/dev/null 2>&1; then
+  if [ "$project_type" = "script" ]; then
+    project_type="project"
+    skills_hint="r-data-analysis, r-visualization, r-stats"
+    agents_hint="r-statistician, r-code-reviewer"
+  fi
+fi
+
+# Detect targets pipeline
+if [ -f "_targets.R" ]; then
+  project_type="targets-pipeline"
+  skills_hint="r-targets, r-data-analysis, r-performance"
+  agents_hint="r-code-reviewer, r-dependency-manager"
+fi
+
+# Detect Shiny app
+if [ -f "app.R" ] || [ -f "server.R" ] || [ -f "ui.R" ]; then
+  project_type="shiny-app"
+  skills_hint="r-shiny, r-visualization, r-debugging"
+  agents_hint="r-shiny-architect, r-code-reviewer"
+fi
+
+# Detect Quarto project
+if [ -f "_quarto.yml" ] || ls ./*.qmd 1>/dev/null 2>&1; then
+  if [ "$project_type" = "script" ]; then
+    project_type="quarto"
+    skills_hint="r-quarto, r-visualization, r-tables"
+    agents_hint="r-code-reviewer"
+  fi
+fi
+
+# Detect clinical project markers
+if [ -f "DESCRIPTION" ] && grep -qE "pharmaverse|admiral|sdtm|adam" DESCRIPTION 2>/dev/null; then
+  project_type="clinical"
+  skills_hint="r-clinical, r-tables, r-stats"
+  agents_hint="r-statistician, r-code-reviewer"
+fi
+
+echo "R project detected: ${project_type}"
+if [ -n "$skills_hint" ]; then
+  echo "Recommended skills: ${skills_hint}"
+fi
+if [ -n "$agents_hint" ]; then
+  echo "Recommended agents: ${agents_hint}"
+fi

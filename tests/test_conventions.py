@@ -116,27 +116,27 @@ def run_convention_tests() -> TestSuite:
         for block_start, block in _extract_r_code_blocks(content):
             if _is_wrong_example_context(content, block_start):
                 continue
-            # Track cumulative paren depth across lines in the block
-            paren_depth = 0
+            # Track cumulative nesting depth across lines (parens and brackets)
+            nesting_depth = 0
             for j, line in enumerate(block.splitlines(), block_start + 1):
                 stripped = line.strip()
                 if not stripped or stripped.startswith("#"):
                     continue
-                # If we're inside unclosed parens from a previous line, this is a continuation
-                if paren_depth > 0:
-                    paren_depth += line.count("(") - line.count(")")
+                # If we're inside unclosed parens/brackets from a previous line, this is a continuation
+                if nesting_depth > 0:
+                    nesting_depth += (line.count("(") + line.count("[")) - (line.count(")") + line.count("]"))
                     continue
                 # Must be a top-level assignment: identifier = value at start of line
                 match = re.match(r"^(\w[\w.]*)\s*=\s+", stripped)
                 if match:
-                    # Count open/close parens on this line before the =
+                    # Count open/close parens and brackets on this line before the =
                     eq_idx = stripped.index("=")
                     before_eq = stripped[:eq_idx]
-                    local_depth = before_eq.count("(") - before_eq.count(")")
+                    local_depth = (before_eq.count("(") + before_eq.count("[")) - (before_eq.count(")") + before_eq.count("]"))
                     if local_depth <= 0:
                         assignment_violations.append(f"{f.relative_to(SKILLS_DIR.parent)}:{j}")
-                # Update paren depth for multi-line expressions
-                paren_depth += line.count("(") - line.count(")")
+                # Update nesting depth for multi-line expressions
+                nesting_depth += (line.count("(") + line.count("[")) - (line.count(")") + line.count("]"))
 
     suite.add(
         "no-equals-assignment-in-codeblocks",
