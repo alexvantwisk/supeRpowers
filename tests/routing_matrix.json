@@ -1,0 +1,339 @@
+[
+  {
+    "id": "route-001",
+    "prompt": "Fit a Cox proportional hazards model to my clinical trial data",
+    "expected_skill": "r-clinical",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "clinical trial",
+    "category": "survival-ambiguity"
+  },
+  {
+    "id": "route-002",
+    "prompt": "Fit a Cox model to customer churn time-to-event data",
+    "expected_skill": "r-stats",
+    "must_not_fire": ["r-clinical"],
+    "discriminator": "non-clinical context (customer churn)",
+    "category": "survival-ambiguity"
+  },
+  {
+    "id": "route-003",
+    "prompt": "Kaplan-Meier curve for overall survival in a Phase III trial",
+    "expected_skill": "r-clinical",
+    "must_not_fire": ["r-stats", "r-visualization"],
+    "discriminator": "Phase III trial + Kaplan-Meier",
+    "category": "survival-ambiguity"
+  },
+  {
+    "id": "route-004",
+    "prompt": "Survival analysis of machine failure times in a manufacturing plant",
+    "expected_skill": "r-stats",
+    "must_not_fire": ["r-clinical"],
+    "discriminator": "non-clinical context (manufacturing)",
+    "category": "survival-ambiguity"
+  },
+  {
+    "id": "route-005",
+    "prompt": "Generate a TLF package for regulatory submission to the FDA",
+    "expected_skill": "r-clinical",
+    "must_not_fire": ["r-tables"],
+    "discriminator": "regulatory + FDA",
+    "category": "survival-ambiguity"
+  },
+  {
+    "id": "route-006",
+    "prompt": "Fit a logistic regression to predict customer churn and optimize the classification threshold",
+    "expected_skill": "r-tidymodels",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "predict + optimize threshold = ML territory",
+    "category": "regression-ml-boundary"
+  },
+  {
+    "id": "route-007",
+    "prompt": "Fit a logistic regression and interpret the odds ratios with confidence intervals",
+    "expected_skill": "r-stats",
+    "must_not_fire": ["r-tidymodels"],
+    "discriminator": "interpret odds ratios = inference territory",
+    "category": "regression-ml-boundary"
+  },
+  {
+    "id": "route-008",
+    "prompt": "Compare linear model vs random forest for predicting house prices",
+    "expected_skill": "r-tidymodels",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "model comparison for prediction",
+    "category": "regression-ml-boundary"
+  },
+  {
+    "id": "route-009",
+    "prompt": "Is the coefficient for age statistically significant in my linear model?",
+    "expected_skill": "r-stats",
+    "must_not_fire": ["r-tidymodels"],
+    "discriminator": "statistical significance = inference",
+    "category": "regression-ml-boundary"
+  },
+  {
+    "id": "route-010",
+    "prompt": "Tune XGBoost hyperparameters with cross-validation using tidymodels",
+    "expected_skill": "r-tidymodels",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "tune + XGBoost + cross-validation",
+    "category": "regression-ml-boundary"
+  },
+  {
+    "id": "route-011",
+    "prompt": "Should I use ridge regression or lasso for feature selection in my predictive model?",
+    "expected_skill": "r-tidymodels",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "feature selection + predictive model",
+    "category": "regression-ml-boundary"
+  },
+  {
+    "id": "route-012",
+    "prompt": "Test if the mean response time is significantly different from zero",
+    "expected_skill": "r-stats",
+    "must_not_fire": ["r-tdd"],
+    "discriminator": "significantly different = hypothesis test, not unit test",
+    "category": "hypothesis-test-hijack"
+  },
+  {
+    "id": "route-013",
+    "prompt": "Write unit tests for my data cleaning function using testthat",
+    "expected_skill": "r-tdd",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "unit tests + testthat",
+    "category": "hypothesis-test-hijack"
+  },
+  {
+    "id": "route-014",
+    "prompt": "Run a chi-squared test on this contingency table of treatment outcomes",
+    "expected_skill": "r-stats",
+    "must_not_fire": ["r-tdd"],
+    "discriminator": "chi-squared test = statistical test",
+    "category": "hypothesis-test-hijack"
+  },
+  {
+    "id": "route-015",
+    "prompt": "Set up testthat 3rd edition for my R package with snapshot tests",
+    "expected_skill": "r-tdd",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "testthat setup = TDD, not statistics",
+    "category": "hypothesis-test-hijack"
+  },
+  {
+    "id": "route-016",
+    "prompt": "Clean this 500-row CSV and pivot from wide to long format",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": ["r-performance"],
+    "discriminator": "500 rows = normal scale, not performance",
+    "category": "data-scale-ambiguity"
+  },
+  {
+    "id": "route-017",
+    "prompt": "This dplyr pipeline takes 30 seconds on 10 million rows. How do I speed it up?",
+    "expected_skill": "r-performance",
+    "must_not_fire": ["r-data-analysis"],
+    "discriminator": "speed up + 10M rows = performance territory",
+    "category": "data-scale-ambiguity"
+  },
+  {
+    "id": "route-018",
+    "prompt": "Join two dataframes by customer_id and reshape the result to long format",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": ["r-performance"],
+    "discriminator": "join + reshape = data wrangling",
+    "category": "data-scale-ambiguity"
+  },
+  {
+    "id": "route-019",
+    "prompt": "Convert this dplyr code to data.table for better performance on large data",
+    "expected_skill": "r-performance",
+    "must_not_fire": ["r-data-analysis"],
+    "discriminator": "convert to data.table + performance",
+    "category": "data-scale-ambiguity"
+  },
+  {
+    "id": "route-020",
+    "prompt": "Process a 50GB parquet file efficiently without running out of memory",
+    "expected_skill": "r-performance",
+    "must_not_fire": ["r-data-analysis"],
+    "discriminator": "50GB + memory = performance territory",
+    "category": "data-scale-ambiguity"
+  },
+  {
+    "id": "route-021",
+    "prompt": "Create a new R package called mytools with the standard directory structure",
+    "expected_skill": "r-project-setup",
+    "must_not_fire": ["r-package-skill-generator"],
+    "discriminator": "create new package = setup, not skill generation",
+    "category": "package-overload"
+  },
+  {
+    "id": "route-022",
+    "prompt": "Add roxygen2 documentation to all exported functions in my package",
+    "expected_skill": "r-package-dev",
+    "must_not_fire": ["r-project-setup"],
+    "discriminator": "roxygen2 documentation = ongoing package dev",
+    "category": "package-overload"
+  },
+  {
+    "id": "route-023",
+    "prompt": "Generate a Claude skill from the janitor R package on GitHub",
+    "expected_skill": "r-package-skill-generator",
+    "must_not_fire": ["r-package-dev"],
+    "discriminator": "generate Claude skill from GitHub",
+    "category": "package-overload"
+  },
+  {
+    "id": "route-024",
+    "prompt": "Teach Claude about the pointblank R package from its GitHub repository",
+    "expected_skill": "r-package-skill-generator",
+    "must_not_fire": ["r-package-dev", "r-data-analysis"],
+    "discriminator": "teach Claude + GitHub repo = skill generation",
+    "category": "package-overload"
+  },
+  {
+    "id": "route-025",
+    "prompt": "Submit my R package to CRAN after fixing all R CMD check warnings",
+    "expected_skill": "r-package-dev",
+    "must_not_fire": ["r-project-setup"],
+    "discriminator": "CRAN submission = ongoing package dev, not setup",
+    "category": "package-overload"
+  },
+  {
+    "id": "route-026",
+    "prompt": "Scaffold a new Shiny app using the golem framework with standard modules",
+    "expected_skill": "r-project-setup",
+    "must_not_fire": ["r-shiny"],
+    "discriminator": "scaffold + new app = project setup",
+    "category": "package-overload"
+  },
+  {
+    "id": "route-027",
+    "prompt": "Write a Quarto vignette for my R package that demonstrates the main API",
+    "expected_skill": "r-package-dev",
+    "must_not_fire": ["r-quarto"],
+    "discriminator": "package vignette = package-dev territory per r-quarto boundary",
+    "category": "quarto-vignette"
+  },
+  {
+    "id": "route-028",
+    "prompt": "Create a Quarto presentation with revealjs slides for a conference talk",
+    "expected_skill": "r-quarto",
+    "must_not_fire": ["r-package-dev"],
+    "discriminator": "Quarto + revealjs + presentation",
+    "category": "quarto-vignette"
+  },
+  {
+    "id": "route-029",
+    "prompt": "Build a Quarto website for my analysis project with multiple pages",
+    "expected_skill": "r-quarto",
+    "must_not_fire": ["r-package-dev"],
+    "discriminator": "Quarto website, not package",
+    "category": "quarto-vignette"
+  },
+  {
+    "id": "route-030",
+    "prompt": "Create a Table 1 of baseline characteristics by treatment arm using gtsummary",
+    "expected_skill": "r-tables",
+    "must_not_fire": ["r-clinical"],
+    "discriminator": "gtsummary Table 1, no regulatory context",
+    "category": "table-viz-clinical"
+  },
+  {
+    "id": "route-031",
+    "prompt": "Create a demographics table formatted for FDA regulatory submission using CDISC ADaM",
+    "expected_skill": "r-clinical",
+    "must_not_fire": ["r-tables"],
+    "discriminator": "FDA + CDISC ADaM = clinical territory",
+    "category": "table-viz-clinical"
+  },
+  {
+    "id": "route-032",
+    "prompt": "Plot a bar chart of response rates by treatment group using ggplot2",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-tables"],
+    "discriminator": "plot + ggplot2 = visualization",
+    "category": "table-viz-clinical"
+  },
+  {
+    "id": "route-033",
+    "prompt": "Make a gt table with sparkline columns and conditional formatting for a report",
+    "expected_skill": "r-tables",
+    "must_not_fire": ["r-visualization"],
+    "discriminator": "gt + sparklines = tables territory",
+    "category": "table-viz-clinical"
+  },
+  {
+    "id": "route-034",
+    "prompt": "Debug why my Shiny app crashes immediately on load with an obscure error",
+    "expected_skill": "r-debugging",
+    "must_not_fire": ["r-shiny"],
+    "discriminator": "debug + crash + error = debugging, not Shiny architecture",
+    "category": "cross-domain"
+  },
+  {
+    "id": "route-035",
+    "prompt": "Profile my targets pipeline to find which target is the bottleneck",
+    "expected_skill": "r-performance",
+    "must_not_fire": ["r-targets"],
+    "discriminator": "profile + bottleneck = performance territory",
+    "category": "cross-domain"
+  },
+  {
+    "id": "route-036",
+    "prompt": "My ggplot code throws an error: object column_name not found",
+    "expected_skill": "r-debugging",
+    "must_not_fire": ["r-visualization"],
+    "discriminator": "error + not found = debugging territory",
+    "category": "cross-domain"
+  },
+  {
+    "id": "route-037",
+    "prompt": "Add test coverage for my Shiny module using shinytest2 and testthat",
+    "expected_skill": "r-tdd",
+    "must_not_fire": ["r-shiny"],
+    "discriminator": "test coverage + testthat = TDD territory",
+    "category": "cross-domain"
+  },
+  {
+    "id": "route-038",
+    "prompt": "Evaluate my tidymodels workflow performance with ROC-AUC and accuracy metrics",
+    "expected_skill": "r-tidymodels",
+    "must_not_fire": ["r-performance"],
+    "discriminator": "ROC-AUC + tidymodels = ML evaluation, not code perf",
+    "category": "cross-domain"
+  },
+  {
+    "id": "route-039",
+    "prompt": "Explain how to use dplyr effectively for data manipulation in R",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": ["r-package-skill-generator"],
+    "discriminator": "use dplyr = data analysis, not skill generation",
+    "category": "broad-trigger-hijack"
+  },
+  {
+    "id": "route-040",
+    "prompt": "Help me learn the purrr package for functional programming in R",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": ["r-package-skill-generator"],
+    "discriminator": "learn purrr = data analysis usage, not skill generation from GitHub",
+    "category": "broad-trigger-hijack"
+  },
+  {
+    "id": "route-041",
+    "prompt": "Audit my r-visualization skill against the quality rubric",
+    "expected_skill": "skill-auditor",
+    "must_not_fire": [],
+    "discriminator": "audit skill = skill-auditor",
+    "category": "broad-trigger-hijack"
+  },
+  {
+    "id": "route-042",
+    "prompt": "Review my R code for style issues and anti-patterns",
+    "expected_skill": null,
+    "expected_agent": "r-code-reviewer",
+    "must_not_fire": ["skill-auditor"],
+    "discriminator": "review R code = agent dispatch, not skill audit",
+    "category": "broad-trigger-hijack"
+  }
+]
