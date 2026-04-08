@@ -18,7 +18,7 @@ mtcars %>%
   summarise(mean_mpg = mean(mpg))
 ```
 
-If existing code uses `%>%`, match it for consistency but suggest migration to `|>`.
+If existing code uses `%>%`, migrate it to `|>` when touching that code.
 
 Note: `|>` requires R >= 4.1.0. The base pipe does not support the `.` placeholder — use anonymous functions instead: `x |> (\(d) lm(mpg ~ wt, data = d))()`.
 
@@ -36,7 +36,7 @@ Mention base R or data.table alternatives when they are genuinely better:
 - **Linter:** `lintr` with default tidyverse rules
 - **Naming:** `snake_case` for functions, variables, and file names
 - **Assignment:** `<-` for assignment, never `=`
-- **Strings:** Double quotes `"` preferred
+- **Strings:** Double quotes `"` always (single quotes only inside double-quoted strings)
 - **Line length:** 80 characters soft limit, 120 hard limit
 - **Spacing:** Space after commas, around `<-`, around infix operators
 
@@ -116,3 +116,44 @@ my_filter <- function(data, col_name, threshold) {
 - One primary function per file in `R/`, named to match: `my_function()` lives in `R/my-function.R`
 - Utility/helper functions can share a file: `R/utils.R`, `R/utils-validation.R`
 - Keep files under 400 lines. Extract if growing beyond that.
+
+## Quick Reference — Anti-Patterns
+
+| Never | Always |
+|-------|--------|
+| `sapply()` | `vapply()` or `purrr::map_*()` — type-safe |
+| `ifelse()` | `dplyr::if_else()` — preserves type, strict |
+| `T` / `F` | `TRUE` / `FALSE` — T and F can be overwritten |
+| `1:length(x)` | `seq_along(x)` — safe when `x` is empty |
+| `library()` in functions | `pkg::fn()` or `@importFrom` — explicit deps |
+| `setwd()` / `rm(list=ls())` | `here::here()` / restart R session |
+| Modify input in place | Return new object — immutability preferred |
+
+## Environment-Aware Coding
+
+When an R session is available via btw/mcptools:
+
+- **Before writing code:** Inspect data frames (`btw_tool_env_describe_data_frame`), check installed packages, read function docs
+- **When uncertain about a function:** Read the help page (`btw_tool_docs_help_page`) rather than guessing from training data
+- **After writing non-trivial code:** Run it and verify the output (see Verify After Write below)
+- **When recommending packages:** Check if they're installed first (`btw_tool_sessioninfo_is_package_installed`)
+
+These are enhancement behaviors. All conventions work without MCP — MCP makes them more precise.
+
+## Verify After Write
+
+For non-trivial R code (data transformations, model fits, table generation), verify output when an R session is available:
+
+1. Run the code via btw
+2. Check for errors and warnings
+3. Verify output dimensions and structure match expectations
+4. Fix issues before presenting to the user
+
+Skip verification for: simple one-liners, package scaffolding, configuration files, code that requires data not in the session.
+
+## Function Design
+
+- Prefer pure functions: same inputs → same outputs, no side effects
+- Use `withr::local_*()` / `withr::defer()` for temporary side effects (tempfiles, options, env vars)
+- Return values explicitly; use `invisible()` for side-effect functions
+- Keep functions under 50 lines; extract helpers when growing beyond that

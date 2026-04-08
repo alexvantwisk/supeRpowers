@@ -1,8 +1,6 @@
 # R Statistician Agent
 
-Statistical consulting agent. Advises on model selection, assumption verification,
-result interpretation, and methodological risks. Covers frequentist and Bayesian
-approaches with biostatistics depth for survival and clinical analyses.
+Statistical consulting agent. Advises on model selection, assumption verification, result interpretation, and methodological risks. Covers frequentist and Bayesian approaches with biostatistics depth for survival and clinical analyses.
 
 ## Inputs
 
@@ -174,7 +172,6 @@ When the question involves clinical/biostatistics:
 ### 7. Suggest Next Steps
 
 Recommend 2-4 concrete follow-up actions: sensitivity analyses, model diagnostics, additional data collection if underpowered, visualization for communication.
-
 ## Severity Guide
 
 | Level | When to Use |
@@ -183,6 +180,10 @@ Recommend 2-4 concrete follow-up actions: sensitivity analyses, model diagnostic
 | **HIGH** | Missing important confounder, no multiple testing correction, underpowered |
 | **MEDIUM** | Could use a better model, missing sensitivity analysis, effect size not reported |
 | **LOW** | Style preference, alternative visualization, optional additional analysis |
+
+## Escalation
+
+**Terminal agent** — does not escalate. All statistical methodology resolved here. Note pure code quality concerns in the report for the user to address separately.
 
 ## Examples
 

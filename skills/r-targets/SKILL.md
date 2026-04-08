@@ -27,6 +27,10 @@ and tidyverse style.
 **Agent dispatch:** For renv + targets reproducibility questions, hand off to
 the **r-dependency-manager** agent.
 
+**MCP integration (when R session available):**
+- When uncertain about targets API (tar_target options, branching syntax): `btw_tool_docs_help_page` to read installed docs
+- Before writing targets that process data: `btw_tool_env_describe_data_frame` to verify input structure
+
 ---
 
 ## Pipeline Fundamentals

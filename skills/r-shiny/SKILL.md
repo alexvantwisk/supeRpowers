@@ -9,6 +9,7 @@ description: >
   shinytest2, deployment, server, ui, app, observe, render.
   Do NOT use for standalone ggplot2 plots — use r-visualization instead.
   Do NOT use for Quarto interactive documents — use r-quarto instead.
+  For a guided app scaffold workflow, invoke /r-cmd-shiny-app instead.
 ---
 
 # R Shiny
@@ -24,6 +25,10 @@ tidyverse/shiny conventions.
 **Agent dispatch:** Dispatch to **r-shiny-architect** agent for app structure
 review and reactivity audit. If the agent is not yet available, provide
 guidance inline.
+
+**MCP integration (when R session available):**
+- Before building UI for data display: `btw_tool_env_describe_data_frame` to inspect the data that will be rendered
+- When uncertain about Shiny or bslib functions: `btw_tool_docs_help_page` to check current API
 
 ---
 

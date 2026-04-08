@@ -1,180 +1,145 @@
 #!/usr/bin/env bash
-# supeRpowers session-start hook
-# Detects R project type and prints context about relevant skills and agents.
-# Fires on: startup, resume, clear, compact.
+# SessionStart hook for supeRpowers plugin
+# Detects R project type and surfaces relevant skills and agents.
 
 set -euo pipefail
 
-project_type="script"
-skills_hint=""
-agents_hint=""
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# Detect R package (has DESCRIPTION with Package: field)
-if [ -f "DESCRIPTION" ] && grep -q "^Package:" DESCRIPTION 2>/dev/null; then
-  project_type="package"
-  skills_hint="r-package-dev, r-tdd, r-debugging"
-  agents_hint="r-pkg-check, r-code-reviewer, r-dependency-manager"
+# --- Detection flags ---
+is_r_package=false
+is_shiny=false
+is_quarto=false
+is_targets=false
+is_clinical=false
+is_r_project=false
+
+# R Package: DESCRIPTION + (R/ or NAMESPACE)
+if [ -f "DESCRIPTION" ] && { [ -d "R" ] || [ -f "NAMESPACE" ]; }; then
+  is_r_package=true
 fi
 
-# Detect RStudio project
-if ls ./*.Rproj 1>/dev/null 2>&1; then
-  if [ "$project_type" = "script" ]; then
-    project_type="project"
-    skills_hint="r-data-analysis, r-visualization, r-stats"
-    agents_hint="r-statistician, r-code-reviewer"
-  fi
+# Shiny App: app.R, ui.R+server.R, golem, or rhino
+if [ -f "app.R" ] || { [ -f "ui.R" ] && [ -f "server.R" ]; }; then
+  is_shiny=true
+fi
+if [ "$is_r_package" = true ] && [ -f "inst/golem-config.yml" ]; then
+  is_shiny=true
+fi
+if [ -f "rhino.yml" ]; then
+  is_shiny=true
 fi
 
-# Detect targets pipeline
+# Quarto project
+if [ -f "_quarto.yml" ]; then
+  is_quarto=true
+fi
+
+# Targets pipeline
 if [ -f "_targets.R" ]; then
-  project_type="targets-pipeline"
-  skills_hint="r-targets, r-data-analysis, r-performance"
-  agents_hint="r-code-reviewer, r-dependency-manager"
+  is_targets=true
 fi
 
-# Detect Shiny app
-if [ -f "app.R" ] || [ -f "server.R" ] || [ -f "ui.R" ]; then
-  project_type="shiny-app"
-  skills_hint="r-shiny, r-visualization, r-debugging"
-  agents_hint="r-shiny-architect, r-code-reviewer"
-fi
-
-# Detect Quarto project
-if [ -f "_quarto.yml" ] || ls ./*.qmd 1>/dev/null 2>&1; then
-  if [ "$project_type" = "script" ]; then
-    project_type="quarto"
-    skills_hint="r-quarto, r-visualization, r-tables"
-    agents_hint="r-code-reviewer"
+# Clinical/Pharma: admiral/pharmaverse in DESCRIPTION, or adam/sdtm dirs
+if [ "$is_r_package" = true ] && [ -f "DESCRIPTION" ]; then
+  if grep -qiE 'admiral|pharmaverse|sdtm\.oak|sdtm\b|adam' "DESCRIPTION" 2>/dev/null; then
+    is_clinical=true
   fi
 fi
-
-# Detect clinical project markers
-if [ -f "DESCRIPTION" ] && grep -qE "pharmaverse|admiral|sdtm|adam" DESCRIPTION 2>/dev/null; then
-  project_type="clinical"
-  skills_hint="r-clinical, r-tables, r-stats"
-  agents_hint="r-statistician, r-code-reviewer"
+if [ -d "adam" ] || [ -d "sdtm" ] || [ -d "ADAM" ] || [ -d "SDTM" ]; then
+  is_clinical=true
 fi
 
-# ---------------------------------------------------------------------------
-# Extraction phase: gather compact project metadata
-# Budget: ~12 lines worst-case. Each feature degrades gracefully.
-# ---------------------------------------------------------------------------
+# General R project: .Rproj, .R files, or R/ dir (but not already a package)
+if compgen -G "*.Rproj" >/dev/null 2>&1 || compgen -G "*.R" >/dev/null 2>&1 || [ -d "R" ]; then
+  is_r_project=true
+fi
 
-desc_summary=""
-desc_r_dep=""
-desc_imports=""
-ns_exports=""
-renv_r_version=""
-test_inventory=""
-renv_packages=""
-
-# 1. DESCRIPTION summary (package projects)
-if [ -f "DESCRIPTION" ] && grep -q "^Package:" DESCRIPTION 2>/dev/null; then
-  pkg_name=$(grep "^Package:" DESCRIPTION 2>/dev/null | sed 's/^Package: *//')
-  pkg_version=$(grep "^Version:" DESCRIPTION 2>/dev/null | sed 's/^Version: *//')
-  pkg_title=$(grep "^Title:" DESCRIPTION 2>/dev/null | sed 's/^Title: *//')
-  if [ -n "$pkg_name" ]; then
-    desc_summary="${pkg_name} ${pkg_version} — \"${pkg_title}\""
-  fi
-
-  # R version dependency from Depends field
-  r_dep=$(sed -n '/^Depends:/,/^[^ ]/p' DESCRIPTION 2>/dev/null | sed '$d' | tr '\n' ' ' | grep -oE 'R \([^)]+\)' 2>/dev/null)
-  if [ -n "$r_dep" ]; then
-    desc_r_dep=$(echo "$r_dep" | sed 's/R (\(.*\))/\1/')
-  fi
-
-  # Imports list (handles continuation lines)
-  raw_imports=$(sed -n '/^Imports:/,/^[^ ]/p' DESCRIPTION 2>/dev/null | sed '$d' | sed 's/^Imports://' | tr -d ' \n' | tr ',' '\n' | sed '/^$/d' | sort)
-  if [ -n "$raw_imports" ]; then
-    import_count=$(echo "$raw_imports" | wc -l | tr -d ' ')
-    if [ "$import_count" -gt 15 ]; then
-      overflow=$((import_count - 15))
-      desc_imports="$(echo "$raw_imports" | head -15 | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g'), ... (+${overflow} more)"
-    else
-      desc_imports=$(echo "$raw_imports" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
+# --- R session info ---
+# Capture R version, platform, and key package versions when Rscript is available.
+# This gives skills concrete version info so they know the actual API surface.
+r_session_info=""
+r_platform=""
+r_pkg_versions=""
+if command -v Rscript >/dev/null 2>&1; then
+  r_version=$(Rscript --vanilla -e 'cat(R.version$major, R.version$minor, sep=".")' 2>/dev/null || true)
+  if [ -n "$r_version" ]; then
+    r_platform=$(Rscript --vanilla -e 'cat(R.version$platform)' 2>/dev/null || true)
+    r_session_info="R ${r_version} detected. Platform: ${r_platform:-unknown}."
+    # Capture key tidyverse + infrastructure package versions
+    r_pkg_versions=$(Rscript --vanilla -e '
+      pkgs <- c("dplyr", "ggplot2", "tidyr", "purrr", "readr", "stringr",
+                "forcats", "lubridate", "shiny", "testthat", "gt", "targets")
+      installed <- pkgs[pkgs %in% rownames(installed.packages())]
+      if (length(installed) > 0) {
+        versions <- vapply(installed, \(p) as.character(packageVersion(p)), character(1))
+        cat(paste(installed, versions, sep = " "), sep = ", ")
+      }
+    ' 2>/dev/null || true)
+    if [ -n "$r_pkg_versions" ]; then
+      r_session_info="${r_session_info}\\n  Key packages: ${r_pkg_versions}"
     fi
   fi
 fi
 
-# 2. NAMESPACE exports (package projects)
-if [ -f "NAMESPACE" ]; then
-  raw_exports=$(grep "^export(" NAMESPACE 2>/dev/null | sed 's/export(//;s/)//' | sort)
-  export_pattern=$(grep "^exportPattern(" NAMESPACE 2>/dev/null | sed 's/exportPattern(//;s/)//' | head -1)
-  if [ -n "$raw_exports" ]; then
-    export_count=$(echo "$raw_exports" | wc -l | tr -d ' ')
-    if [ "$export_count" -gt 20 ]; then
-      overflow=$((export_count - 20))
-      ns_exports="$(echo "$raw_exports" | head -20 | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g'), ... (+${overflow} more)"
-    else
-      ns_exports=$(echo "$raw_exports" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
-    fi
-  elif [ -n "$export_pattern" ]; then
-    ns_exports="pattern: ${export_pattern}"
-  fi
-fi
-
-# 3. renv R version
+# Check for renv.lock to surface package versions hint
 if [ -f "renv.lock" ]; then
-  renv_r_version=$(grep -A1 '"R"' renv.lock 2>/dev/null | grep -o '"Version": *"[^"]*"' | sed 's/"Version": *"//;s/"//')
+  r_session_info="${r_session_info}\\n  renv.lock found — package versions locked."
 fi
 
-# 4. Test file inventory (package projects)
-if [ -d "tests/testthat" ]; then
-  raw_tests=$(ls tests/testthat/ 2>/dev/null | grep "^test-" | sed 's/\.R$//')
-  if [ -n "$raw_tests" ]; then
-    test_count=$(echo "$raw_tests" | wc -l | tr -d ' ')
-    if [ "$test_count" -gt 10 ]; then
-      overflow=$((test_count - 10))
-      test_inventory="$(echo "$raw_tests" | head -10 | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g'), ... (+${overflow} more)"
-    else
-      test_inventory=$(echo "$raw_tests" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
-    fi
-  fi
+# --- Build context ---
+skills=""
+if [ "$is_r_package" = true ]; then
+  skills="${skills}R package detected. Key skills: /r-package-dev, /r-tdd, /r-cmd-pkg-release, /r-cmd-tdd-cycle. Agents: r-pkg-check, r-code-reviewer, r-dependency-manager.\\n"
+fi
+if [ "$is_shiny" = true ]; then
+  skills="${skills}Shiny app detected. Key skills: /r-shiny, /r-cmd-shiny-app. Agent: r-shiny-architect.\\n"
+fi
+if [ "$is_quarto" = true ]; then
+  skills="${skills}Quarto project detected. Key skill: /r-quarto.\\n"
+fi
+if [ "$is_targets" = true ]; then
+  skills="${skills}Targets pipeline detected. Key skill: /r-targets.\\n"
+fi
+if [ "$is_clinical" = true ]; then
+  skills="${skills}Clinical/pharma project detected. Key skill: /r-clinical. Agent: r-statistician.\\n"
+fi
+if [ "$is_r_project" = true ] && [ "$is_r_package" = false ]; then
+  skills="${skills}R project detected. Key skills: /r-data-analysis, /r-visualization, /r-stats, /r-cmd-analysis. Agent: r-statistician.\\n"
 fi
 
-# 5. renv package summary (non-package projects only)
-if [ -f "renv.lock" ] && [ "$project_type" != "package" ] && [ "$project_type" != "clinical" ]; then
-  raw_pkgs=$(grep -o '"Package": *"[^"]*"' renv.lock 2>/dev/null | sed 's/"Package": *"//;s/"//' | sort)
-  if [ -n "$raw_pkgs" ]; then
-    pkg_count=$(echo "$raw_pkgs" | wc -l | tr -d ' ')
-    if [ "$pkg_count" -gt 15 ]; then
-      overflow=$((pkg_count - 15))
-      renv_packages="$(echo "$raw_pkgs" | head -15 | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g'), ... (+${overflow} more)"
-    else
-      renv_packages=$(echo "$raw_pkgs" | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
-    fi
-  fi
+# Nothing detected — exit silently
+if [ -z "$skills" ]; then
+  echo '{}'
+  exit 0
 fi
 
-# ---------------------------------------------------------------------------
-# Output phase
-# ---------------------------------------------------------------------------
+# --- Escape for JSON ---
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
 
-echo "R project detected: ${project_type}"
-if [ -n "$skills_hint" ]; then
-  echo "Recommended skills: ${skills_hint}"
+r_info=""
+if [ -n "$r_session_info" ]; then
+  r_info="${r_session_info}\\n"
 fi
-if [ -n "$agents_hint" ]; then
-  echo "Recommended agents: ${agents_hint}"
+context="supeRpowers R plugin active.\\n${r_info}${skills}Use /r-cmd-* workflow skills to start guided workflows, or /r-* knowledge skills for reference.\\nTip: btw/mcptools MCP enhances all skills with live R session awareness."
+escaped_context=$(escape_for_json "$context")
+
+# Platform-aware JSON output
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{\n  "additional_context": "%s"\n}\n' "$escaped_context"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -z "${COPILOT_CLI:-}" ]; then
+  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$escaped_context"
+else
+  printf '{\n  "additionalContext": "%s"\n}\n' "$escaped_context"
 fi
-if [ -n "$desc_summary" ]; then
-  echo "Package: ${desc_summary}"
-fi
-if [ -n "$desc_r_dep" ]; then
-  echo "R dependency: ${desc_r_dep}"
-fi
-if [ -n "$desc_imports" ]; then
-  echo "Imports: ${desc_imports}"
-fi
-if [ -n "$ns_exports" ]; then
-  echo "Exports: ${ns_exports}"
-fi
-if [ -n "$renv_r_version" ]; then
-  echo "renv R version: ${renv_r_version}"
-fi
-if [ -n "$test_inventory" ]; then
-  echo "Tests: ${test_inventory}"
-fi
-if [ -n "$renv_packages" ]; then
-  echo "renv packages: ${renv_packages}"
-fi
+
+exit 0

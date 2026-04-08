@@ -28,6 +28,11 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 This skill covers *how* to implement models with tidymodels, not *which* model is
 statistically appropriate.
 
+**MCP integration (when R session available):**
+- Before specifying a parsnip model engine: `btw_tool_sessioninfo_is_package_installed` to verify the engine package is installed
+- Before writing recipe steps: `btw_tool_env_describe_data_frame` to inspect predictor types and choose appropriate preprocessing
+- When uncertain about recipe step or tune function arguments: `btw_tool_docs_help_page` to read installed docs
+
 > **Boundary:** Prediction performance and ML tuning workflows. For inferential statistics and coefficient interpretation, use r-stats instead. For clinical trial endpoints, use r-clinical instead.
 
 ---

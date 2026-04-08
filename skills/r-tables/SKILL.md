@@ -20,6 +20,10 @@ gtsummary, gtExtras, and reactable. All code uses base pipe `|>` and `<-`.
 
 **Agent dispatch:** For statistical table review, dispatch to **r-statistician** agent. For code quality, dispatch to **r-code-reviewer** agent.
 
+**MCP integration (when R session available):**
+- Before designing a table: `btw_tool_env_describe_data_frame` to inspect column names, types, and cardinality for grouping/stratification decisions
+- When uncertain about gt or gtsummary functions: `btw_tool_docs_help_page` to check current API and arguments
+
 **Lazy references:**
 - Read `references/gtsummary-themes.md` for journal themes, custom theme creation, and statistic display patterns
 - Read `references/gt-formatting-patterns.md` for conditional formatting, embedded plots, and export workflows

@@ -10,6 +10,7 @@ description: >
   pipe, purrr, data manipulation, tidy data, clean data.
   Do NOT use for statistical modeling or hypothesis testing — use r-stats instead.
   Do NOT use for performance optimization of large datasets — use r-performance instead.
+  For a guided analysis pipeline, invoke /r-cmd-analysis instead.
 ---
 
 # R Data Analysis
@@ -25,6 +26,11 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 hypothesis testing, mixed models), hand off to the **r-statistician** agent.
 If the r-statistician agent is not yet available, provide basic modeling
 guidance inline.
+
+**MCP integration (when R session available):**
+- Before joins or transformations: `btw_tool_env_describe_data_frame` to inspect column names, types, and dimensions of input data frames
+- Before referencing specific columns: verify they exist in the actual data, not just assumed from context
+- When uncertain about a function's arguments: `btw_tool_docs_help_page` to read installed docs
 
 ---
 

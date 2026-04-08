@@ -195,6 +195,12 @@ grViz("
 All MCP features below are **optional** — the skill works fully without them.
 Use when connected MCP servers are available.
 
+### btw/mcptools (R session awareness)
+
+- Before recommending admiral/pharmaverse functions: `btw_tool_sessioninfo_is_package_installed` to verify the package is available
+- Before writing CDISC transformations: `btw_tool_env_describe_data_frame` to inspect actual dataset structure (variable names, types, expected CDISC domains)
+- When uncertain about admiral function arguments: `btw_tool_docs_help_page` to read installed docs
+
 ### Clinical Trials MCP
 
 ```

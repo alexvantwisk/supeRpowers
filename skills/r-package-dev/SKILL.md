@@ -9,6 +9,7 @@ description: >
   pkgdown, CRAN submission, vignette, R CMD check, package development.
   Do NOT use for initial project scaffolding only — use r-project-setup instead.
   Do NOT use for writing package tests — use r-tdd instead.
+  For a guided release workflow, invoke /r-cmd-pkg-release instead.
 ---
 
 # R Package Development
@@ -25,6 +26,11 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 **Agent dispatch:**
 - Dispatch to **r-pkg-check** agent after `devtools::check()` for deep issue resolution
 - Dispatch to **r-dependency-manager** agent for dependency questions
+
+**MCP integration (when R session available):**
+- Before writing or updating roxygen2 docs: `btw_tool_docs_help_page` to read existing documentation for the function
+- When working on exports or NAMESPACE: `btw_tool_docs_package_help_topics` to see the full list of exported functions
+- Before adding a dependency: `btw_tool_sessioninfo_is_package_installed` to check if it's already available
 
 ---
 
@@ -213,12 +219,7 @@ usethis::use_github_action("lint")              # lintr checks
 
 These create `.github/workflows/*.yaml` files. The `check-standard` action
 runs `R CMD check` on ubuntu, macOS, and Windows with current R and R-devel.
-
-Add status badges:
-
-```r
-usethis::use_github_actions_badge("R-CMD-check")
-```
+Add status badges with `usethis::use_github_actions_badge("R-CMD-check")`.
 
 ---
 

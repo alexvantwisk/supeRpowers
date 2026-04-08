@@ -25,6 +25,11 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 **Agent dispatch:** For methodology questions, assumption audits, or interpreting
 complex outputs, dispatch to the **r-statistician** agent.
 
+**MCP integration (when R session available):**
+- Before recommending a model from a specific package: `btw_tool_sessioninfo_is_package_installed` to verify availability
+- When choosing between model families: `btw_tool_docs_help_page` to read the actual function signatures and arguments
+- Before fitting a model: `btw_tool_env_describe_data_frame` to check outcome variable type and sample size
+
 ---
 
 ## Linear Models & Diagnostics
