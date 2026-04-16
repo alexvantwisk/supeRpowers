@@ -1,13 +1,13 @@
 # R Class Systems Guide
 
-Detailed comparison of S3, S4, R7, and R6 with constructors, methods, and usage
+Detailed comparison of S3, S4, S7, and R6 with constructors, methods, and usage
 examples for each system.
 
 **Sources:**
 - Advanced R 2e ch. 12 "Base types" through ch. 16 "Trade-offs" — <https://adv-r.hadley.nz/oo.html>
 - S3: Advanced R ch. 13 — <https://adv-r.hadley.nz/s3.html>
 - S4: Advanced R ch. 15 — <https://adv-r.hadley.nz/s4.html>
-- R7 package — <https://rconsortium.github.io/S7/> (R7 was renamed to S7)
+- S7 package (formerly R7) — <https://rconsortium.github.io/S7/>
 - R6 package — <https://r6.r-lib.org/>
 - `?methods::setClass`, `?methods::setGeneric`
 - Bioconductor S4 guidance — <https://contributions.bioconductor.org/r-code.html>
@@ -22,7 +22,7 @@ Need mutable state (caching, connections, environments)?
   NO  -> Is this a Bioconductor package or formal interface contract?
     YES -> S4
     NO  -> Greenfield project wanting modern features?
-      YES -> R7 (if stable enough for your timeline)
+      YES -> S7 (if stable enough for your timeline)
       NO  -> S3 (default choice for most packages)
 ```
 
@@ -201,15 +201,20 @@ instead of `inherits()`, define generics with `setGeneric()`.
 
 ---
 
-## R7 — Modern Successor to S3/S4
+## S7 — Modern Successor to S3/S4
 
-Developed by the R Consortium as a unification of S3 and S4. Available via the
-`R7` package. Best for greenfield projects with no Bioconductor dependency.
+Developed by the R Consortium as a unification of S3 and S4. Available via
+the `S7` package on CRAN. Best for greenfield projects with no Bioconductor
+dependency.
+
+The project was initially released under the name `R7` and renamed to `S7`
+before its 0.1.0 CRAN release. Older blog posts and tutorials may still use
+`library(R7)`; the API is unchanged — just install and load `S7` instead.
 
 ### Class Definition
 
 ```r
-library(R7)
+library(S7)
 
 temperature <- new_class("temperature",
   properties = list(
@@ -257,8 +262,11 @@ convert(temp, to = "fahrenheit")
 **Key features:** Properties (not slots or attributes), built-in validation,
 compatible with S3 generics, cleaner syntax than S4.
 
-**Caveat:** R7 is maturing but not yet required by any major ecosystem. Check
-current stability before adopting for CRAN packages.
+**Caveat:** S7 is maturing and intended to eventually land in base R, but is
+not yet required by any major ecosystem. Check current stability and CRAN
+policy before adopting for a package you plan to submit.
+
+**DESCRIPTION:** `Imports: S7` (CRAN) — not `R7`.
 
 ---
 
@@ -332,7 +340,7 @@ state is genuinely needed. Most packages should prefer S3.
 
 ## Comparison Summary
 
-| Feature | S3 | S4 | R7 | R6 |
+| Feature | S3 | S4 | S7 | R6 |
 |---------|----|----|----|----|
 | Complexity | Low | High | Medium | Medium |
 | Formal definition | No | Yes | Yes | Yes |

@@ -209,7 +209,7 @@ NULL
 
 ---
 
-## S3 / S4 / R7 Tags
+## S3 / S4 / S7 Tags
 
 ### `@method generic class`
 

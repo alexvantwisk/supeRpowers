@@ -23,7 +23,7 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 - `references/description-fields.md` — every DESCRIPTION field, valid values, CRAN-safe templates
 - `references/roxygen2-tags.md` — complete roxygen2 tag reference with examples
 - `references/namespace-patterns.md` — `@importFrom` vs `::`, re-exports, conflict resolution
-- `references/class-systems-guide.md` — S3, S4, R7, R6 comparison with decision tree
+- `references/class-systems-guide.md` — S3, S4, S7, R6 comparison with decision tree
 - `references/pkgdown-site-config.md` — `_pkgdown.yml` layout, theming, GitHub Pages deploy
 - `references/r-cmd-check-troubleshooting.md` — every common ERROR/WARNING/NOTE and how to fix it
 - `references/cran-submission-checklist.md` — step-by-step CRAN submission workflow
@@ -142,7 +142,7 @@ existing package with `Rscript scripts/audit_deps.R .`.
 |--------|-------------|-----------|
 | **S3** | Most packages | Simple, informal, `UseMethod()` dispatch |
 | **S4** | Bioconductor, formal interfaces | Slots, validity, multiple dispatch |
-| **R7** | Greenfield projects | Modern S3/S4 successor, properties |
+| **S7** | Greenfield projects | Modern S3/S4 successor, properties |
 | **R6** | Mutable state (caching, connections) | Reference semantics, `$new()` |
 
 Read `references/class-systems-guide.md` for constructors, methods, and
