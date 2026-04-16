@@ -3,6 +3,15 @@
 Detailed comparison of S3, S4, R7, and R6 with constructors, methods, and usage
 examples for each system.
 
+**Sources:**
+- Advanced R 2e ch. 12 "Base types" through ch. 16 "Trade-offs" — <https://adv-r.hadley.nz/oo.html>
+- S3: Advanced R ch. 13 — <https://adv-r.hadley.nz/s3.html>
+- S4: Advanced R ch. 15 — <https://adv-r.hadley.nz/s4.html>
+- R7 package — <https://rconsortium.github.io/S7/> (R7 was renamed to S7)
+- R6 package — <https://r6.r-lib.org/>
+- `?methods::setClass`, `?methods::setGeneric`
+- Bioconductor S4 guidance — <https://contributions.bioconductor.org/r-code.html>
+
 ---
 
 ## Decision Tree

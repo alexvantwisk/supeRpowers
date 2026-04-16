@@ -4,6 +4,15 @@ Build and deploy a professional package website with pkgdown. Covers
 `_pkgdown.yml` structure, reference organisation, vignette integration,
 theming, and GitHub Pages deployment.
 
+**Sources:**
+- pkgdown documentation — <https://pkgdown.r-lib.org/>
+- `vignette("customise", package = "pkgdown")` — site customisation
+- `vignette("how-to-update-released-site")` — release workflow
+- `vignette("linking", package = "pkgdown")` — cross-references
+- bslib (Bootstrap theming) — <https://rstudio.github.io/bslib/>
+- Bootswatch themes — <https://bootswatch.com/>
+- r-lib/actions (`pkgdown` workflow) — <https://github.com/r-lib/actions/tree/v2/examples>
+
 ---
 
 ## Setup

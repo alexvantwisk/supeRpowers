@@ -5,6 +5,13 @@ Uses `revdepcheck` to install and check every CRAN/Bioconductor/GitHub
 package that depends on yours against both the CRAN release and your
 proposed update.
 
+**Sources:**
+- revdepcheck package — <https://github.com/r-lib/revdepcheck>
+- R Packages 2e ch. 22 "Releasing to CRAN" (revdep section) — <https://r-pkgs.org/release.html#reverse-dependency-checks>
+- CRAN Repository Policy (reverse-dep expectations) — <https://cran.r-project.org/web/packages/policies.html>
+- lifecycle package (deprecation) — <https://lifecycle.r-lib.org/>
+- `?tools::check_packages_in_dir` (base R alternative)
+
 ---
 
 ## When to Run revdep Checks

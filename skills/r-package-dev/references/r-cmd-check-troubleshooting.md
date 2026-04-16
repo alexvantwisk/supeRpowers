@@ -4,6 +4,14 @@ Every ERROR, WARNING, and NOTE you will see from `devtools::check()`,
 grouped by what triggers them and how to fix. Ordered roughly by
 frequency.
 
+**Sources:**
+- Writing R Extensions §1 "Creating R packages" — <https://cran.r-project.org/doc/manuals/r-release/R-exts.html>
+- CRAN Repository Policy — <https://cran.r-project.org/web/packages/policies.html>
+- R Packages 2e ch. 20 "R CMD check" — <https://r-pkgs.org/R-CMD-check.html>
+- rhub documentation — <https://r-hub.github.io/rhub/>
+- urlchecker — <https://github.com/r-lib/urlchecker>
+- `?tools::check` and `?R CMD check --help`
+
 ---
 
 ## ERRORs — Block Release

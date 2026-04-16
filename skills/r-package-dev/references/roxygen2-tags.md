@@ -3,6 +3,14 @@
 Complete reference for roxygen2 tags with examples. Markdown mode enabled
 via `Roxygen: list(markdown = TRUE)` in `DESCRIPTION`.
 
+**Sources:**
+- roxygen2 documentation — <https://roxygen2.r-lib.org/>
+- `vignette("rd", package = "roxygen2")` — Rd-generation tag reference
+- `vignette("rd-formatting", package = "roxygen2")` — markdown mode
+- `vignette("namespace", package = "roxygen2")` — NAMESPACE directives
+- R Packages 2e ch. 16 "Function documentation" — <https://r-pkgs.org/man.html>
+- Writing R Extensions §2 (Rd format) — <https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Writing-R-documentation-files>
+
 ---
 
 ## Core Function Tags

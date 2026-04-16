@@ -3,6 +3,14 @@
 Deep dive on NAMESPACE management, import strategies, re-exports, and
 resolving function name conflicts with other packages.
 
+**Sources:**
+- Writing R Extensions §1.5 "Package namespaces" — <https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Package-namespaces>
+- R Packages 2e ch. 11 "Dependencies: Mindset and background" and ch. 12 "Dependencies: In practice" — <https://r-pkgs.org/dependencies-mindset-background.html>
+- conflicted package — <https://conflicted.r-lib.org/>
+- roxygen2 namespace vignette — <https://roxygen2.r-lib.org/articles/namespace.html>
+- rlang tidy eval — <https://rlang.r-lib.org/reference/topic-data-mask.html>
+- `?base::::` and `?base::getNamespace`
+
 ---
 
 ## How NAMESPACE Is Generated

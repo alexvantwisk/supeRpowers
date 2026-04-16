@@ -3,6 +3,13 @@
 Complete reference for every field in `DESCRIPTION`, with CRAN-acceptable
 values, common mistakes, and tidyverse/`usethis` conventions.
 
+**Sources:**
+- Writing R Extensions §1.1 — <https://cran.r-project.org/doc/manuals/r-release/R-exts.html#The-DESCRIPTION-file>
+- R Packages 2e ch. 9 "DESCRIPTION" — <https://r-pkgs.org/description.html>
+- usethis reference — <https://usethis.r-lib.org/reference/>
+- CRAN Repository Policy — <https://cran.r-project.org/web/packages/policies.html>
+- `?utils::person` (role codes)
+
 ---
 
 ## Required Fields
