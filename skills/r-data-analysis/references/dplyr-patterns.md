@@ -62,6 +62,22 @@ and makes grouping scope explicit per operation.
 
 ---
 
+## filter() vs filter_out() (dplyr >= 1.2)
+
+```r
+# filter() keeps rows where the condition is TRUE — NAs are dropped silently
+df |> filter(class != "suv")             # also drops rows with NA class
+
+# filter_out() drops rows where the condition is TRUE — NAs are kept
+df |> filter_out(class == "suv")         # keeps NA class rows
+```
+
+**Rule:** When the *intent* is "drop these rows", use `filter_out()` —
+matches intuition with NAs and avoids the `!(... | is.na(...))` boolean
+gymnastics that `filter()` forces. New in dplyr 1.2 (Feb 2026).
+
+---
+
 ## reframe() — Multi-row Summaries
 
 ```r
@@ -102,32 +118,42 @@ events |>
 
 ---
 
-## case_match() — Value Mapping
+## recode_values() / replace_values() — Value Mapping (dplyr >= 1.2)
 
 ```r
-# Direct value-to-value mapping (cleaner than case_when for exact matches)
+# recode_values() — create a new vector by mapping old → new values
 df |>
-  mutate(region_name = case_match(
+  mutate(region_name = recode_values(
     region_code,
     "NE" ~ "Northeast",
     "SE" ~ "Southeast",
     "MW" ~ "Midwest",
     "W"  ~ "West",
-    .default = "Unknown"
+    default = "Unknown"
   ))
 
-# Collapse multiple values
+# Collapse multiple values into a bucket
 df |>
-  mutate(size = case_match(
+  mutate(size = recode_values(
     n_employees,
     1:10 ~ "Small",
     11:100 ~ "Medium",
-    .default = "Large"
+    default = "Large"
   ))
+
+# replace_values() — partially update; unmatched values keep their original
+df |> mutate(status = replace_values(status, "n/a" ~ NA, "" ~ NA))
+
+# Lookup-table form with from/to vectors
+codes  <- c("NE", "SE", "MW", "W")
+names  <- c("Northeast", "Southeast", "Midwest", "West")
+df |> mutate(region_name = recode_values(region_code, from = codes, to = names))
 ```
 
-**Use `case_match()`** for exact value lookups. **Use `case_when()`** for
-conditional logic with expressions.
+**dplyr 1.2 (Feb 2026):** `case_match()` is soft-deprecated and `recode()`
+is superseded — use `recode_values()` (new vector) or `replace_values()`
+(partial update). Older code using `case_match()` still works but warns.
+Use `case_when()` for conditional logic with expressions.
 
 ---
 
@@ -230,4 +256,7 @@ filter_col <- function(df, col, val) {
 | `rowwise()` is slow on large data | Use `rowMeans(pick(...))` or `pmap()` instead |
 | `pick()` in `filter()` context | `pick()` works in `mutate()`/`summarise()`, use `if_any()`/`if_all()` in `filter()` |
 | `.by` not available in older dplyr | Requires dplyr >= 1.1.0; fall back to `group_by()` |
-| `case_match()` requires exact type match | Ensure the match values are the same type as the input column |
+| `case_match()` soft-deprecated (dplyr 1.2) | Use `recode_values()` (new vector) or `replace_values()` (partial update) |
+| Underscored verbs `mutate_()`/`arrange_()` | Defunct in dplyr 1.2 — use the unsuffixed verbs with `across()` / tidyselect |
+| `summarise()` returning >1 row per group | Defunct in dplyr 1.2 — use `reframe()` |
+| Recoding type mismatch | Ensure match values are the same type as the input column (`recode_values()` errors loudly on mismatch) |

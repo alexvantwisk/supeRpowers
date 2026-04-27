@@ -19,6 +19,13 @@ ymd_hms("2025-04-27 14:30:00")   # POSIXct
 # Mixed input formats — parse_date_time() with a vector of orders
 mixed <- c("2025-01-15", "01/15/2025", "January 15, 2025", "15-Jan-2025")
 parse_date_time(mixed, orders = c("ymd", "mdy", "BdY", "dby"))
+
+# Quarter strings — yq() (lubridate >= 1.9)
+yq(c("2025 Q1", "2025-Q4"))
+
+# Build dates from components
+make_date(year = 2025, month = 4, day = 27)
+make_datetime(year = 2025, month = 4, day = 27, hour = 14, min = 30, tz = "UTC")
 ```
 
 **Rule:** When dates may be in mixed formats, use `parse_date_time()` with

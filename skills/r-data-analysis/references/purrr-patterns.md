@@ -17,10 +17,15 @@ heads  <- map_chr(files, \(f) readLines(f, n = 1))
 
 # map() returns a list — use when output type is heterogeneous
 fits <- map(split(mtcars, mtcars$cyl), \(d) lm(mpg ~ wt, data = d))
+
+# map_vec() — for typed output beyond the four atomic types (Date, factor, ...)
+dates <- map_vec(strs, \(s) lubridate::ymd(s))
 ```
 
 **Rule:** Prefer `map_*()` typed variants over `sapply()`. `sapply()` silently
-returns a list on type mismatch; `map_dbl()` errors loudly.
+returns a list on type mismatch; `map_dbl()` errors loudly. `map_vec()`
+(purrr >= 1.0) extends the type-safety guarantee to dates, factors,
+date-times, and other vctrs vector types.
 
 ---
 
@@ -57,11 +62,31 @@ results |> iwalk(\(d, name) write_csv(d, paste0(name, ".csv")))
 
 ---
 
+## list_rbind() / list_cbind() / list_c() — Combining Results
+
+```r
+# Stack many data frames — preferred over reduce(bind_rows)
+files |> map(read_csv) |> list_rbind()
+files |> map(read_csv) |> list_rbind(names_to = "file")  # tag each by source
+
+# Bind a list of vectors into one
+splits |> map(\(x) tibble(group = x, n = length(x))) |> list_rbind()
+
+# Concatenate atomic vectors
+1:3 |> map(\(i) i + 0:1) |> list_c()                    # 1 2 2 3 3 4
+```
+
+**Rule (purrr >= 1.0):** `map_dfr()` and `map_dfc()` are *superseded* —
+the `_dfr`/`_dfc` suffixes implied a 1-to-1 type contract that the
+functions never enforced. Replace with `map() |> list_rbind()` (uses
+`vctrs::vec_rbind()` under the hood, no dplyr dependency).
+
+---
+
 ## reduce() and accumulate()
 
 ```r
-# reduce() — collapse a list to a single value
-files |> map(read_csv) |> reduce(bind_rows)             # stack many CSVs
+# reduce() — fold a list to a single value
 filters |> reduce(\(d, f) f(d), .init = df)             # apply filter pipeline
 
 # accumulate() — keep all intermediate steps
@@ -69,8 +94,8 @@ filters |> reduce(\(d, f) f(d), .init = df)             # apply filter pipeline
 df_list |> accumulate(left_join, by = "id")            # progressive joins
 ```
 
-Use `reduce()` for "fold over a list"; `accumulate()` when intermediate
-results matter (cumulative joins, running aggregations).
+Reach for `reduce()` when each step depends on the previous one; reach
+for `list_rbind()` / `list_c()` when you just need to concatenate.
 
 ---
 
@@ -166,3 +191,5 @@ list_of_dfs |> map(\(d) d |> filter(score > 0))
 | `safely()` output is `list(result, error)` not flat | Use `transpose()` then `compact()` to split successes from errors |
 | `reduce(.init =)` omitted on empty input | Always pass `.init` when input may be empty |
 | Mixing `purrr::map` and `base::Map` | Stick with purrr — naming, NSE, and type guarantees are consistent |
+| `map_dfr()` / `map_dfc()` superseded (purrr >= 1.0) | Use `map() |> list_rbind()` or `map() |> list_cbind()` |
+| `imap()` over an unnamed list passes index, not name | Add names with `set_names()` first if you want named callbacks |

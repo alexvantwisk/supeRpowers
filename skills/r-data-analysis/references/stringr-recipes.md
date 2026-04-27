@@ -4,6 +4,15 @@ Idiomatic string manipulation with `stringr`. Always prefer stringr over base
 `grep`/`sub`/`gsub` — consistent argument order (`string` first), vectorised,
 and locale-aware. All code uses `|>` and `<-`.
 
+> **stringr 1.6.0 (Nov 2025)** introduced two breaking changes:
+> 1. All relevant functions now **preserve names** — `str_to_upper(c(a = "x"))`
+>    returns a named vector. Update downstream code that assumed unnamed
+>    output.
+> 2. In `str_replace_all()` a *replacement function* now receives all values
+>    in a single vector (one call instead of one per element) — much faster
+>    but breaks per-element callbacks. `str_like(ignore_case)` is also
+>    deprecated; `str_like()` is now case-sensitive (matches SQL `LIKE`).
+
 ---
 
 ## Detect, Extract, Replace
@@ -155,3 +164,6 @@ Use `glue` for any non-trivial string interpolation; reserve `str_c()` /
 | Accents not matching | Use `coll()` instead of `regex()` for accent-insensitive |
 | `str_split()` returns a list when you wanted a vector | Use `str_split_1()` (single string) or `str_split_fixed()` |
 | Trailing newlines in `str_extract()` | Trim with `str_trim()` or anchor pattern more tightly |
+| Output gains unwanted names (stringr >= 1.6) | Use `unname()` after the operation, or strip names from input first |
+| `str_replace_all(x, p, fn)` callback behaves differently (>= 1.6) | Replacement function now sees the full vector — vectorise the body |
+| `str_like(x, "FOO", ignore_case = TRUE)` warns | Deprecated — `str_like()` is case-sensitive; pre-lowercase both sides if needed |

@@ -108,5 +108,7 @@ and ggplot legends.
 | Filtered data still has unused factor levels | `fct_drop()` to remove unused levels |
 | NAs invisible in factor counts | `fct_na_value_to_level()` to make them explicit |
 | `fct_lump()` (deprecated alias) | Use `fct_lump_n()` / `fct_lump_min()` / `fct_lump_prop()` |
+| Naming `...` arguments in `fct_relevel()` / `fct_cross()` / `fct_expand()` | Errors since forcats 1.0.0 — pass levels positionally or via a vector |
+| `fct_lump_n()` partial arg name `n_min` etc. | Removed in 1.0.0 — use the full argument name |
 | Reorder lost after a join | Re-apply `fct_reorder()` after the join, or convert factor to character before joining and back after |
 | Different factor encodings between data sets | Standardise to character before joins; convert to factor at the plotting stage |

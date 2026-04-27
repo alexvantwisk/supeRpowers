@@ -22,7 +22,8 @@ df |>
     cols = matches("^(rev|cost)_\\d{4}$"),
     names_to = c("metric", "year"),
     names_pattern = "(rev|cost)_(\\d{4})",
-    names_transform = list(year = as.integer)
+    names_transform = list(year = as.integer),
+    values_transform = list(value = as.numeric)   # coerce in flight (tidyr >= 1.3)
   )
 
 # names_sep — simpler alternative for delimited names
@@ -75,9 +76,10 @@ If `pivot_wider()` warns about list-columns, you have duplicated
 ```r
 # Decision: list-column of vectors → longer; list-column of named records → wider
 
-# unnest_longer() — one row per element
+# unnest_longer() — one row per element; keep_empty preserves rows with empty lists
 df <- tibble(id = 1:2, vals = list(c(10, 20), c(30, 40, 50)))
 df |> unnest_longer(vals)
+df |> unnest_longer(vals, keep_empty = TRUE)            # tidyr >= 1.3
 
 # unnest_wider() — one column per name in each element
 df <- tibble(id = 1:2, info = list(list(name = "A", n = 10), list(name = "B", n = 20)))
