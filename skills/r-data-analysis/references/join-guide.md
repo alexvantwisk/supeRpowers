@@ -1,6 +1,7 @@
 # Join Strategy Guide
 
-Decision trees, inequality joins, rolling joins, cross joins, and diagnostics.
+All seven dplyr join verbs, inequality and rolling joins, cross/nest joins,
+and the dplyr 1.1 safety arguments (`relationship`, `multiple`, `unmatched`).
 All code uses `|>` and `<-`.
 
 ---
@@ -9,14 +10,18 @@ All code uses `|>` and `<-`.
 
 ```
 Need columns from both tables?
-  YES → Which rows to keep?
-    All left rows    → left_join()
-    Only matches     → inner_join()
-    All rows (both)  → full_join()
-    All right rows   → right_join()
+  YES → Want one row per x-row, with y rows nested?
+    YES → nest_join()                       (list-column of matches)
+    NO  → Which rows to keep?
+      All left rows    → left_join()
+      Only matches     → inner_join()
+      All rows (both)  → full_join()
+      All right rows   → right_join()
   NO → Filtering only?
     Keep matches     → semi_join()
     Keep non-matches → anti_join()
+  Just need every combination?
+    cross_join()                              (Cartesian product)
 ```
 
 ---
@@ -100,6 +105,35 @@ Use sparingly — output rows = `nrow(a) * nrow(b)`.
 
 ---
 
+## nest_join() — Joins Without Fan-out
+
+```r
+# Each x row keeps a list-column of its matching y rows
+customers |> nest_join(orders, join_by(customer_id))
+#> # A tibble: 3 x 3
+#>   customer_id name      orders
+#>         <int> <chr>     <list>
+#> 1           1 Alice     <tibble [2 x 2]>
+#> 2           2 Bob       <tibble [0 x 2]>
+#> 3           3 Charlie   <tibble [5 x 2]>
+
+# Pair with map() / unnest() for downstream work — see references/purrr-patterns.md
+customers |>
+  nest_join(orders, join_by(customer_id), name = "order_data") |>
+  mutate(n_orders = map_int(order_data, nrow),
+         total = map_dbl(order_data, \(o) sum(o$amount)))
+```
+
+**Identity:** `inner_join()` ≡ `nest_join() |> unnest()`;
+`left_join()` ≡ `nest_join() |> unnest(keep_empty = TRUE)`.
+
+Reach for `nest_join()` when you need to operate on the matched rows
+*per-x-row* (count, summarise, fit a model) without first fanning out to
+a wide table — preserves row count and is faster than `left_join() |>
+nest()` for large `y`.
+
+---
+
 ## Duplicate Protection with relationship
 
 ```r
@@ -120,6 +154,46 @@ customers |>
 
 Use `relationship` to catch unexpected duplicates at join time instead of
 debugging silent row fan-out downstream.
+
+---
+
+## multiple = — Pick Which Match to Keep
+
+```r
+# When one x row has many y matches, control what comes back:
+trades |> left_join(quotes, join_by(ticker), multiple = "all")    # default-ish
+trades |> left_join(quotes, join_by(ticker), multiple = "first")  # earliest
+trades |> left_join(quotes, join_by(ticker), multiple = "last")   # latest
+trades |> left_join(quotes, join_by(ticker), multiple = "any")    # any one match
+```
+
+**Values:** `"all"`, `"first"`, `"last"`, `"any"`. As of dplyr 1.1.1, only
+true many-to-many joins warn — one-to-many is silent. Set `multiple = "all"`
+explicitly when you *expect* fan-out: it documents intent and silences any
+remaining warnings. For "first/last by a key", combine with sorted `y`.
+
+---
+
+## unmatched = — Fail on Orphans
+
+```r
+# Default drops y rows that didn't match — silent
+orders |> inner_join(customers, join_by(customer_id))
+
+# Error if any x row has no match in y
+orders |> inner_join(customers, join_by(customer_id), unmatched = "error")
+
+# inner_join can take a length-2 vector for x and y independently
+orders |> inner_join(
+  customers,
+  join_by(customer_id),
+  unmatched = c("error", "drop")    # error on x orphans, drop y orphans
+)
+```
+
+**Values:** `"drop"` (default), `"error"`. Use with `inner_join()` and
+`right_join()` when an unmatched key is a data quality bug, not just a
+filter — fails loudly at join time.
 
 ---
 
@@ -184,3 +258,7 @@ full_join(source_a, source_b, join_by(id)) |>
 | Inequality join producing Cartesian explosion | Add equality keys first to constrain the match space |
 | Forgetting `unmatched = "error"` | Use `unmatched = "error"` to fail fast on unexpected orphan rows |
 | `NA` keys match other `NA` keys | By default `NA == NA` is `TRUE` in joins; filter NAs from keys if unwanted |
+| Renamed key column collapses into one | Pass `keep = TRUE` to retain both join columns in the output |
+| Legacy `by = "id"` syntax mixed with `join_by()` | Pick one: `join_by()` is the modern form and supports inequality + helpers |
+| `nest_join()` vs `left_join() |> nest()` | Prefer `nest_join()` — preserves x row count and skips an unnecessary fan-out |
+| `closest()` doesn't translate to SQL via dbplyr | Pre-aggregate in the database, then `collect()` into R for the rolling join |
