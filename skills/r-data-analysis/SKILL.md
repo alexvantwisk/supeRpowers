@@ -1,15 +1,20 @@
 ---
 name: r-data-analysis
 description: >
-  Use when working with data wrangling, cleaning, transformation, or pipelines
-  in R using dplyr, tidyr, readr, lubridate, stringr, or forcats. Provides
-  expert guidance on tidy data principles, column manipulation, reshaping,
-  joins, type conversion, string and date processing, and factor handling.
+  Use when working with data wrangling, cleaning, transformation, reshaping,
+  or import in R using dplyr, tidyr, readr, lubridate, stringr, forcats, or
+  purrr. Provides expert guidance on tidy data principles, column
+  manipulation, joins, type conversion, string and date processing, factor
+  reordering, list-columns, missing-data EDA, and data validation in
+  pipelines.
   Triggers: data wrangling, data cleaning, data transformation, dplyr, tidyr,
   readr, mutate, filter, pivot, join, reshape, stringr, forcats, lubridate,
-  pipe, purrr, data manipulation, tidy data, clean data.
+  purrr, pipe, regex, time zone, nested data, list-columns, factor reorder,
+  clean names, data validation, missing data EDA, data manipulation, tidy
+  data, clean data.
   Do NOT use for statistical modeling or hypothesis testing — use r-stats instead.
   Do NOT use for performance optimization of large datasets — use r-performance instead.
+  Do NOT use for pipeline orchestration — use r-targets instead.
   For a guided analysis pipeline, invoke /r-cmd-analysis instead.
 ---
 
@@ -19,8 +24,15 @@ Tidyverse-first data wrangling, cleaning, and transformation in R.
 All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 
 **Lazy references:**
-- Read `references/dplyr-patterns.md` for advanced across()/pick()/window function recipes
+- Read `references/dplyr-patterns.md` for advanced across()/pick()/window/nest recipes
 - Read `references/join-guide.md` for complex join strategies and decision trees
+- Read `references/tidyr-reshape.md` for pivots, unnesting, separating, completing
+- Read `references/stringr-recipes.md` for regex, extraction, replacement, splitting
+- Read `references/lubridate-recipes.md` for parsers, time zones, periods vs durations
+- Read `references/forcats-recipes.md` for factor reorder/lump/recode/collapse
+- Read `references/purrr-patterns.md` for typed map_*, list-columns, error handling
+- Read `references/data-cleaning-toolkit.md` for janitor + naniar missing-data EDA
+- Read `references/data-validation.md` for pointblank/validate pipelines
 
 **Agent dispatch:** When analysis crosses into statistical modeling (regression,
 hypothesis testing, mixed models), hand off to the **r-statistician** agent.
@@ -31,6 +43,23 @@ guidance inline.
 - Before joins or transformations: `btw_tool_env_describe_data_frame` to inspect column names, types, and dimensions of input data frames
 - Before referencing specific columns: verify they exist in the actual data, not just assumed from context
 - When uncertain about a function's arguments: `btw_tool_docs_help_page` to read installed docs
+
+---
+
+## Tidy-Data Principles
+
+Every analysis starts by reshaping data into tidy form:
+
+1. Each **variable** is a column.
+2. Each **observation** is a row.
+3. Each **value** is a cell.
+
+If a column name encodes a value (e.g. `revenue_2024`, `q1_sales`), the
+data is wide — pivot longer first. If multiple variables share a column,
+split them. If one observation spans multiple rows, pivot wider.
+
+Read `references/tidyr-reshape.md` for `pivot_longer`/`pivot_wider`,
+`unnest_*`, `separate_wider_*`, `complete`, and `fill`.
 
 ---
 
@@ -85,40 +114,106 @@ Read `references/join-guide.md` for inequality joins and complex strategies.
 
 ---
 
-## stringr, forcats, lubridate Conventions
+## stringr — Strings and Regex
 
-Use stringr for all string ops (not base `grep`/`sub`). Use forcats for factor reordering/lumping (not manual `levels<-`). Use lubridate parsers (`ymd()`, `ymd_hms()`) and extractors (`year()`, `month()`).
+Always prefer stringr over base `grep`/`sub`/`gsub` — consistent
+`string`-first argument order, vectorised, locale-aware. Reach for
+`str_detect()` to filter, `str_extract()` to capture, `str_replace_all()`
+to substitute. Use `fixed()` for literal substrings, `regex()` for
+patterns, `coll()` for accent-insensitive matching.
 
-Key patterns: `fct_reorder()` by a summary stat for plot ordering, `fct_lump_n()` to collapse rare levels, `floor_date()`/`ceiling_date()` for period rounding, `interval() / days(1)` for duration arithmetic.
+Read `references/stringr-recipes.md` for the regex cheatsheet, splitting,
+padding, case conversion, and `glue` interop.
 
 ---
 
-## Missing Data Strategies
+## lubridate — Dates and Times
+
+Always use lubridate parsers (`ymd()`, `mdy()`, `ymd_hms()`) over
+`as.Date()` — `as.Date()` silently returns NA on unrecognised formats. For
+mixed input, use `parse_date_time()` with multiple `orders`. Use `%m+%`
+when adding months to month-end dates. Distinguish `with_tz()` (convert
+instant to another zone) from `force_tz()` (relabel a wall-clock time).
+
+Read `references/lubridate-recipes.md` for parsers, components, periods
+vs durations, time zones, and `floor_date()` for time-series binning.
+
+---
+
+## forcats — Factors
+
+Use `fct_reorder()` (by a summary stat) for self-sorting boxplots and bar
+charts; never reach for `factor(..., levels = ...)` manual gymnastics. Use
+`fct_lump_n()` to collapse rare levels into "Other", `fct_collapse()` /
+`fct_recode()` for renaming, and `fct_na_value_to_level()` to make NAs an
+explicit, visible level.
+
+Read `references/forcats-recipes.md` for the full reorder, lump, modify,
+and missing-NA family.
+
+---
+
+## purrr — Functional Patterns
+
+Use typed `map_*` variants (`map_dbl`, `map_chr`, `map_lgl`) over
+`sapply()` — type-safe and fail-fast. For per-group modeling, replace `for`
+loops with `nest(.by =) |> mutate(fit = map(data, ...))`. Wrap fragile
+operations in `safely()` / `possibly()`.
+
+Read `references/purrr-patterns.md` for `map2`/`pmap`, list-columns with
+broom, list rectangling (`hoist`), and `across()` vs `map()` boundaries.
+
+---
+
+## Data Cleaning: janitor + naniar
+
+Run `janitor::clean_names()` immediately after import — it is idempotent
+and removes a class of name-related bugs. Use `janitor::get_dupes()` to
+inspect duplicate rows on a key, and `tabyl()` for tidyverse-friendly
+frequency tables. Before calling `drop_na()` on the whole frame, run
+`naniar::miss_var_summary()` and `naniar::vis_miss()` to characterise the
+missingness pattern — dropping blindly bakes in selection bias.
+
+Read `references/data-cleaning-toolkit.md` for the missing-data decision
+tree and when to defer imputation modeling to r-stats / r-tidymodels.
+
+---
+
+## Data Validation: pointblank / validate
+
+For pipelines that fan out into reports or models, validate on ingest
+with `pointblank::create_agent()` + rule functions + `interrogate()` —
+not scattered `stopifnot()` chains. Catches schema drift, type drift,
+out-of-range values, and duplicate keys with one report.
+
+Read `references/data-validation.md` for rule functions, action levels,
+YAML round-trip, and the boundary against r-package-skill-generator (a
+*"build a skill from the pointblank repo"* request still routes there).
+
+---
+
+## Missing Data — Quick Reference
 
 ```r
 df |> summarise(across(everything(), \(x) sum(is.na(x))))  # diagnose
-df |> drop_na(revenue, date)                                # remove NAs in key cols
-df |> mutate(score = replace_na(score, 0),                  # replace NAs
+df |> drop_na(revenue, date)                                # scoped drop
+df |> mutate(score = replace_na(score, 0),                  # replace
              label = coalesce(label, backup_label, "unknown"))
 ```
 
+For pattern characterisation and the bias decision tree, read
+`references/data-cleaning-toolkit.md`.
+
 ---
 
-## When to Use data.table
+## data.table Boundary
 
-> **Boundary:** data.table mentioned here as an alternative syntax. For performance optimization of large datasets, use r-performance instead.
+> For performance optimization of large datasets, use r-performance instead.
 
 Consider `data.table` when: dataset >1M rows, memory-constrained, or
-performance-critical inner loops. `fread()`/`fwrite()` are significantly
-faster for file I/O.
-
-```r
-library(data.table)
-dt <- fread("large_data.csv")
-result <- dt[year >= 2023, .(total = sum(revenue)), by = .(region, product)]
-```
-
-For most analysis under 1M rows, dplyr is clearer and preferred.
+performance-critical inner loops; `fread()`/`fwrite()` are significantly
+faster for file I/O. For most analysis under 1M rows, dplyr is clearer
+and preferred.
 
 ---
 

@@ -335,5 +335,61 @@
     "must_not_fire": ["skill-auditor"],
     "discriminator": "review R code = agent dispatch, not skill audit",
     "category": "broad-trigger-hijack"
+  },
+  {
+    "id": "route-043",
+    "prompt": "Extract the domain from these emails using a regex with stringr",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": [],
+    "discriminator": "stringr + regex = data wrangling",
+    "category": "data-analysis-coverage"
+  },
+  {
+    "id": "route-044",
+    "prompt": "Convert these lubridate timestamps from UTC to America/New_York time zone",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": [],
+    "discriminator": "lubridate + time zone = data wrangling",
+    "category": "data-analysis-coverage"
+  },
+  {
+    "id": "route-045",
+    "prompt": "Use forcats fct_reorder to set my boxplot's factor levels by median value",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": ["r-visualization"],
+    "discriminator": "forcats reorder = factor handling, not viz authoring",
+    "category": "data-analysis-coverage"
+  },
+  {
+    "id": "route-046",
+    "prompt": "Use purrr to apply a fitting routine to each nested group and collect coefficients",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": ["r-package-skill-generator"],
+    "discriminator": "purrr usage = data analysis, not skill generation from GitHub",
+    "category": "data-analysis-coverage"
+  },
+  {
+    "id": "route-047",
+    "prompt": "Run janitor clean names on these ugly column names from a messy CSV",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": [],
+    "discriminator": "janitor clean names = data cleaning",
+    "category": "data-analysis-coverage"
+  },
+  {
+    "id": "route-048",
+    "prompt": "Set up data validation with pointblank to reject any order with a negative amount",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": ["r-package-skill-generator"],
+    "discriminator": "pointblank usage = data validation in pipeline, not skill generation",
+    "category": "data-analysis-coverage"
+  },
+  {
+    "id": "route-049",
+    "prompt": "Set up pipeline orchestration with the targets package for this cleaning step",
+    "expected_skill": "r-targets",
+    "must_not_fire": ["r-data-analysis"],
+    "discriminator": "pipeline orchestration with targets = workflow tool, not wrangling",
+    "category": "data-analysis-coverage"
   }
 ]
