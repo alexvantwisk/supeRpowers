@@ -40,8 +40,10 @@ agent <- create_agent(
 agent |> all_passed()                # TRUE if every rule passed
 agent |> get_agent_x_list()          # detailed results
 
-# Fail the pipeline on warn/stop thresholds
-if (!all_passed(agent)) stop_on_fail()(agent)
+# Abort the pipeline on any failure
+if (!all_passed(agent)) {
+  cli::cli_abort("Validation failed; see {.fn get_agent_report} for details.")
+}
 ```
 
 **Rule:** Pipelines that fan out into reports, ML models, or shipped data
@@ -60,6 +62,7 @@ worse than a loud abort.
 | `col_vals_gte()` / `lte()` / `between()` | Out-of-range numerics |
 | `col_vals_in_set()` | Unknown category levels |
 | `col_vals_regex()` | Malformed strings (emails, IDs) |
+| `col_vals_increasing()` / `col_vals_decreasing()` | Order violations in time series (pointblank >= 0.12) |
 | `rows_distinct()` | Duplicate keys |
 | `rows_complete()` | Whole-row NAs |
 | `col_vals_expr()` | Arbitrary tidy-eval predicate |
@@ -106,7 +109,10 @@ agent |> email_blast(to = "data-quality@example.com")
 
 # YAML round-trip — version-controlled rules
 agent |> yaml_write(filename = "validation-rules.yml")
-read_disk_multiagent("validation-rules.yml")
+yaml_read_agent("validation-rules.yml") |> interrogate()
+
+# Or skip the round-trip and run directly from a YAML file
+yaml_agent_interrogate("validation-rules.yml")
 ```
 
 Rule sets stored as YAML can live alongside data-loading code in the
