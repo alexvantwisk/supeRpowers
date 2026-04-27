@@ -11,6 +11,13 @@
 5. When the user asks to remove missing values, does the skill warn about the bias risks of `na.omit()` or `drop_na()` on the full dataset before filtering?
 6. When asked to optimize a slow `group_by |> summarise` pipeline on 50M rows, does the skill defer to r-performance rather than attempting data.table rewrites?
 7. Does all generated code use `|>` and `<-` exclusively (no `%>%` or `=` for assignment)?
+8. For per-group model fitting, does the skill prefer `nest(.by =) |> mutate(fit = map(data, ...))` (or `across()` where appropriate) over a `for` loop, returning a list-column?
+9. For email or URL extraction, does the skill use `stringr::str_extract()` with a regex rather than base `strsplit` plus indexing?
+10. For factor reordering on a plot, does the skill use `forcats::fct_reorder()` (or `fct_infreq`/`fct_relevel`) rather than manual `factor(..., levels = ...)`?
+11. For ugly column names from import, does the skill suggest `janitor::clean_names()` rather than manual `gsub` / `tolower` chains?
+12. For time-zone-aware timestamps, does the skill distinguish `with_tz()` (convert instant) from `force_tz()` (relabel) and pick the right one for the user's intent?
+13. For pipeline data validation, does the skill use `pointblank::create_agent()` + rule functions + `interrogate()` rather than ad-hoc `stopifnot()` chains?
+14. When asked to "build a skill from the pointblank GitHub repo", does the skill defer to r-package-skill-generator rather than treating it as a usage question?
 
 ## Test Prompts
 
@@ -18,6 +25,13 @@
 
 - "I have a CSV with columns for customer_id, order_date, product, and amount. Clean it: remove duplicates, parse dates, and create a monthly summary of total spend per customer."
 - "Reshape this wide dataset with columns Q1_sales, Q2_sales, Q3_sales, Q4_sales into long format with quarter and sales columns, then join it with a region lookup table."
+- "Use purrr to fit a linear model per nested group of the diamonds dataset and return a tibble of slope estimates with confidence intervals." (purrr-patterns happy path)
+- "Extract the domain part from a vector of email addresses using stringr." (stringr-recipes happy path)
+- "Convert a column of UTC timestamps to America/New_York and round each one down to the nearest hour." (lubridate-recipes happy path)
+- "Reorder a boxplot's x-axis factor levels by median outcome value." (forcats-recipes happy path)
+- "Pivot this JSON list-column into top-level columns using hoist." (tidyr-reshape happy path)
+- "After importing this messy CSV, fix column names, drop empty columns, and report variable-level missingness." (data-cleaning-toolkit happy path)
+- "Set up a pointblank agent that asserts no negative amounts, no NA customer ids, and rows distinct on order_id, then run interrogate." (data-validation happy path)
 
 ### Edge Cases
 
@@ -30,6 +44,7 @@
 - "Run a paired t-test comparing pre and post treatment scores in my clinical data frame." (boundary: should defer to r-stats for hypothesis testing)
 - "My dplyr pipeline takes 45 seconds on 80 million rows. Rewrite it to be faster, maybe using data.table or collapse." (boundary: should defer to r-performance for optimization)
 - "Clean this dataset by removing NAs, then build a logistic regression to predict churn from the remaining features." (mixed request: cleaning is in scope, modeling should defer to r-stats or r-tidymodels)
+- "Build a Claude validation skill from the pointblank GitHub repository." (boundary: skill generation, not pipeline validation — must defer to r-package-skill-generator)
 
 ### Boundary Tests
 

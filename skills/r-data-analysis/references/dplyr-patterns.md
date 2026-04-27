@@ -177,6 +177,31 @@ df |> mutate(avg = rowMeans(pick(starts_with("score_")), na.rm = TRUE))
 
 ---
 
+## nest() + unnest() — List-columns
+
+```r
+# Collapse each group into a tibble in a list-column
+by_cyl <- mtcars |> nest(.by = cyl)
+by_cyl
+#> # A tibble: 3 x 2
+#>     cyl data
+#>   <dbl> <list>
+#> 1     6 <tibble [7 x 10]>
+#> 2     4 <tibble [11 x 10]>
+#> 3     8 <tibble [14 x 10]>
+
+# Pair with map() for per-group modeling — see references/purrr-patterns.md
+by_cyl |>
+  mutate(fit = map(data, \(d) lm(mpg ~ wt, data = d)),
+         tidied = map(fit, broom::tidy)) |>
+  unnest(tidied)
+```
+
+Use `nest(.by =)` instead of `group_by() |> nest()` — explicit and less
+verbose. Read `references/purrr-patterns.md` for `map()`-on-nested patterns.
+
+---
+
 ## Patterns with .env and .data Pronouns
 
 ```r
