@@ -111,13 +111,19 @@ SKILL.md.
   palettes (`scale_color_lancet`, `_nejm`, `_jco`, `_aaas`, `_npg`), colorblind
   palette catalog (Okabe-Ito, viridis variants, ColorBrewer Set2 / Dark2 /
   Paired with safe-for-print notes), volcano and forest recipes.
-- **`theme-guide.md`** *(refreshed)* — current element hierarchy + new section
-  on `scales::label_*`, `scales::pretty_breaks`, `scales::trans_new`,
-  `scales::cut_short_scale`.
-- **`ggplot2-layers.md`** *(refreshed)* — corrections, modern
-  `linewidth`/`linetype` notes, position adjustments review.
+- **`theme-guide.md`** *(refreshed in place)* — keep current element hierarchy;
+  append new section on `scales::label_*`, `scales::pretty_breaks`,
+  `scales::trans_new`, `scales::cut_short_scale`. Existing tables retained as-is
+  unless they reference deprecated APIs.
+- **`ggplot2-layers.md`** *(refreshed in place)* — keep current geom / stat /
+  position / coord tables; line-by-line corrections only (e.g., update `size`
+  to `linewidth` for line geoms, fix any deprecated examples). No structural
+  rewrite.
 
 ## 6. eval.md additions
+
+All existing eval content (binary questions, test prompts, success criteria) is
+**retained**. The items below are additions, not replacements.
 
 **Binary questions (added):**
 
