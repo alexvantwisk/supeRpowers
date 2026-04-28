@@ -26,6 +26,111 @@ Need columns from both tables?
 
 ---
 
+## The Six Mutating and Filtering Joins by Example
+
+Same two tables, six joins, six different row counts:
+
+```r
+x <- tibble(id = c(1, 2, 3, 4),    name  = c("Alice", "Bob", "Cara", "Dan"))
+y <- tibble(id = c(2, 3, 3, 5),    score = c(  10,    20,    30,     40))
+```
+
+### left_join() — keep all left rows
+
+```r
+x |> left_join(y, join_by(id))
+#> # A tibble: 5 x 3   (4 left rows; id 3 fans out to two)
+#>      id name  score
+#>   <dbl> <chr> <dbl>
+#> 1     1 Alice    NA      # no match in y
+#> 2     2 Bob      10
+#> 3     3 Cara     20
+#> 4     3 Cara     30
+#> 5     4 Dan      NA
+```
+
+Pick `left_join()` when **x is the source of truth** and you're enriching
+it with attributes from y. ~80% of real-world joins.
+
+### inner_join() — keep only matched rows
+
+```r
+x |> inner_join(y, join_by(id))
+#> # A tibble: 3 x 3   (drops Alice and Dan; no match in y)
+#>      id name  score
+#> 1     2 Bob      10
+#> 2     3 Cara     20
+#> 3     3 Cara     30
+```
+
+Pick `inner_join()` when **a missing match means the row is irrelevant**
+to downstream analysis. Pair with `unmatched = "error"` if missing keys
+indicate a data quality bug.
+
+### full_join() — keep all rows from both sides
+
+```r
+x |> full_join(y, join_by(id))
+#> # A tibble: 6 x 3   (Alice, Dan from x; id 5 from y; rest matched)
+#>      id name  score
+#> 1     1 Alice    NA
+#> 2     2 Bob      10
+#> 3     3 Cara     20
+#> 4     3 Cara     30
+#> 5     4 Dan      NA
+#> 6     5 NA       40
+```
+
+Pick `full_join()` for **outer-style merges where every row from either
+source is needed**. Often followed by `coalesce()` to combine columns
+that exist on both sides.
+
+### right_join() — keep all right rows
+
+```r
+x |> right_join(y, join_by(id))
+#> # A tibble: 4 x 3   (drops Alice and Dan; keeps id 5 from y)
+#>      id name  score
+#> 1     2 Bob      10
+#> 2     3 Cara     20
+#> 3     3 Cara     30
+#> 4     5 NA       40
+```
+
+Pick `right_join()` rarely. `y |> left_join(x, ...)` reads more naturally
+in a left-to-right pipeline. The main legitimate use is when y is already
+in scope and you want to keep the pipeline reading top-to-bottom.
+
+### semi_join() — keep matches, no new columns
+
+```r
+x |> semi_join(y, join_by(id))
+#> # A tibble: 2 x 2   (Bob and Cara — Cara not duplicated)
+#>      id name
+#> 1     2 Bob
+#> 2     3 Cara
+```
+
+Pick `semi_join()` to **filter x to rows that have a match in y** without
+adding y's columns and without fan-out. Cleaner than
+`x |> filter(id %in% y$id)` because it handles composite keys.
+
+### anti_join() — keep non-matches
+
+```r
+x |> anti_join(y, join_by(id))
+#> # A tibble: 2 x 2   (Alice and Dan — orphans of y)
+#>      id name
+#> 1     1 Alice
+#> 2     4 Dan
+```
+
+Pick `anti_join()` to **find rows in x that are missing from y** —
+orphan diagnostics, "customers with no orders", set differences. The
+single best join-debugging tool.
+
+---
+
 ## join_by() — Modern Join Syntax
 
 ```r
