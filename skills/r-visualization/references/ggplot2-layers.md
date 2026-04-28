@@ -4,6 +4,19 @@ Detailed reference for geoms, stats, positions, coordinates, scales, and guides.
 
 ---
 
+## API conventions (ggplot2 ≥3.4)
+
+- Line geoms (`geom_line`, `geom_path`, `geom_segment`, `geom_abline`/`hline`/`vline`,
+  `geom_smooth`, `geom_errorbar*`, `geom_linerange`, `geom_pointrange`,
+  `geom_contour`, `geom_step`, `geom_density`, `geom_freqpoly`, `geom_curve`,
+  `geom_function`) use `linewidth = X`, not `size = X`. `size` now controls
+  only point and text radius.
+- Prefer `.data[[var]]` over `aes_string()` for programmatic aesthetic mapping.
+- `qplot()` is deprecated; always use `ggplot() + geom_*()`.
+- `stat(x)` inside `aes()` is deprecated; use `after_stat(x)` instead.
+
+---
+
 ## Geoms — Detailed
 
 ### One Variable (Continuous)
