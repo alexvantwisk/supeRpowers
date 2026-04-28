@@ -86,8 +86,8 @@ mod_filter_server <- function(id, data) {
       req(input$cyl, input$mpg)
       data() |>
         dplyr::filter(
-          cyl %in% input$cyl,
-          dplyr::between(mpg, input$mpg[1], input$mpg[2])
+          .data$cyl %in% input$cyl,
+          dplyr::between(.data$mpg, input$mpg[1], input$mpg[2])
         )
     })
   })
@@ -167,6 +167,11 @@ golden-path-safe replacement for `system.file()` plus path joining.
 - `data/` — package-level `.rda` for `data(my_dataset)`. Build via
   `usethis::use_data(my_dataset)`; document in `R/data.R`.
 - Never read from `getwd()` — it breaks once the package is installed.
+- `system.file()` from base R works the same way for installed packages —
+  `golem::app_sys()` is a thin wrapper that calls
+  `system.file(..., package = pkgload::pkg_name())`. Use `app_sys()` inside
+  golem code; reach for `system.file()` when you're outside the package
+  context (e.g., a smoke-test script).
 
 ```r
 orders <- readr::read_csv(golem::app_sys("extdata", "orders.csv"))
@@ -221,6 +226,13 @@ RUN R CMD INSTALL --no-multiarch --with-keep.source .
 
 # ---- stage 2: runtime ----
 FROM rocker/r-ver:4.4.1
+# Runtime system libraries — match the build-stage list (see "trimmed for clarity" caveat).
+# Packages like httr2, curl, xml2 need libcurl4 / libssl3 / libxml2 at runtime.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libcurl4 \
+      libssl3 \
+      libxml2 \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build /usr/local/lib/R/site-library /usr/local/lib/R/site-library
 EXPOSE 3838
 ENV R_CONFIG_ACTIVE=production
