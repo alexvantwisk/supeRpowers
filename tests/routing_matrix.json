@@ -391,5 +391,37 @@
     "must_not_fire": ["r-data-analysis"],
     "discriminator": "pipeline orchestration with targets = workflow tool, not wrangling",
     "category": "data-analysis-coverage"
+  },
+  {
+    "id": "route-050",
+    "prompt": "Scaffold a golem app with a mod_filter module and tests in tests/testthat",
+    "expected_skill": "r-shiny",
+    "must_not_fire": [],
+    "discriminator": "golem + module + Shiny app architecture = r-shiny",
+    "category": "framework-routing"
+  },
+  {
+    "id": "route-051",
+    "prompt": "Build a teal app for ADaM ADSL showing a treatment-by-arm summary",
+    "expected_skill": "r-shiny",
+    "must_not_fire": [],
+    "discriminator": "teal + ADaM + dashboard = r-shiny (teal reference)",
+    "category": "framework-routing"
+  },
+  {
+    "id": "route-052",
+    "prompt": "Migrate my shinydashboard app (dashboardPage + box + valueBox) to bslib",
+    "expected_skill": "r-shiny",
+    "must_not_fire": [],
+    "discriminator": "shinydashboard migration = r-shiny UI section",
+    "category": "framework-routing"
+  },
+  {
+    "id": "route-053",
+    "prompt": "Deploy my Shiny app to Posit Connect with renv lockfile",
+    "expected_skill": "r-shiny",
+    "must_not_fire": [],
+    "discriminator": "Posit Connect + renv + Shiny = r-shiny deployment reference",
+    "category": "deployment-routing"
   }
 ]
