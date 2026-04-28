@@ -279,3 +279,102 @@ If CRAN requests changes:
 - [ ] Reverse dependencies checked (for updates)
 - [ ] `README.md` is up to date (`devtools::build_readme()` if using `.Rmd`)
 - [ ] Package builds from clean state: `devtools::build()` succeeds
+
+---
+
+## Phase 5: After Submission
+
+### CRAN Incoming Pending
+
+After `submit_cran()`, your package sits in CRAN "incoming" pending review.
+Status pages:
+
+- <https://cran.r-project.org/web/packages/check.html> — package check status
+- <https://cran.r-project.org/incoming/> — manual queue (mostly informational)
+
+Typical timeline: 1–7 business days. Some packages auto-accept (no policy
+issues, no NOTEs); others get a human reviewer's email.
+
+### `--as-cran` vs `devtools::check(cran = TRUE)`
+
+These are not identical:
+
+```bash
+R CMD check --as-cran mypkg_1.0.0.tar.gz
+```
+
+vs
+
+```r
+devtools::check(cran = TRUE)
+```
+
+`devtools::check(cran = TRUE)` sets `_R_CHECK_CRAN_INCOMING_=true` and
+related env vars, then runs `R CMD check`. Functionally equivalent **most**
+of the time. Differences:
+
+- `--as-cran` requires an installed package tarball; `devtools::check()`
+  builds one for you.
+
+For the final pre-submission check, **build the tarball and run
+`R CMD check --as-cran` on it directly** — this matches what CRAN runs:
+
+```bash
+R CMD build .
+R CMD check --as-cran mypkg_*.tar.gz
+```
+
+### Resubmission Protocol
+
+If CRAN rejects (you'll receive an email from a CRAN maintainer):
+
+1. **Read carefully.** Quote each issue verbatim into a "Resubmission"
+   section at the **top** of `cran-comments.md`.
+2. **Do not push back** unless you genuinely disagree on policy interpretation
+   — and even then, fix what you can and ask politely.
+3. **Address every flagged issue.** Don't selectively fix.
+4. **Update `cran-comments.md`:**
+
+```markdown
+## Resubmission
+
+This is a resubmission. Compared to the previous submission:
+
+* Replaced `\dontrun{}` with `\donttest{}` for examples that are slow but
+  runnable (per Uwe's comment dated 2026-04-15).
+* Added missing `\value{}` for `internal_helper()`.
+* Ensured no example writes outside `tempdir()`.
+
+## R CMD check results
+
+0 errors | 0 warnings | 0 notes
+```
+
+5. **Re-run the gauntlet:**
+
+```r
+devtools::check(cran = TRUE)
+urlchecker::url_check()
+spelling::spell_check_package()
+```
+
+6. **Resubmit:**
+
+```r
+devtools::submit_cran()
+```
+
+Most rejections fall into a small set of buckets:
+
+| Bucket | Typical fix |
+|---|---|
+| `\dontrun{}` overuse | Use `\donttest{}` or guard with `if (interactive())` |
+| Writing outside `tempdir()` | Use `tempfile()` / `withr::local_tempdir()` |
+| Modifying user environment | Use `withr::local_options()` and friends |
+| Missing `\value{}` | Add `@returns` to roxygen, `document()` |
+| URL not reachable | Fix or remove; rerun `urlchecker::url_check()` |
+| Description text issues | Quote function/package names with backticks; full stops |
+| `LICENSE` mismatch | Match `License:` field to actual `LICENSE` file content |
+
+If a reviewer asks for clarification (not rejection), reply in the email
+thread within a few days. Do not resubmit until they ask you to.

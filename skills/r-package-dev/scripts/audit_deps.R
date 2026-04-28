@@ -126,13 +126,29 @@ check_guards <- function(files, suggested) {
   results <- list()
   if (length(suggested) == 0L || length(files) == 0L) return(results)
   for (p in suggested) {
-    text <- unlist(lapply(files, readLines, warn = FALSE))
-    uses <- any(grepl(paste0(p, "::"), text, fixed = TRUE)) ||
-      any(grepl(paste0("requireNamespace\\(\\s*[\"']", p, "[\"']"),
-                text))
-    guarded <- any(grepl(paste0("requireNamespace\\(\\s*[\"']", p, "[\"']"),
-                         text))
-    results[[p]] <- list(uses = uses, guarded = guarded)
+    locations <- list()
+    guarded <- FALSE
+    for (f in files) {
+      lines <- readLines(f, warn = FALSE)
+      use_idx <- grep(paste0("\\b", p, "::"), lines)
+      guard_idx <- grep(
+        paste0("requireNamespace\\(\\s*[\"']", p, "[\"']"),
+        lines
+      )
+      if (length(guard_idx) > 0L) guarded <- TRUE
+      if (length(use_idx) > 0L) {
+        for (i in use_idx) {
+          locations[[length(locations) + 1L]] <- list(
+            file = f, line = i, text = trimws(lines[i])
+          )
+        }
+      }
+    }
+    results[[p]] <- list(
+      uses = length(locations) > 0L,
+      guarded = guarded,
+      locations = locations
+    )
   }
   results
 }
@@ -142,7 +158,18 @@ any_issue <- FALSE
 for (p in names(r_guard)) {
   info <- r_guard[[p]]
   if (isTRUE(info$uses) && !isTRUE(info$guarded)) {
-    cat(sprintf("  * %s — used in R/ but NOT guarded by requireNamespace()\n", p))
+    cat(sprintf("  * %s -- used in R/ but NOT guarded by requireNamespace():\n",
+                p))
+    for (loc in info$locations) {
+      rel_file <- sub(paste0("^", pkg_path, "/"), "",
+                      normalizePath(loc$file, mustWork = FALSE))
+      cat(sprintf("      %s:%d  %s\n",
+                  rel_file, loc$line, loc$text))
+    }
+    cat(sprintf(
+      "    Fix: wrap with `if (!requireNamespace(\"%s\", quietly = TRUE))`\n",
+      p
+    ))
     any_issue <- TRUE
   }
 }

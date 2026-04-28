@@ -11,6 +11,8 @@
 5. When documenting exported functions, does the skill use roxygen2 `@export` tags rather than manual NAMESPACE editing?
 6. When the user needs to access an internal function from another package, does the skill recommend `::` or re-exporting rather than `:::`?
 7. Does all generated code use `|>` and `<-` exclusively (no `%>%` or `=` for assignment)?
+8. When asked about S7 vs S4 for a new class hierarchy, does the skill recommend S7 as the default for greenfield work?
+9. When asked about a release workflow, does the skill mention `usethis::use_release_issue()` rather than walking through manual steps?
 
 ## Test Prompts
 
@@ -24,6 +26,8 @@
 - "I'm getting NAMESPACE conflicts -- my package exports a function called `filter` and it clashes with dplyr. How do I handle this without renaming my function?"
 - "I have S4 classes with methods that need proper registration. The `setMethod()` calls work interactively but `R CMD check` says the methods aren't found."
 - "Before I submit my update to CRAN, I need to run reverse dependency checks. My package has 47 reverse dependencies. Walk me through the process."
+- "I have an S4 class hierarchy with three classes (Animal, Dog extends Animal, Cat extends Animal) plus methods. Walk me through migrating to S7 step-by-step."
+- "Open a release issue using `usethis::use_release_issue()` and walk me through the checklist for a 0.4.0 minor release. My package has no reverse dependencies."
 
 ### Adversarial Cases
 
@@ -39,14 +43,46 @@
 
 ## Success Criteria
 
-- Happy path roxygen2 response MUST include `@export`, `@param`, `@return`, and `@examples` tags and MUST use `devtools::document()` to regenerate NAMESPACE.
-- CRAN submission response MUST include `devtools::check()` with zero errors/warnings/notes as a gate, and MUST mention `urlchecker`, `rhub`, or `win-builder` for cross-platform validation.
-- NAMESPACE conflict response MUST discuss `.conflicts.OK`, selective importing via `@importFrom`, or package-level conflict resolution -- not just "rename your function."
-- S4 method registration response MUST address `setGeneric()`/`setMethod()` collation order, `@include` roxygen tags, or Collate field in DESCRIPTION.
-- Reverse dependency check response MUST reference `revdepcheck::revdep_check()` or an equivalent workflow, not suggest manually installing all 47 packages.
-- Pure scaffolding prompt MUST be deferred to r-project-setup; response must NOT produce `usethis::create_package()` code.
-- Test-writing prompt MUST be deferred to r-tdd; response must NOT contain `test_that()` blocks.
-- Skill generation prompt MUST be deferred to r-package-skill-generator; response must NOT produce SKILL.md content.
-- Response must NOT use `:::` to access internal functions in other packages; it must recommend `::` or re-exporting.
-- Response must NOT skip or downplay `R CMD check`; every workflow that touches NAMESPACE or exports MUST include a check step.
-- Response must NOT use `%>%`, `=` for assignment, or single quotes for strings.
+### Required content (positive criteria)
+
+- Happy-path roxygen response MUST include **all five** of:
+  - `@param` for every argument
+  - `@returns` (or `@return`)
+  - `@examples`
+  - `@export`
+  - An explicit `devtools::document()` invocation
+- CRAN-readiness response MUST include **all five** of:
+  - `devtools::check(cran = TRUE)` (or `R CMD check --as-cran`)
+  - `urlchecker::url_check()` (or `urlchecker`)
+  - `spelling::spell_check_package()` (or `spelling`)
+  - `cran-comments.md`
+  - `NEWS.md`
+- NAMESPACE conflict response MUST mention **at least two** of:
+  - selective `@importFrom`
+  - `pkg::fn()` qualified calls
+  - `usethis::use_import_from()`
+  - package-level conflict resolution (`conflicted` or `.conflicts.OK`)
+- S4 method registration response MUST mention **at least two** of:
+  - `setGeneric()` / `setMethod()`
+  - `@include` collation tag
+  - `Collate:` field in `DESCRIPTION`
+  - `methods::existsMethod()` for verification
+- Reverse dependency response MUST reference one of: `revdepcheck::revdep_check()`,
+  `revdepcheck` package, or `--with-revdep` flag of `release_checklist.R`.
+- S7 migration response MUST mention **all three** of: `S7::new_class`,
+  property syntax (`@prop`), `S7::method()`-style generic registration.
+
+### Forbidden content (negative criteria)
+
+- Pure scaffolding prompt MUST be deferred to `r-project-setup`; response
+  MUST NOT contain `usethis::create_package()`.
+- Test-writing prompt MUST be deferred to `r-tdd`; response MUST NOT contain
+  `test_that()` blocks.
+- Skill-generation prompt MUST be deferred to `r-package-skill-generator`;
+  response MUST NOT contain SKILL.md content.
+- Response MUST NOT use `:::` to access internal functions in other packages.
+- Response MUST NOT skip or downplay `R CMD check` for any workflow that
+  touches NAMESPACE or exports.
+- Response MUST NOT use `%>%`, `=` for assignment, or single quotes for strings.
+- Response MUST NOT recommend `@docType package` (deprecated) — must use
+  `_PACKAGE` sentinel.

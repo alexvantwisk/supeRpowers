@@ -14,10 +14,19 @@ description: >
 
 # R Package Development
 
-Full lifecycle R package development using the modern toolchain:
-usethis, devtools, roxygen2, testthat 3e, pkgdown, and CRAN submission.
+Full-lifecycle R package development with the modern toolchain: `usethis`, `devtools`, `roxygen2`, `testthat` 3e, `pkgdown`, CRAN submission, plus `pak`, `air`, `lintr`, `lifecycle`, `cli`, `withr`. All R code uses base pipe `|>`, `<-` for assignment, snake_case, and double quotes. Target R >= 4.1.0.
 
-All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
+## When to use this skill
+
+This skill owns: development loop, documentation, NAMESPACE, dependencies, class systems, vignettes, pkgdown, R CMD check, CRAN submission, CI/CD.
+
+| You want to... | Use instead |
+|----------------|-------------|
+| Scaffold a new project (only) | `r-project-setup` |
+| Write tests / TDD cycle | `r-tdd` |
+| Run an interactive guided release | `/r-cmd-pkg-release` |
+| Generate a Claude skill FROM an R package | `r-package-skill-generator` |
+| Debug a runtime error in R source (not a check failure) | `r-debugging` |
 
 **Lazy references:**
 - `references/description-fields.md` — every DESCRIPTION field, valid values, CRAN-safe templates
@@ -28,6 +37,9 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 - `references/r-cmd-check-troubleshooting.md` — every common ERROR/WARNING/NOTE and how to fix it
 - `references/cran-submission-checklist.md` — step-by-step CRAN submission workflow
 - `references/revdep-workflow.md` — reverse dependency checking with `revdepcheck`
+- `references/modern-toolchain.md` — `pak`, `air`, `lintr`, `lifecycle`, `cli`, `withr`
+- `references/release-workflow.md` — `usethis::use_release_issue()` lifecycle
+- `references/data-and-assets.md` — `data/`, `inst/extdata/`, `R/sysdata.rda`
 
 **Scripts:**
 - `scripts/check_package.R` — run `devtools::check()` and print summary
@@ -42,15 +54,13 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 - Dispatch to **r-dependency-manager** agent for dependency questions
 
 **MCP integration (when R session available):**
-- `btw_tool_docs_help_page` — read existing docs before editing roxygen2
-- `btw_tool_docs_package_help_topics` — list exported functions before NAMESPACE edits
-- `btw_tool_sessioninfo_is_package_installed` — check before adding a dependency
+- `btw:btw_tool_docs_help_page` — read existing docs before editing roxygen2
+- `btw:btw_tool_docs_package_help_topics` — list exported functions before NAMESPACE edits
+- `btw:btw_tool_sessioninfo_is_package_installed` — check before adding a dependency
 
 ---
 
 ## Package Scaffold
-
-> **Boundary:** Package scaffold as part of ongoing development. For initial project scaffolding only, use r-project-setup instead.
 
 ```r
 usethis::create_package("path/to/mypkg")
@@ -62,28 +72,30 @@ usethis::use_git(); usethis::use_github()
 usethis::use_readme_rmd(); usethis::use_news_md()
 ```
 
-Fill `Title`, `Description`, `Authors@R` (use `person()`), `URL`,
-`BugReports` immediately. See `references/description-fields.md` for
-every field's rules. Validate with
-`Rscript scripts/validate_description.R .`.
+Fill `Title`, `Description`, `Authors@R` (use `person()`), `URL`, `BugReports`
+immediately. See `references/description-fields.md` for every field's rules.
+Validate with `Rscript scripts/validate_description.R .`.
 
 ---
 
 ## Development Loop
 
-```
-load_all() -> test() -> document() -> check()
-```
+The named feedback loop: `load_all() -> test() -> document() -> check() -> fix -> repeat`.
 
 ```r
 devtools::load_all()      # Simulate library(mypkg) from source
 devtools::test()          # Run testthat suite
 devtools::document()      # Rebuild NAMESPACE + man/ from roxygen2
-devtools::check()         # Full R CMD check (run before every commit)
+devtools::check()         # Full R CMD check
 ```
 
-**Quick iteration:** `load_all()` + `test_active_file()` while developing a
-single function. Run full `check()` before pushing.
+**Stop conditions:** 0 errors, 0 warnings, 0 notes (CRAN target) OR explicit
+user-defined acceptance criteria. Never stop because "it looks fine."
+
+**Quick iteration:** `load_all()` + `testthat::test_active_file()` while
+developing a single function. For a fast pre-check that skips R CMD check, run
+`Rscript scripts/preflight.R .` (regenerates man/, lints, spell-checks, URL
+checks). Run full `check()` before pushing.
 
 ---
 
@@ -108,10 +120,10 @@ weighted_summary <- function(data, value_col, weight_col = NULL, na_rm = TRUE) {
 }
 ```
 
-**Rules:** `@param` for every argument, `@returns` + `@examples` mandatory
-for all exported functions, `<data-masking>` / `<tidy-select>` tags for
-tidy eval arguments. Run `Rscript scripts/check_docs.R .` to verify
-coverage. See `references/roxygen2-tags.md` for the full tag reference.
+**Rules:** `@param` for every argument, `@returns` + `@examples` mandatory for
+all exported functions, `<data-masking>` / `<tidy-select>` tags for tidy eval.
+Run `Rscript scripts/check_docs.R .` to verify coverage. See
+`references/roxygen2-tags.md` for the full tag reference.
 
 ---
 
@@ -129,10 +141,9 @@ usethis::use_import_from("rlang", ".data")      # Selective import
 | `@importFrom pkg fun` | Hot loops, or used > 10 times in one file. |
 | `use_import_from()` | Operators (`|>`, `:=`, `.data`) and infix functions. |
 
-**Never** use `@import pkg` (imports entire namespace, collision risk).
-Read `references/namespace-patterns.md` for re-exports, S4 collation
-order, and conflict resolution with downstream packages. Audit an
-existing package with `Rscript scripts/audit_deps.R .`.
+**Never** use `@import pkg` (imports entire namespace, collision risk). Read
+`references/namespace-patterns.md` for re-exports, S4 collation order, and
+conflict resolution. Audit with `Rscript scripts/audit_deps.R .`.
 
 ---
 
@@ -145,8 +156,8 @@ existing package with `Rscript scripts/audit_deps.R .`.
 | **S7** | Greenfield projects | Modern S3/S4 successor, properties |
 | **R6** | Mutable state (caching, connections) | Reference semantics, `$new()` |
 
-Read `references/class-systems-guide.md` for constructors, methods, and
-decision tree for each system.
+Read `references/class-systems-guide.md` for constructors, methods, and the
+decision tree.
 
 ---
 
@@ -156,9 +167,8 @@ decision tree for each system.
 usethis::use_rcpp()                # Sets up src/, Makevars, roxygen tags
 usethis::use_rcpp_armadillo()      # For linear algebra
 # After editing src/*.cpp: devtools::document() then devtools::load_all()
+# Tag package doc: @useDynLib mypkg, .registration = TRUE
 ```
-
-Tag the package-level doc with `@useDynLib mypkg, .registration = TRUE`.
 
 ---
 
@@ -170,16 +180,11 @@ usethis::use_pkgdown()                      # Sets up pkgdown site
 usethis::use_pkgdown_github_pages()         # Auto-deploy via GitHub Pages
 ```
 
-One topic per vignette. For `_pkgdown.yml` layout, theming, and deployment,
-read `references/pkgdown-site-config.md`.
+One topic per vignette. For `_pkgdown.yml` layout, theming, and deployment, read `references/pkgdown-site-config.md`.
 
 ---
 
-## Testing in Packages
-
-> **Boundary:** R CMD check and package-level quality gates. For TDD workflow, test-first methodology, and snapshot tests, use r-tdd instead.
-
-Package-level gates (not test authoring):
+## Testing in Packages (gates, not authoring — see `r-tdd`)
 
 ```r
 devtools::test()                      # Run testthat suite
@@ -187,8 +192,7 @@ covr::package_coverage()              # Coverage report
 testthat::skip_on_cran()              # Use for slow / networked tests
 ```
 
-For diagnosing check failures, read `references/r-cmd-check-troubleshooting.md`
-or run `Rscript scripts/check_package.R` against your package.
+For check failures, read `references/r-cmd-check-troubleshooting.md` or run `Rscript scripts/check_package.R`.
 
 ---
 
@@ -204,10 +208,10 @@ spelling::spell_check_package()       # Typos
 revdepcheck::revdep_check()           # For updates — see references/revdep-workflow.md
 ```
 
-Prepare `cran-comments.md` with test environments and check results.
-Update `NEWS.md`. Then `devtools::submit_cran()`. Read
-`references/cran-submission-checklist.md` for the full guide, rejection
-reasons, and resubmission protocol.
+Prepare `cran-comments.md` with test environments and check results. Update
+`NEWS.md`. Then `devtools::submit_cran()`. Read
+`references/cran-submission-checklist.md` for the full guide, rejection reasons,
+and resubmission protocol.
 
 ---
 
@@ -220,27 +224,37 @@ usethis::use_github_action("pkgdown")           # Build and deploy site
 usethis::use_github_action("lint")              # lintr checks
 ```
 
-Creates `.github/workflows/*.yaml`. Badge with
-`usethis::use_github_actions_badge("R-CMD-check")`.
+Creates `.github/workflows/*.yaml`. Badge with `usethis::use_github_actions_badge("R-CMD-check")`.
 
 ---
 
 ## Gotchas
 
-| Trap | Fix |
-|------|-----|
-| `@import pkg` (whole namespace) | Use `@importFrom pkg fun` or `pkg::fun()` |
-| Forgetting `document()` after roxygen edits | Run `document()` after every edit |
-| `library()` inside `R/` | Use `pkg::fun()` or `@importFrom` |
-| Missing `@export` on public function | Add `@export`, then `document()` |
-| Hardcoded paths | `testthat::test_path()`, `system.file()`, `fs::path_package()` |
-| Dep used but not declared | `usethis::use_package("dep")` |
-| `Depends:` instead of `Imports:` | `Imports:` for almost everything; `Depends:` only for R version |
-| Reaching into another package with `:::` | CRAN rejects; request export or re-implement |
-| Scope creep | Fix only the identified issue; show minimal diff |
+| If you see... | Do... | Verify with... |
+|---|---|---|
+| `@import pkg` (whole namespace) | Replace with `@importFrom pkg fn` or `pkg::fn()` | `devtools::document()` then check NAMESPACE diff |
+| Stale exports / missing methods after roxygen edit | `devtools::document()` | `git diff NAMESPACE` |
+| `library()` or `require()` inside `R/` | Replace with `pkg::fn()` or `@importFrom` | `R CMD check` shows no "library/require call" NOTE |
+| Missing `@export` on a public function | Add `@export`, then `document()` | NAMESPACE gains `export(fn)` |
+| Hardcoded paths in tests | Use `testthat::test_path()`, `system.file()`, `fs::path_package()` | `devtools::test()` passes outside the source tree |
+| Dep used but not declared | `usethis::use_package("dep")` | `Rscript scripts/audit_deps.R .` reports clean |
+| `Depends:` instead of `Imports:` | Move to `Imports:` (keep `Depends:` only for R version) | `desc::desc()` confirms Imports |
+| Reaching another package with `:::` | Request export upstream or re-implement | `R CMD check --as-cran` rejects `:::` |
+| `@docType package` (deprecated) | Replace with `_PACKAGE` sentinel in `R/<pkg>-package.R` | `devtools::document()` regenerates package help |
+| S4/S7 method registration silently dropped | Add `@include` and confirm `Collate:` order in DESCRIPTION | `methods::existsMethod()` returns TRUE |
+| Lazy data >5 MB blocks CRAN | `usethis::use_data(..., compress = "xz")`; check with `tools::checkRdaFiles("data/")` | Install size NOTE under 5 MB |
+| Confused about `data/` vs `inst/extdata/` | Read `references/data-and-assets.md` | Files load via `data()` (R) or `system.file()` (raw) |
 
-See `references/r-cmd-check-troubleshooting.md` for every common
-ERROR/WARNING/NOTE.
+For every common ERROR/WARNING/NOTE from `devtools::check()`, see
+`references/r-cmd-check-troubleshooting.md`.
+
+## Scope Discipline (mandatory)
+
+- Fix **only** the identified issue. No drive-by refactors.
+- Show the **minimal diff**. One issue per session.
+- Never re-export, rename, or restructure without an explicit user request.
+- Re-run `devtools::check()` (or `scripts/preflight.R` for fast iteration)
+  after every fix; do not batch unrelated changes.
 
 ---
 
@@ -266,25 +280,16 @@ fetch_forecast <- function(city, days = 3L) {
   stopifnot(is.character(city), length(city) == 1L, days >= 1L, days <= 7L)
   # ... implementation using httr2
 }
-
 devtools::document()   # Regenerates NAMESPACE + man/
 devtools::check()      # 0 errors, 0 warnings -> ready
 ```
 
-### Edge Case: NAMESPACE conflict from .data in dplyr NSE
-
-**Prompt:** "R CMD check warns about .data not found in NAMESPACE."
+### Edge Case: `.data` not found in NAMESPACE
 
 ```r
-# Input — .data[[var]] used but NAMESPACE has no import
-filter_column <- function(data, col, min_val) {
-  data |> dplyr::filter(.data[[col]] >= min_val)
-}
-
-# Fix — import .data from rlang (NOT dplyr)
+# R CMD check warns about .data — import from rlang (NOT dplyr)
 usethis::use_import_from("rlang", ".data")
-devtools::document()
-# NAMESPACE gains: importFrom(rlang,.data); check passes.
+devtools::document()   # NAMESPACE gains: importFrom(rlang,.data)
 ```
 
 **More example prompts:**

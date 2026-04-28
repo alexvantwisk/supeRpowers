@@ -14,6 +14,8 @@
 # Exits 0 on success, 1 on any failure. Prints a coloured-ish summary.
 
 args <- commandArgs(trailingOnly = TRUE)
+with_revdep <- "--with-revdep" %in% args
+args <- args[!startsWith(args, "--")]
 pkg_path <- if (length(args) >= 1) args[1] else "."
 
 pkg_path <- normalizePath(pkg_path, mustWork = FALSE)
@@ -166,6 +168,28 @@ cran_comments <- file.path(pkg_path, "cran-comments.md")
 record("cran-comments.md present", file.exists(cran_comments),
        if (!file.exists(cran_comments))
          "Missing — create before submission" else "")
+
+# ---- 7. Reverse dependency check (opt-in) ----
+if (with_revdep) {
+  if (requireNamespace("revdepcheck", quietly = TRUE)) {
+    cat("\n>> Running revdepcheck::revdep_check() -- this can take an hour+...\n")
+    revdep_result <- tryCatch(
+      revdepcheck::revdep_check(pkg_path, num_workers = 4L),
+      error = function(e) e
+    )
+    if (inherits(revdep_result, "error")) {
+      record("revdepcheck", FALSE, conditionMessage(revdep_result))
+    } else {
+      record("revdepcheck", TRUE,
+             "see revdep/ for per-package results")
+    }
+  } else {
+    record("revdepcheck", FALSE,
+           "revdepcheck not installed -- run pak::pkg_install(\"r-lib/revdepcheck\")")
+  }
+} else {
+  cat("\n>> Skipping revdepcheck (pass --with-revdep to run; takes 30+ min).\n")
+}
 
 # ---- Summary ----
 cat("\n=== Summary ===\n")

@@ -128,6 +128,32 @@ never attach packages.
 **Fix:** Replace with `pkg::fn()` or `@importFrom`. Only vignettes and
 tests may use `library()`.
 
+### "package requires R (>= 4.1.0)"
+
+**Saw:**
+
+```
+* checking package dependencies ... ERROR
+  Cannot import 'mypkg' because it depends on R 4.1.0
+```
+
+**Cause:** Code uses native `|>` (R >= 4.1.0) or `\(x)` lambda without
+declaring the version constraint.
+
+**Fix:** in `DESCRIPTION`:
+
+```dcf
+Depends:
+    R (>= 4.1.0)
+```
+
+**Verify:**
+
+```r
+desc::desc()$get("Depends")    # shows R (>= 4.1.0)
+devtools::check()               # ERROR gone
+```
+
 ---
 
 ## WARNINGs — Usually Block Release
@@ -171,6 +197,45 @@ If the function should be internal, remove `@export` and rerun `document()`.
 
 ```r
 devtools::build_vignettes()
+```
+
+### "vignette engine X registered but no vignettes"
+
+**Saw:**
+
+```
+* checking package vignettes in 'inst/doc' ... WARNING
+  Package vignette(s) declared in DESCRIPTION but none found
+```
+
+**Cause:** `VignetteBuilder` declared in DESCRIPTION but `vignettes/` is
+empty or missing the engine declaration in `.Rmd` YAML.
+
+**Fix:** ensure each vignette `.Rmd` has the engine in its YAML:
+
+```yaml
+---
+title: "Getting started"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+```
+
+And DESCRIPTION:
+
+```dcf
+VignetteBuilder: knitr
+Suggests: knitr, rmarkdown
+```
+
+**Verify:**
+
+```r
+devtools::build_vignettes()    # produces inst/doc/*.html
+devtools::check()               # WARNING gone
 ```
 
 ### "'LazyData' is specified without a 'data' directory"
@@ -227,20 +292,44 @@ Appears when submitting < 30 days since last release. Explain why:
   (#42) reported by downstream maintainers.
 ```
 
-### "Installed size is X Mb"
+### "Installed size is X Mb" / "installed size of XX MB exceeds CRAN limits"
 
-NOTE if install > 5 Mb. Justify if large:
+**Saw:**
 
-```markdown
-* Installed size is 12.3 Mb; this is due to precompiled Stan models
-  in inst/stan/ (6.1 Mb) and embedded fonts (4.2 Mb) required for
-  PDF output.
+```
+* checking installed package size ... NOTE
+  installed size is  6.2Mb
+  sub-directories of 1Mb or more:
+    data  4.5Mb
+    R     1.1Mb
 ```
 
-Reduce by:
-- Moving large data to a companion data package
-- Precompiling Stan models with `rstantools::rstan_config()`
-- Removing unused fixture files
+**Cause:** Total install > 5 MB (CRAN policy). Usually large `data/*.rda`,
+vignette outputs, or compiled object files.
+
+**Fix:**
+
+```r
+# Compress data/
+usethis::use_data(my_dataset, overwrite = TRUE, compress = "xz")
+tools::checkRdaFiles("data/")   # see resulting sizes
+```
+
+For files > 5 MB total: split into a companion data package; precompile Stan
+models with `rstantools::rstan_config()`; remove unused fixtures.
+
+If genuinely needed, justify in `cran-comments.md`:
+
+```markdown
+* Installed size is 12.3 Mb; due to precompiled Stan models (6.1 Mb)
+  and embedded fonts (4.2 Mb) required for PDF output.
+```
+
+**Verify:**
+
+```r
+devtools::check()    # NOTE about install size gone
+```
 
 ### "Found the following (possibly) invalid URLs"
 
@@ -335,6 +424,61 @@ Informational. Lists detected issues — check and address each:
 **Cause:** Typo in a field name or unsupported field.
 
 **Fix:** Check against the list in `?utils::read.dcf`; remove or fix.
+
+### "Authors@R: ... missing required fields"
+
+**Saw:**
+
+```
+* checking DESCRIPTION meta-information ... WARNING
+  Malformed Authors@R field
+```
+
+**Cause:** `Authors@R` is malformed — common: missing `role`, missing
+`email` for the maintainer, ORCID without `comment`.
+
+**Fix:**
+
+```dcf
+Authors@R: c(
+    person("Ada", "Lovelace", , "ada@example.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-1825-0097")),
+    person("Charles", "Babbage", role = "ctb"))
+```
+
+The maintainer must have role `cre`. ORCID is the bare `0000-...` ID.
+
+**Verify:**
+
+```r
+desc::desc()$get_authors()      # shows valid person objects
+devtools::check()                # WARNING gone
+```
+
+### "Description does not end with a full stop"
+
+**Saw:**
+
+```
+* checking DESCRIPTION meta-information ... WARNING
+  Malformed Description field: should contain one or more complete sentences.
+```
+
+**Cause:** `Description` field doesn't end with `.`, `?`, or `!`.
+
+**Fix:**
+
+```dcf
+Description: Tools for fetching weather forecasts from public APIs and
+    summarising them as tibbles.
+```
+
+**Verify:**
+
+```r
+devtools::check()    # WARNING gone
+```
 
 ### "The Title field should be in title case"
 
