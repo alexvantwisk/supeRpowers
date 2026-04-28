@@ -20,17 +20,31 @@ usethis, devtools, roxygen2, testthat 3e, pkgdown, and CRAN submission.
 All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 
 **Lazy references:**
-- Read `references/cran-submission-checklist.md` for step-by-step CRAN submission guide
-- Read `references/class-systems-guide.md` for detailed R class system comparison
+- `references/description-fields.md` — every DESCRIPTION field, valid values, CRAN-safe templates
+- `references/roxygen2-tags.md` — complete roxygen2 tag reference with examples
+- `references/namespace-patterns.md` — `@importFrom` vs `::`, re-exports, conflict resolution
+- `references/class-systems-guide.md` — S3, S4, S7, R6 comparison with decision tree
+- `references/pkgdown-site-config.md` — `_pkgdown.yml` layout, theming, GitHub Pages deploy
+- `references/r-cmd-check-troubleshooting.md` — every common ERROR/WARNING/NOTE and how to fix it
+- `references/cran-submission-checklist.md` — step-by-step CRAN submission workflow
+- `references/revdep-workflow.md` — reverse dependency checking with `revdepcheck`
+
+**Scripts:**
+- `scripts/check_package.R` — run `devtools::check()` and print summary
+- `scripts/release_checklist.R` — full pre-release gauntlet (check, URLs, spelling, DESCRIPTION, NEWS)
+- `scripts/validate_description.R` — validate DESCRIPTION fields against CRAN rules
+- `scripts/audit_deps.R` — find unused imports, missing deps, unguarded Suggests
+- `scripts/check_docs.R` — verify roxygen2 coverage for every exported function
+- `scripts/lint_package.R` — run lintr with tidyverse-style linters
 
 **Agent dispatch:**
 - Dispatch to **r-pkg-check** agent after `devtools::check()` for deep issue resolution
 - Dispatch to **r-dependency-manager** agent for dependency questions
 
 **MCP integration (when R session available):**
-- Before writing or updating roxygen2 docs: `btw_tool_docs_help_page` to read existing documentation for the function
-- When working on exports or NAMESPACE: `btw_tool_docs_package_help_topics` to see the full list of exported functions
-- Before adding a dependency: `btw_tool_sessioninfo_is_package_installed` to check if it's already available
+- `btw_tool_docs_help_page` — read existing docs before editing roxygen2
+- `btw_tool_docs_package_help_topics` — list exported functions before NAMESPACE edits
+- `btw_tool_sessioninfo_is_package_installed` — check before adding a dependency
 
 ---
 
@@ -40,21 +54,18 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 
 ```r
 usethis::create_package("path/to/mypkg")
-
-# Inside the new package:
 usethis::use_testthat(3)
-usethis::use_pipe(type = "base")       # Adds |> re-export, sets min R >= 4.1.0
-usethis::use_roxygen_md()              # Enables markdown in roxygen2 comments
-usethis::use_mit_license()             # Or use_gpl3_license(), use_cc0_license()
-usethis::use_git()
-usethis::use_github()                  # Creates remote, pushes initial commit
-usethis::use_readme_rmd()              # README.Rmd -> README.md via knit
-usethis::use_news_md()                 # NEWS.md for changelog
+usethis::use_pipe(type = "base")       # |> re-export, R >= 4.1.0
+usethis::use_roxygen_md()              # Markdown in roxygen
+usethis::use_mit_license()             # Or use_gpl3_license()
+usethis::use_git(); usethis::use_github()
+usethis::use_readme_rmd(); usethis::use_news_md()
 ```
 
-Creates `DESCRIPTION`, `NAMESPACE`, `R/`, `man/`, `tests/testthat/`, `LICENSE`,
-`.Rbuildignore`. Fill `Title`, `Description`, `Authors@R` (use `person()`),
-`URL`, `BugReports` immediately.
+Fill `Title`, `Description`, `Authors@R` (use `person()`), `URL`,
+`BugReports` immediately. See `references/description-fields.md` for
+every field's rules. Validate with
+`Rscript scripts/validate_description.R .`.
 
 ---
 
@@ -83,21 +94,13 @@ Markdown enabled via `Roxygen: list(markdown = TRUE)` in DESCRIPTION.
 ```r
 #' Compute weighted summary statistics
 #'
-#' Calculates mean and standard deviation of a column, optionally weighted.
-#'
 #' @param data A data frame or tibble.
-#' @param value_col <[`data-masking`][rlang::args_data_masking]> Column
-#'   containing numeric values to summarise.
-#' @param weight_col <[`data-masking`][rlang::args_data_masking]> Optional
-#'   column of weights. If `NULL` (default), unweighted statistics are returned.
+#' @param value_col <[`data-masking`][rlang::args_data_masking]> Column to summarise.
+#' @param weight_col <[`data-masking`][rlang::args_data_masking]> Optional weights.
 #' @param na_rm Logical. Remove `NA` values before computation? Default `TRUE`.
-#'
 #' @returns A tibble with columns `mean` and `sd`.
-#'
 #' @examples
 #' mtcars |> weighted_summary(mpg)
-#' mtcars |> weighted_summary(mpg, weight_col = wt)
-#'
 #' @family summary functions
 #' @export
 weighted_summary <- function(data, value_col, weight_col = NULL, na_rm = TRUE) {
@@ -105,34 +108,31 @@ weighted_summary <- function(data, value_col, weight_col = NULL, na_rm = TRUE) {
 }
 ```
 
-**Rules:**
-- `@param` for every parameter, `@returns` for every function (not `@return`)
-- `@examples` mandatory for all exported functions
-- `@family` to group related functions
-- Tidy eval: use `<data-masking>` or `<tidy-select>` tags as shown above
+**Rules:** `@param` for every argument, `@returns` + `@examples` mandatory
+for all exported functions, `<data-masking>` / `<tidy-select>` tags for
+tidy eval arguments. Run `Rscript scripts/check_docs.R .` to verify
+coverage. See `references/roxygen2-tags.md` for the full tag reference.
 
 ---
 
-## NAMESPACE Management
-
-### Adding dependencies
+## NAMESPACE and Dependencies
 
 ```r
 usethis::use_package("dplyr")                   # Adds to Imports
 usethis::use_package("ggplot2", type = "Suggests")  # Optional dep
 usethis::use_import_from("rlang", ".data")      # Selective import
-usethis::use_import_from("rlang", c("abort", "warn", "inform"))
 ```
-
-### `pkg::fun()` vs `@importFrom`
 
 | Strategy | When to use |
 |----------|-------------|
 | `pkg::fun()` | Default. Clear provenance, no NAMESPACE clutter. |
-| `@importFrom pkg fun` | Hot loops (avoids `::` lookup), frequently used (>10 calls). |
-| `use_import_from()` | Operators (`|>`, `.data`) and infix functions. |
+| `@importFrom pkg fun` | Hot loops, or used > 10 times in one file. |
+| `use_import_from()` | Operators (`|>`, `:=`, `.data`) and infix functions. |
 
 **Never** use `@import pkg` (imports entire namespace, collision risk).
+Read `references/namespace-patterns.md` for re-exports, S4 collation
+order, and conflict resolution with downstream packages. Audit an
+existing package with `Rscript scripts/audit_deps.R .`.
 
 ---
 
@@ -142,7 +142,7 @@ usethis::use_import_from("rlang", c("abort", "warn", "inform"))
 |--------|-------------|-----------|
 | **S3** | Most packages | Simple, informal, `UseMethod()` dispatch |
 | **S4** | Bioconductor, formal interfaces | Slots, validity, multiple dispatch |
-| **R7** | Greenfield projects | Modern S3/S4 successor, properties |
+| **S7** | Greenfield projects | Modern S3/S4 successor, properties |
 | **R6** | Mutable state (caching, connections) | Reference semantics, `$new()` |
 
 Read `references/class-systems-guide.md` for constructors, methods, and
@@ -153,148 +153,142 @@ decision tree for each system.
 ## Compiled Code with Rcpp
 
 ```r
-usethis::use_rcpp()       # Sets up src/, Makevars, roxygen tags
-usethis::use_rcpp_armadillo()  # For linear algebra (RcppArmadillo)
+usethis::use_rcpp()                # Sets up src/, Makevars, roxygen tags
+usethis::use_rcpp_armadillo()      # For linear algebra
+# After editing src/*.cpp: devtools::document() then devtools::load_all()
 ```
 
-After creating a `.cpp` file in `src/`:
-
-```r
-devtools::document()      # Generates RcppExports.R and RcppExports.cpp
-devtools::load_all()      # Compiles and loads
-```
-
-Tag the package-level documentation file with `@useDynLib mypkg, .registration = TRUE`.
+Tag the package-level doc with `@useDynLib mypkg, .registration = TRUE`.
 
 ---
 
 ## Vignettes and pkgdown
 
 ```r
-usethis::use_vignette("getting-started")    # Creates vignettes/*.Rmd
+usethis::use_vignette("getting-started")    # vignettes/*.Rmd
 usethis::use_pkgdown()                      # Sets up pkgdown site
-pkgdown::build_site()                       # Build locally
+usethis::use_pkgdown_github_pages()         # Auto-deploy via GitHub Pages
 ```
 
-One topic per vignette. Customize `_pkgdown.yml` with `reference:` sections
-(group by topic) and `articles:` for vignettes. Deploy via GitHub Actions.
+One topic per vignette. For `_pkgdown.yml` layout, theming, and deployment,
+read `references/pkgdown-site-config.md`.
 
 ---
 
 ## Testing in Packages
 
-> **Boundary:** R CMD check and package-level quality gates. For TDD workflow and test-first methodology, use r-tdd instead.
+> **Boundary:** R CMD check and package-level quality gates. For TDD workflow, test-first methodology, and snapshot tests, use r-tdd instead.
+
+Package-level gates (not test authoring):
+
+```r
+devtools::test()                      # Run testthat suite
+covr::package_coverage()              # Coverage report
+testthat::skip_on_cran()              # Use for slow / networked tests
+```
+
+For diagnosing check failures, read `references/r-cmd-check-troubleshooting.md`
+or run `Rscript scripts/check_package.R` against your package.
+
+---
 
 ## CRAN Submission
 
-**Pre-submission checklist:**
+Run the gauntlet: `Rscript scripts/release_checklist.R .`. It chains:
 
 ```r
-devtools::check(cran = TRUE)          # Must be 0 errors, 0 warnings
-rhub::check_for_cran()                # Test on multiple platforms
-urlchecker::url_check()               # Validate all URLs
-spelling::spell_check_package()       # Catch typos
+devtools::check(cran = TRUE)          # 0 errors, 0 warnings mandatory
+rhub::check_for_cran()                # Multi-platform
+urlchecker::url_check()               # URL validity
+spelling::spell_check_package()       # Typos
+revdepcheck::revdep_check()           # For updates — see references/revdep-workflow.md
 ```
 
-Prepare `cran-comments.md` at package root documenting test environments and
-R CMD check results. Update `NEWS.md` with user-facing changes.
-
-```r
-devtools::submit_cran()               # Or submit via web form
-```
-
-Read `references/cran-submission-checklist.md` for the full step-by-step guide,
-common rejection reasons, and resubmission protocol.
+Prepare `cran-comments.md` with test environments and check results.
+Update `NEWS.md`. Then `devtools::submit_cran()`. Read
+`references/cran-submission-checklist.md` for the full guide, rejection
+reasons, and resubmission protocol.
 
 ---
 
 ## CI/CD with GitHub Actions
 
 ```r
-usethis::use_github_action("check-standard")    # R CMD check on 3 OSes
+usethis::use_github_action("check-standard")    # R CMD check on 3 OSes + R-devel
 usethis::use_github_action("test-coverage")     # covr + codecov
 usethis::use_github_action("pkgdown")           # Build and deploy site
 usethis::use_github_action("lint")              # lintr checks
 ```
 
-These create `.github/workflows/*.yaml` files. The `check-standard` action
-runs `R CMD check` on ubuntu, macOS, and Windows with current R and R-devel.
-Add status badges with `usethis::use_github_actions_badge("R-CMD-check")`.
+Creates `.github/workflows/*.yaml`. Badge with
+`usethis::use_github_actions_badge("R-CMD-check")`.
 
 ---
 
 ## Gotchas
 
-| Trap | Why It Fails | Fix |
-|------|-------------|-----|
-| `@import pkg` instead of `@importFrom pkg fun` | Imports entire namespace; causes collisions with other packages | Use `@importFrom pkg fun` or `pkg::fun()` — never `@import` |
-| Forgetting `devtools::document()` after roxygen changes | `NAMESPACE` and man pages are stale; exports don't update | Run `devtools::document()` after every roxygen edit |
-| `library()` in package code | Attaches entire package to search path; violates CRAN policy | Use `pkg::fun()` or `@importFrom pkg fun` in `R/` files |
-| Missing `@export` tag | Function exists but users cannot access it after `library(pkg)` | Add `@export` to roxygen block, then `devtools::document()` |
-| Hardcoded file paths | Paths break on other machines and in `R CMD check` | Use `testthat::test_path()`, `system.file()`, or `fs::path_package()` |
-| Forgetting `usethis::use_package("dep")` | Dependency not in `DESCRIPTION`; `R CMD check` fails with "not available" | Run `usethis::use_package()` for every new dependency |
-| `Depends:` instead of `Imports:` | Forces package onto user's search path; pollutes namespace | Use `Imports:` for almost all deps; `Depends:` only for data packages or tight coupling |
-| Scope creep | Claude adds features or refactors unrelated code during a focused fix | Fix only the identified issue; show minimal diff |
+| Trap | Fix |
+|------|-----|
+| `@import pkg` (whole namespace) | Use `@importFrom pkg fun` or `pkg::fun()` |
+| Forgetting `document()` after roxygen edits | Run `document()` after every edit |
+| `library()` inside `R/` | Use `pkg::fun()` or `@importFrom` |
+| Missing `@export` on public function | Add `@export`, then `document()` |
+| Hardcoded paths | `testthat::test_path()`, `system.file()`, `fs::path_package()` |
+| Dep used but not declared | `usethis::use_package("dep")` |
+| `Depends:` instead of `Imports:` | `Imports:` for almost everything; `Depends:` only for R version |
+| Reaching into another package with `:::` | CRAN rejects; request export or re-implement |
+| Scope creep | Fix only the identified issue; show minimal diff |
+
+See `references/r-cmd-check-troubleshooting.md` for every common
+ERROR/WARNING/NOTE.
 
 ---
 
 ## Examples
 
-### Happy Path: Create package with roxygen2 docs and check
+### Happy Path: New package with a documented function
 
 **Prompt:** "Create a new R package called tidyweather with a documented function."
 
 ```r
-# Input — scaffold and add a function
 usethis::create_package("~/tidyweather")
-usethis::use_testthat(3)
-usethis::use_pipe(type = "base")
-usethis::use_mit_license()
-usethis::use_package("httr2")
+usethis::use_testthat(3); usethis::use_pipe(type = "base")
+usethis::use_mit_license(); usethis::use_package("httr2")
 
 # R/fetch_forecast.R
 #' Fetch weather forecast for a city
-#'
 #' @param city Character. City name to query.
 #' @param days Integer. Number of forecast days (1-7). Default `3`.
 #' @returns A tibble with columns `date`, `temp_high`, `temp_low`.
-#' @examples
-#' fetch_forecast("London", days = 5)
+#' @examples fetch_forecast("London", days = 5)
 #' @export
 fetch_forecast <- function(city, days = 3L) {
   stopifnot(is.character(city), length(city) == 1L, days >= 1L, days <= 7L)
   # ... implementation using httr2
 }
 
-# Output — build docs and run check
-devtools::document()   # generates man/fetch_forecast.Rd and updates NAMESPACE
-devtools::check()      # 0 errors, 0 warnings, 0 notes -> ready
+devtools::document()   # Regenerates NAMESPACE + man/
+devtools::check()      # 0 errors, 0 warnings -> ready
 ```
 
-### Edge Case: NAMESPACE conflict from @importFrom vs tidy eval
+### Edge Case: NAMESPACE conflict from .data in dplyr NSE
 
-**Prompt:** "R CMD check warns about .data not found in NAMESPACE after I added a dplyr function."
+**Prompt:** "R CMD check warns about .data not found in NAMESPACE."
 
 ```r
-# Input — .data[[var]] used in a function but NAMESPACE has no import
-# R CMD check: "no visible binding for global variable '.data'"
+# Input — .data[[var]] used but NAMESPACE has no import
 filter_column <- function(data, col, min_val) {
-  data |> dplyr::filter(.data[[col]] >= min_val)  # .data not imported!
+  data |> dplyr::filter(.data[[col]] >= min_val)
 }
 
 # Fix — import .data from rlang (NOT dplyr)
 usethis::use_import_from("rlang", ".data")
 devtools::document()
-
-# NAMESPACE now contains: importFrom(rlang,.data)
-# R CMD check passes cleanly
-
-# Also works for {{ }} (curly-curly) — no import needed, but requires
-# @param tag with <data-masking> for documentation:
-#' @param col <[`data-masking`][rlang::args_data_masking]> Column to filter.
+# NAMESPACE gains: importFrom(rlang,.data); check passes.
 ```
 
 **More example prompts:**
 - "Add a `fetch_forecast()` function with full roxygen2 docs and tests"
 - "Get this package ready for CRAN submission"
 - "Create a pkgdown site grouping functions by topic"
+- "Audit my package's dependencies — anything unused or missing?"

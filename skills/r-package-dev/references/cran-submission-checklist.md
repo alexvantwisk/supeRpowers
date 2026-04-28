@@ -2,6 +2,15 @@
 
 Step-by-step guide for submitting an R package to CRAN. Follow this in order.
 
+**Sources:**
+- CRAN Repository Policy — <https://cran.r-project.org/web/packages/policies.html>
+- CRAN Submission portal — <https://cran.r-project.org/submit.html>
+- R Packages 2e ch. 22 "Releasing to CRAN" — <https://r-pkgs.org/release.html>
+- Writing R Extensions §1 — <https://cran.r-project.org/doc/manuals/r-release/R-exts.html>
+- win-builder — <https://win-builder.r-project.org/>
+- Mac builder — <https://mac.r-project.org/macbuilder/submit.html>
+- Keep a Changelog — <https://keepachangelog.com/>
+
 ---
 
 ## Phase 1: Pre-Submission Checks
