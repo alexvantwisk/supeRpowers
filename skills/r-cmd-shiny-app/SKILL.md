@@ -31,7 +31,7 @@ Use TaskCreate at the start of this workflow — one task per phase below. Mark 
 - "Phase 4: Test with shinytest2"
 - "Phase 5: Architecture review"
 
-When adding modules to an existing app, omit the scaffold task — the list stays accurate to what was actually done.
+Surfaces the orchestration shape to the user; when adding modules to an existing app, omit the scaffold task so the list stays accurate.
 
 ## Steps
 
