@@ -104,3 +104,22 @@ Keep only one registered at a time, then reconnect Claude Code.
 ```
 
 Restart Claude Code after editing.
+
+## 7. `cc_env()` shows an empty workspace via Claude
+
+**Symptom:** You have objects in your Positron R session, but when Claude calls
+`cc_env()` through `r-btw`, it returns `(empty)`.
+
+**Cause:** `btw_tool_run_r()` is hitting a fresh R subprocess, not the Positron
+session bridged by `mcptools::mcp_session()`.
+
+**Fix:**
+
+1. Confirm `mcptools::mcp_session()` is running in the Positron console (check
+   the startup message — declaring it in `.Rprofile` is not enough if the
+   session was launched before the line was added)
+2. Confirm `.mcp.json` registers `mcptools::mcp_server()` for stateful tools
+   (not a bare `Rscript -e "btw::btw_mcp_server(...)"` which spawns its own
+   process)
+3. Restart Claude Code so the MCP connection re-establishes against the
+   running session
