@@ -391,5 +391,93 @@
     "must_not_fire": ["r-data-analysis"],
     "discriminator": "pipeline orchestration with targets = workflow tool, not wrangling",
     "category": "data-analysis-coverage"
+  },
+  {
+    "id": "route-050",
+    "prompt": "Build a raincloud plot of measurements by group with ggdist",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "raincloud / ggdist = visualization extension",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-051",
+    "prompt": "Make a ridgeline plot showing distributions across categories",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "ridgeline = ggridges = visualization",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-052",
+    "prompt": "Add a beeswarm plot with one point per observation per group",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "beeswarm = ggbeeswarm = visualization",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-053",
+    "prompt": "Use markdown formatting (bold, italic, superscript) in my plot title with ggtext",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-quarto"],
+    "discriminator": "markdown in plot title = ggtext = visualization theming",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-054",
+    "prompt": "Highlight a subset of lines in a multi-line ggplot using gghighlight",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-data-analysis"],
+    "discriminator": "gghighlight = visualization extension",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-055",
+    "prompt": "Build a multi-panel paper figure with shared legend using patchwork",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-quarto"],
+    "discriminator": "patchwork composition = visualization",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-056",
+    "prompt": "Build nested facets with two grouping variables using ggh4x",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-data-analysis"],
+    "discriminator": "ggh4x nested facets = visualization",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-057",
+    "prompt": "Animate this ggplot over time using gganimate",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-shiny"],
+    "discriminator": "gganimate static animation = visualization, not Shiny",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-058",
+    "prompt": "Make my static ggplot interactive for an HTML report using ggiraph",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-shiny"],
+    "discriminator": "ggiraph standalone interactivity = visualization, not Shiny",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-059",
+    "prompt": "Plot a modern Kaplan-Meier curve with a risktable using ggsurvfit",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-clinical"],
+    "discriminator": "ggsurvfit mechanics without FDA/regulatory framing = visualization",
+    "category": "viz-ecosystem"
+  },
+  {
+    "id": "route-060",
+    "prompt": "Swap my plot palette to the Lancet or NEJM journal palette using ggsci",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-clinical"],
+    "discriminator": "ggsci palette swap = visualization theming",
+    "category": "viz-ecosystem"
   }
 ]

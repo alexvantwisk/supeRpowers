@@ -10,6 +10,15 @@
 4. When asked to create a formatted summary table, does the skill defer to r-tables?
 5. When rendering 10k+ points, does the skill address overplotting (via alpha, jitter, hex bins, or density)?
 6. Does the skill use `|>` and `<-` exclusively (never `%>%` or `=` for assignment)?
+7. Does the skill prefer `ggsurvfit` over `survminer` for new KM code?
+8. Does the skill use `scales::label_*` over hand-rolled `formatC` / `sprintf` for axis labels?
+9. Does the skill prefer `geom_col()` over `geom_bar(stat = "identity")`?
+10. When asked for markdown / bold / italic in axis or title text, does the skill route through `ggtext::element_markdown()`?
+11. When asked for a raincloud plot, does the skill use `ggdist`?
+12. When asked for ridgeline / stacked density plots, does the skill use `ggridges`?
+13. For >100k points, does the skill suggest `geom_hex()` / aggregation / `plot_ly` WebGL rather than dropping a static `plotly::ggplotly`?
+14. For a multi-panel paper figure, does the skill reach for `patchwork` and use `&` for composition-wide theme?
+15. Does the skill use `linewidth` (not `size`) on line geoms in any new code (ggplot2 ≥3.4 convention)?
 
 ## Test Prompts
 
@@ -17,6 +26,16 @@
 
 - "Create a scatter plot of mpg vs wt from mtcars, colored by cyl, with a smooth line and publication-ready styling."
 - "Make a faceted histogram of Sepal.Length by Species from iris, with a clean theme and labeled axes."
+- "Build a raincloud plot of Sepal.Length by Species using ggdist."
+- "Make a ridgeline plot of diamond price by cut using ggridges."
+- "Compose a 2x2 paper figure of four scatter plots with a shared legend at the bottom using patchwork."
+- "Highlight the top three time series in this 30-line plot using gghighlight."
+- "Add markdown formatting (bold, italic, superscript units) to my axis title using ggtext."
+- "Plot a Kaplan-Meier survival curve with a risktable using ggsurvfit."
+- "Swap my plot's colors to the NEJM palette using ggsci."
+- "Make my static ggplot interactive for an HTML report using ggiraph."
+- "Animate a scatter plot over years using gganimate."
+- "Build nested facets (Region > Country) using ggh4x."
 
 ### Edge Cases
 
@@ -35,6 +54,9 @@
 - "Build a reactive Shiny app that shows a bar chart filtered by user input." (boundary -> r-shiny)
 - "Create a gt table with sparkline columns summarizing trends." (boundary -> r-tables)
 - "Plot the Kaplan-Meier curve for my FDA submission with stratified confidence bands." (boundary -> r-clinical)
+- "Build a Shiny dashboard with an animated bar chart that updates on user input." (boundary -> r-shiny)
+- "Render a styled table with sparkline columns using gt." (boundary -> r-tables)
+- "Generate a Kaplan-Meier curve formatted to FDA submission standards with stratification." (boundary -> r-clinical for analytical layer; this skill handles ggplot mechanics only)
 
 ## Success Criteria
 
@@ -48,3 +70,11 @@
 - Formatted table prompts MUST be deferred to r-tables; the skill must NOT render tabular data as a plot-based table.
 - Clinical trial KM plots MUST flag r-clinical for the analytical and regulatory layer; the skill may provide ggplot2/ggsurvfit mechanics but must NOT perform the clinical analysis (stratification choices, endpoint definitions, regulatory formatting).
 - All generated R code MUST use `|>`, `<-`, snake_case, and double quotes.
+- New KM code MUST use `ggsurvfit`. Generating `survminer::ggsurvplot` for a new request without explicit user preference is a failure.
+- Markdown text in titles/labels MUST route through `ggtext::element_markdown()` (or `element_textbox`); using `parse = TRUE` plotmath instead is a failure when markdown is requested.
+- Raincloud requests MUST use `ggdist::stat_halfeye` / `stat_dots` (with optional `geom_boxplot`); a violin-only or box-only plot is a failure.
+- Ridgeline requests MUST use `ggridges`; stacking densities with `position = "stack"` is a failure.
+- Multi-panel paper-figure requests MUST use `patchwork` (or `cowplot::plot_grid` only when explicitly asked); using `gridExtra::grid.arrange` for new code is a failure.
+- Composition-wide theming MUST use `&`, not `+`. Applying `theme()` with `+` to a patchwork object and expecting it on every panel is a failure.
+- Line / segment / smooth geoms MUST use `linewidth` for line widths in any new code (ggplot2 ≥3.4); using `size` on lines is a failure.
+- Highlight requests SHOULD use `gghighlight`; manually filtering and re-plotting twice is acceptable but suboptimal.

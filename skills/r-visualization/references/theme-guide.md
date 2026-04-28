@@ -386,3 +386,64 @@ rect (all rectangles)
 
 Setting `theme(text = element_text(family = "Helvetica"))` changes the font
 for ALL text elements. Override specific children as needed.
+
+---
+
+## Scales and Labels with `scales`
+
+The `scales` package (a ggplot2 dependency) supplies axis/legend formatters,
+breaks helpers, and transformations. Prefer these over hand-rolled functions.
+
+### Common label formatters
+
+```r
+library(scales)
+
+scale_y_continuous(labels = label_comma())            # 1,234,567
+scale_y_continuous(labels = label_dollar())           # $1,234
+scale_y_continuous(labels = label_percent())          # 12.3%
+scale_y_continuous(labels = label_number(scale_cut = cut_short_scale()))
+                                                       # 1.2K, 3.4M, 5.6B
+scale_x_date(labels = label_date_short())             # Jan 2024
+scale_x_log10(labels = label_log())                   # 10^1, 10^2
+scale_y_continuous(labels = label_bytes())            # 1.2 MB
+scale_y_continuous(labels = label_pvalue())           # p < 0.001
+```
+
+### Breaks helpers
+
+```r
+scale_x_continuous(breaks = pretty_breaks(n = 6))
+scale_x_continuous(breaks = breaks_extended(n = 8))
+scale_x_log10(breaks = breaks_log())
+scale_x_date(breaks = breaks_pretty(6))
+```
+
+### Transformations
+
+```r
+scale_y_continuous(trans = "log10")
+scale_y_continuous(trans = scales::pseudo_log_trans(base = 10))   # handles 0
+scale_y_continuous(trans = scales::sqrt_trans())
+```
+
+For a custom transformation use
+`scales::trans_new(name, transform, inverse, breaks, format)`.
+
+### Why `scales::label_*` over `formatC` / `sprintf`
+
+- Vectorised and ggplot2-aware.
+- Locale-aware (`big.mark`, `decimal.mark`).
+- Composable: `label_number(prefix = "USD ", suffix = "/mo")`.
+- Cuts (`cut_short_scale`, `cut_si`, `cut_long_scale`) handle order-of-magnitude
+  switches without manual branching.
+
+### Composing formatters
+
+```r
+# Currency abbreviated to short scale: $1.2K, $3.4M
+scale_y_continuous(labels = label_dollar(scale_cut = cut_short_scale()))
+
+# Percent with one decimal, locale-aware comma
+scale_y_continuous(labels = label_percent(accuracy = 0.1, big.mark = ","))
+```
