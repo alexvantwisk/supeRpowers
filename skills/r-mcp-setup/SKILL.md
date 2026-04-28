@@ -125,6 +125,7 @@ in the user's live session.
 ```r
 if (interactive()) {
   try(mcptools::mcp_session(), silent = TRUE)
+  try(source(".claude/scripts/cc-helpers.R"), silent = TRUE)
 }
 ```
 
@@ -141,6 +142,35 @@ claude mcp list
 
 The output should show `r-btw` with status `connected`. If it shows
 `disconnected` or doesn't appear, see `references/mcp-troubleshooting.md`.
+
+### Step 6: Close the IDE-Awareness Gap (Optional)
+
+`mcp_session()` lets Claude inspect live R state, but it still can't see your
+Plots pane, Environment pane, or Data Viewer. Three helper functions bridge
+that gap by writing artifacts to a scratch directory Claude can read:
+
+| Helper       | Purpose                                                            |
+|--------------|--------------------------------------------------------------------|
+| `cc_plot()`  | Save the last ggplot to `.claude/scratch/plots/` so Claude can view it |
+| `cc_env()`   | Print a workspace summary (name / class / dim / memory)            |
+| `cc_view(x)` | Write `head(x)` to `.claude/scratch/<name>.csv` for clean tabular preview |
+
+**Install:**
+
+1. Copy `${CLAUDE_PLUGIN_ROOT}/skills/r-mcp-setup/scripts/cc-helpers.R`
+   to `.claude/scripts/cc-helpers.R` in the user's project
+2. Source from `.Rprofile` (see Step 4)
+3. Add `.claude/scratch/` to `.gitignore` and (for packages) `.Rbuildignore`
+
+Read `references/ide-awareness-helpers.md` for rationale, function signatures,
+and usage discipline.
+
+**Honest framing:** these helpers close most of the gap with Positron
+Assistant's ambient awareness. The residual difference is that Positron
+Assistant doesn't need to be asked — Claude Code does. The discipline is
+calling `cc_env()` at the start of a debugging task and `cc_plot()` after
+each interesting figure. That habit reproduces ~90% of the "Positron Assistant
+feels smarter" effect.
 
 ---
 
