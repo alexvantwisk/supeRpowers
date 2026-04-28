@@ -345,6 +345,139 @@ really_internal <- function() ...
 
 ---
 
+## Cross-reference and Reuse Tags
+
+### `@inheritParams source`
+
+Reuse `@param` definitions from another function to avoid duplication.
+
+```r
+#' Filter forecast by precipitation
+#' @inheritParams fetch_forecast
+#' @param min_mm Numeric. Minimum precipitation in mm.
+#' @export
+filter_forecast <- function(city, days = 3L, min_mm = 0) { ... }
+```
+
+`@inheritParams` reuses every `@param` from `fetch_forecast()` that isn't
+explicitly overridden.
+
+### `@describeIn obj`
+
+Document multiple methods on one Rd page (typically S3/S4/S7 dispatch).
+
+```r
+#' Print a forecast
+#' @export
+print.forecast <- function(x, ...) { ... }
+
+#' @describeIn print.forecast Compact one-line summary
+#' @export
+format.forecast <- function(x, ...) { ... }
+```
+
+Both end up on `?print.forecast` with sub-sections.
+
+### `@rdname name`
+
+Combine multiple functions into one Rd file.
+
+```r
+#' Add or remove a column
+#'
+#' @param data A tibble.
+#' @rdname column_ops
+#' @export
+add_column <- function(data, ...) { ... }
+
+#' @rdname column_ops
+#' @export
+remove_column <- function(data, ...) { ... }
+```
+
+Both functions documented together at `?column_ops`.
+
+### `@family family-name`
+
+Group related functions in a "See also" section automatically.
+
+```r
+#' @family summary functions
+weighted_mean <- function(...) { ... }
+
+#' @family summary functions
+weighted_sd <- function(...) { ... }
+```
+
+Each gets a "See also: weighted_sd" (or vice versa) link.
+
+### `@srrstats "X.Y.Z"`
+
+For rOpenSci statistical software peer review — record which standards
+your code fulfills.
+
+```r
+#' Compute weighted mean
+#' @srrstats {G2.1, G2.4} explicit input/output checking
+weighted_mean <- function(x, w) { ... }
+```
+
+Only relevant if you submit to rOpenSci stats review; ignored otherwise.
+
+---
+
+## Lifecycle Badges
+
+Use the `lifecycle` package to communicate function maturity.
+
+```r
+#' Compute experimental thing
+#'
+#' @description
+#' `r lifecycle::badge("experimental")`
+#'
+#' Detail goes here.
+#' @export
+experimental_thing <- function(x) { ... }
+```
+
+Stages: `experimental`, `stable`, `superseded`, `deprecated`, `defunct`.
+The expanded badge appears as an SVG image at the top of the help page.
+
+For deprecated arguments specifically:
+
+```r
+#' @param old_arg `r lifecycle::badge("deprecated")` Use `new_arg` instead.
+```
+
+See `references/modern-toolchain.md` for the full lifecycle workflow.
+
+---
+
+## Markdown Link Forms
+
+With `Roxygen: list(markdown = TRUE)` in DESCRIPTION:
+
+| Syntax | Renders as |
+|---|---|
+| `[fn()]` | Link to local function `fn` |
+| `[pkg::fn()]` | Link to function in another package |
+| `[topic][pkg::topic]` | Custom link text to topic |
+| `<https://example.com>` | Auto-link URL |
+| `[See guide][https://example.com]` | Custom-text URL |
+
+Inside `@param`, `@return`, `@description`:
+
+```r
+#' @param method One of `"glm"` or `"lm"`. See [stats::glm()] and
+#'   [stats::lm()] for details.
+#' @return A [tibble::tibble()].
+```
+
+Wrapping with backticks renders as code; without renders as text.
+
+---
+
 ## Style Conventions
 
 - First line is the title — capitalised, no trailing period
