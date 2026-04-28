@@ -47,6 +47,7 @@ Identify the app pattern:
 - **Split:** `ui.R` + `server.R` (+ optional `global.R`)
 - **golem:** `R/app_ui.R`, `R/app_server.R`, `R/mod_*.R`, `inst/golem-config.yml`
 - **rhino:** `app/main.R`, `app/view/`, `app/logic/`, `rhino.yml`
+- **teal:** `teal::init()` calls, `teal.data::cdisc_data()` / `cdisc_dataset()` usage, `teal.modules.clinical` / `teal.modules.general` imports, optional `app/teal_app.R`
 
 Inventory R files, module files, test files, `www/` assets, data files.
 
@@ -113,6 +114,8 @@ Severity:
 **rhino apps:** `rhino.yml` configured, views in `app/view/`, logic in `app/logic/`, box imports, Cypress/shinytest2 tests.
 
 **Basic apps:** Suggest migration to golem for non-trivial apps (>3 modules or production deployment).
+
+**teal apps:** Datasets defined via `teal.data::cdisc_data()` with explicit `cdisc_dataset()` wrappers and `keys`. Modules registered through `teal::init(modules = modules(...))`. Filter pre-sets via `teal.slice::teal_slices()`. Custom modules wrap `teal::module()` rather than calling `moduleServer` directly (teal-aware reactivity, filter integration, reproducibility log via `teal.code`). `r-clinical` skill owns ADaM/SDTM domain semantics — flag domain confusions for cross-skill review rather than handling inline.
 
 ## Escalation
 
