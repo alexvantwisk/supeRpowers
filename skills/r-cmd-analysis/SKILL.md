@@ -20,6 +20,19 @@ Guided workflow: import, clean, explore, model, visualize, report.
 - Clear research question or analysis goal
 - R session with tidyverse installed
 
+## Progress Tracking
+
+Use TaskCreate at the start of this workflow — one task per phase below. Mark each `in_progress` when starting, `completed` when its gate passes.
+
+- "Phase 1: Import data"
+- "Phase 2: Clean data"
+- "Phase 3: Explore data"
+- "Phase 4: Model"
+- "Phase 5: Visualize findings"
+- "Phase 6: Report"
+
+Surfaces the orchestration shape to the user and prevents skipped phases or premature completion claims.
+
 ## Steps
 
 ### Step 1: Import
