@@ -32,8 +32,6 @@ agents/                  # Shared agents (no YAML frontmatter)
   r-code-reviewer.md     r-statistician.md      r-pkg-check.md
   r-shiny-architect.md   r-dependency-manager.md
 docs/                    # Reference documentation (e.g. docs/superpowers/)
-tasks/                   # Implementation plans (workflow commands, agent
-                         # chaining, stronger conventions, hooks system)
 tests/                   # Routing, structural, and convention test suites
 ```
 
@@ -94,17 +92,6 @@ grep -rn '%>%' skills/ agents/ rules/ --exclude=eval.md
 3. Keep under 200 lines
 4. Include a severity guide table
 5. Include 2-3 examples at the end
-
-## Implementation Plans
-
-Architectural plans live in `tasks/`:
-
-- `plan-1-workflow-commands.md` — design for the `r-cmd-*` skill family
-- `plan-2-agent-chaining.md` — agent dispatch and handoff contracts
-- `plan-3-stronger-conventions.md` — convention enforcement strategy
-- `plan-4-hooks-system.md` — session-start hook design
-
-Read the relevant plan before making architectural changes.
 
 ## Verification Checklist
 
