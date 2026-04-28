@@ -25,8 +25,8 @@ Guided Red-Green-Refactor-Review workflow for R packages using testthat 3e.
 Use TaskCreate at the start of this workflow — one task per phase below. Mark each `in_progress` when starting, `completed` when its gate passes.
 
 - "Phase 1: Setup test file"
-- "Phase 2: RED — write failing test"
-- "Phase 3: GREEN — minimal implementation"
+- "Phase 2: RED — Write failing test"
+- "Phase 3: GREEN — Minimal implementation"
 - "Phase 4: REFACTOR"
 - "Phase 5: REVIEW"
 - "Phase 6: COVERAGE"

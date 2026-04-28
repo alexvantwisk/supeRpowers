@@ -44,7 +44,7 @@ Six btw tool groups give Claude Code unique R capabilities:
 
 ## Progress Tracking
 
-Use TaskCreate when running the full setup — one task per step below.
+Use TaskCreate when running the full setup — one task per step below. Mark each `in_progress` when starting, `completed` when its gate passes.
 
 - "Step 1: Detect current state"
 - "Step 2: Install packages"
