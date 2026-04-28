@@ -46,14 +46,19 @@ This skill owns: development loop, documentation, NAMESPACE, dependencies, class
 - `scripts/check_docs.R` — verify roxygen2 coverage for every exported function
 - `scripts/lint_package.R` — run lintr with tidyverse-style linters
 
+**Modern toolchain (lazy reference):**
+- `references/modern-toolchain.md` — `pak`, `air`, `lintr`, `lifecycle`, `cli`, `withr`
+- `references/release-workflow.md` — `usethis::use_release_issue()` lifecycle
+- `references/data-and-assets.md` — `data/`, `inst/extdata/`, `R/sysdata.rda`
+
 **Agent dispatch:**
 - Dispatch to **r-pkg-check** agent after `devtools::check()` for deep issue resolution
 - Dispatch to **r-dependency-manager** agent for dependency questions
 
 **MCP integration (when R session available):**
-- `btw_tool_docs_help_page` — read existing docs before editing roxygen2
-- `btw_tool_docs_package_help_topics` — list exported functions before NAMESPACE edits
-- `btw_tool_sessioninfo_is_package_installed` — check before adding a dependency
+- `btw:btw_tool_docs_help_page` — read existing docs before editing roxygen2
+- `btw:btw_tool_docs_package_help_topics` — list exported functions before NAMESPACE edits
+- `btw:btw_tool_sessioninfo_is_package_installed` — check before adding a dependency
 
 ---
 
@@ -78,9 +83,7 @@ every field's rules. Validate with
 
 ## Development Loop
 
-```
-load_all() -> test() -> document() -> check()
-```
+`load_all() -> test() -> document() -> check()`
 
 ```r
 devtools::load_all()      # Simulate library(mypkg) from source
@@ -163,9 +166,8 @@ decision tree for each system.
 usethis::use_rcpp()                # Sets up src/, Makevars, roxygen tags
 usethis::use_rcpp_armadillo()      # For linear algebra
 # After editing src/*.cpp: devtools::document() then devtools::load_all()
+# Tag package-level doc: @useDynLib mypkg, .registration = TRUE
 ```
-
-Tag the package-level doc with `@useDynLib mypkg, .registration = TRUE`.
 
 ---
 
@@ -182,9 +184,7 @@ read `references/pkgdown-site-config.md`.
 
 ---
 
-## Testing in Packages
-
-Package-level gates (not test authoring):
+## Testing in Packages (gates, not authoring — see `r-tdd`)
 
 ```r
 devtools::test()                      # Run testthat suite
