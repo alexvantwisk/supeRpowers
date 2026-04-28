@@ -42,6 +42,21 @@ Six btw tool groups give Claude Code unique R capabilities:
 
 ---
 
+## Progress Tracking
+
+Use TaskCreate when running the full setup — one task per step below. Mark each `in_progress` when starting, `completed` when its gate passes.
+
+- "Step 1: Detect current state"
+- "Step 2: Install packages"
+- "Step 3: Register MCP server"
+- "Step 4: Connect live R session"
+- "Step 5: Verify"
+- "Step 6: Close IDE-awareness gap (optional)"
+
+Setup is one-shot but mid-flight failures are common; tracked state shows exactly where to resume.
+
+---
+
 ## Setup Workflow
 
 Follow these 5 steps in order. Skip any step that's already satisfied.

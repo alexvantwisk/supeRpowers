@@ -22,6 +22,20 @@ Guided release workflow: audit dependencies, test, document, check, bump, review
 - renv initialized (`renv.lock` present)
 - All current work committed to version control
 
+## Progress Tracking
+
+Use TaskCreate at the start of this workflow — one task per phase below. Mark each `in_progress` when starting, `completed` when its gate passes.
+
+- "Phase 1: Dependency audit"
+- "Phase 2: Run tests"
+- "Phase 3: Document"
+- "Phase 4: R CMD check"
+- "Phase 5: Version bump"
+- "Phase 6: Final review"
+- "Phase 7: Submit (CRAN only — skip for internal releases)"
+
+CRAN submission is high-stakes; visible checkpoint state prevents skipping a gate after a failed retry.
+
 ## Steps
 
 ### Step 1: Dependency audit

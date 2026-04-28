@@ -30,6 +30,20 @@ with `--workdir` if needed.
 
 ---
 
+## Progress Tracking
+
+Use TaskCreate at the start of this workflow — one task per stage below. Mark each `in_progress` when starting, `completed` when its gate passes.
+
+- "Step 0: Accept input + clone repo"
+- "Step 1: Scan and inventory"
+- "Step 2: Dispatch exploration agents"
+- "Step 3: Synthesise reports"
+- "Step 4: Draft skill from synthesis"
+
+Long-running multi-agent workflow with file artifacts in `$WORKDIR` — task state mirrors which reports have been written.
+
+---
+
 ## Step 0 — Accept Input
 
 The user provides a GitHub URL. Validate it:

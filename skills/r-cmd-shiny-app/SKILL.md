@@ -21,6 +21,18 @@ Guided workflow: scaffold, design modules, wire reactivity, test, review.
 - Deployment target identified (local, shinyapps.io, Posit Connect, Docker)
 - Decision on framework: golem (recommended for production), rhino, or basic Shiny
 
+## Progress Tracking
+
+Use TaskCreate at the start of this workflow — one task per phase below. Mark each `in_progress` when starting, `completed` when its gate passes.
+
+- "Phase 1: Scaffold project"
+- "Phase 2: Design modules"
+- "Phase 3: Wire reactivity"
+- "Phase 4: Test with shinytest2"
+- "Phase 5: Architecture review"
+
+Surfaces the orchestration shape to the user; when adding modules to an existing app, omit the scaffold task so the list stays accurate.
+
 ## Steps
 
 ### Step 1: Scaffold

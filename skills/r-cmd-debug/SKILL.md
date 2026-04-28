@@ -22,6 +22,19 @@ Guided workflow: reproduce, isolate, diagnose, fix, regression test, verify.
 - Access to the code that triggers the bug
 - Ability to run the code (R session available)
 
+## Progress Tracking
+
+Use TaskCreate at the start of this workflow — one task per phase below. Mark each `in_progress` when starting, `completed` when its gate passes.
+
+- "Phase 1: Reproduce the bug"
+- "Phase 2: Isolate to a function/line"
+- "Phase 3: Diagnose root cause"
+- "Phase 4: Fix"
+- "Phase 5: Write regression test"
+- "Phase 6: Verify with code review"
+
+Prevents premature "fixed" claims before the regression test exists.
+
 ## Steps
 
 ### Step 1: Reproduce
