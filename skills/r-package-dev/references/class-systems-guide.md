@@ -19,14 +19,16 @@ examples for each system.
 ```
 Need mutable state (caching, connections, environments)?
   YES -> R6
-  NO  -> Is this a Bioconductor package or formal interface contract?
+  NO  -> Bioconductor package or interfacing with existing S4 ecosystem?
     YES -> S4
-    NO  -> Greenfield project wanting modern features?
-      YES -> S7 (if stable enough for your timeline)
-      NO  -> S3 (default choice for most packages)
+    NO  -> Greenfield class hierarchy?
+      YES -> S7 (default for new code in 2025+)
+      NO  -> S3 (one-off methods on existing classes; minimal ceremony)
 ```
 
-**Rule of thumb:** Start with S3 unless you have a specific reason not to.
+**Rule of thumb (2025+):** S7 for new class hierarchies. S3 for adding a
+method or two to an existing object. R6 only when you genuinely need
+reference semantics. S4 only for Bioconductor compatibility.
 
 ---
 
@@ -201,70 +203,102 @@ instead of `inherits()`, define generics with `setGeneric()`.
 
 ---
 
-## S7 — Modern Successor to S3/S4
+## S7 — Modern Successor to S3 / S4
 
-Developed by the R Consortium as a unification of S3 and S4. Available via
-the `S7` package on CRAN. Best for greenfield projects with no Bioconductor
-dependency.
+`S7` is the R Consortium's modern class system. It is on CRAN and intended
+as the long-term successor to S3 and S4. Use it for new class hierarchies
+unless you have a specific reason to use one of the others.
 
-The project was initially released under the name `R7` and renamed to `S7`
-before its 0.1.0 CRAN release. Older blog posts and tutorials may still use
-`library(R7)`; the API is unchanged — just install and load `S7` instead.
+The project was initially released as `R7` and renamed to `S7` before its
+0.1.0 CRAN release. Older blog posts may still say `library(R7)`; the API
+is unchanged — install and load `S7` instead.
 
-### Class Definition
+### Constructor: `new_class()`
 
 ```r
 library(S7)
 
-temperature <- new_class("temperature",
+range_class <- new_class("range",
   properties = list(
-    value = class_double,
-    unit  = new_property(class_character, default = "celsius",
-      validator = function(value) {
-        if (!value %in% c("celsius", "fahrenheit", "kelvin")) {
-          sprintf("Unknown unit: %s", value)
-        }
-      }
-    )
+    min = class_double,
+    max = class_double
   ),
   validator = function(self) {
-    if (self@unit == "kelvin" && any(self@value < 0)) {
-      "Kelvin values cannot be negative"
+    if (length(self@min) != 1 || length(self@max) != 1) {
+      "@min and @max must be length 1"
+    } else if (self@min > self@max) {
+      "@min must be <= @max"
     }
+  }
+)
+
+x <- range_class(min = 1, max = 10)
+x@min                                # 1
+```
+
+Properties replace S4 slots and S3 attributes. Access via `@`. Validation
+runs on construction and on any property assignment.
+
+### Methods: `new_generic()` + `method()`
+
+```r
+range_print <- new_generic("range_print", "x")
+method(range_print, range_class) <- function(x) {
+  cat(sprintf("[%g, %g]\n", x@min, x@max))
+}
+
+range_print(x)                       # [1, 10]
+```
+
+Generic registration is explicit — no `UseMethod()` magic, no S4
+`setGeneric()` ceremony.
+
+### Inheritance
+
+```r
+positive_range <- new_class("positive_range",
+  parent = range_class,
+  validator = function(self) {
+    if (self@min < 0) "@min must be >= 0"
   }
 )
 ```
 
-### Generics and Methods
+Multiple inheritance is not supported (intentional simplification vs S4).
 
-```r
-convert <- new_generic("convert", "x")
+### S3 → S7 Migration
 
-method(convert, temperature) <- function(x, to = "fahrenheit") {
-  if (x@unit == "celsius" && to == "fahrenheit") {
-    temperature(value = x@value * 9 / 5 + 32, unit = "fahrenheit")
-  } else {
-    cli::cli_abort("Conversion not supported.")
-  }
-}
-```
+| S3 | S7 |
+|---|---|
+| `structure(list(...), class = "foo")` | `foo_class <- new_class("foo", properties = list(...))` |
+| `attr(x, "name")` / `x$name` | `x@name` |
+| `print.foo <- function(x, ...) {}` | `method(print, foo_class) <- function(x, ...) {}` |
+| `UseMethod("fn")` | `new_generic("fn", "x")` |
 
-### Usage
+Migrate incrementally: register S7 methods on `class_any` to handle existing
+S3 objects, then re-shape internals over time. `S7::S7_dispatch()` interops
+with both directions.
 
-```r
-temp <- temperature(value = c(36.6, 37.2), unit = "celsius")
-temp@value
-#> [1] 36.6 37.2
+### S4 → S7 Migration
 
-convert(temp, to = "fahrenheit")
-```
+| S4 | S7 |
+|---|---|
+| `setClass("foo", representation(...))` | `foo_class <- new_class("foo", properties = list(...))` |
+| Slots (`@`) | Properties (`@`, same syntax) |
+| `setValidity` | `validator = function(self) {}` |
+| `setGeneric` + `setMethod` | `new_generic` + `method()` |
+| `@include` for collation | Same — S7 still requires Collate when generics depend on classes defined later |
+| Multiple dispatch | Multi-arg generics: `new_generic("fn", c("x", "y"))` |
 
-**Key features:** Properties (not slots or attributes), built-in validation,
-compatible with S3 generics, cleaner syntax than S4.
+S7 was designed to make S4-style packages migrateable. The `methods` import
+goes away; `S7` becomes the single dependency.
 
-**Caveat:** S7 is maturing and intended to eventually land in base R, but is
-not yet required by any major ecosystem. Check current stability and CRAN
-policy before adopting for a package you plan to submit.
+### When NOT to Use S7
+
+- Mutable state needed → use R6.
+- Bioconductor package (interop with `BiocGenerics`/`SummarizedExperiment`)
+  → use S4.
+- Adding one or two methods to an existing S3 object → just write S3 methods.
 
 **DESCRIPTION:** `Imports: S7` (CRAN) — not `R7`.
 
