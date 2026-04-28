@@ -14,10 +14,19 @@ description: >
 
 # R Package Development
 
-Full lifecycle R package development using the modern toolchain:
-usethis, devtools, roxygen2, testthat 3e, pkgdown, and CRAN submission.
+Full-lifecycle R package development with the modern toolchain: `usethis`, `devtools`, `roxygen2`, `testthat` 3e, `pkgdown`, CRAN submission, plus `pak`, `air`, `lintr`, `lifecycle`, `cli`, `withr`. All R code uses base pipe `|>`, `<-` for assignment, snake_case, and double quotes. Target R >= 4.1.0.
 
-All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
+## When to use this skill
+
+This skill owns: development loop, documentation, NAMESPACE, dependencies, class systems, vignettes, pkgdown, R CMD check, CRAN submission, CI/CD.
+
+| You want to... | Use instead |
+|----------------|-------------|
+| Scaffold a new project (only) | `r-project-setup` |
+| Write tests / TDD cycle | `r-tdd` |
+| Run an interactive guided release | `/r-cmd-pkg-release` |
+| Generate a Claude skill FROM an R package | `r-package-skill-generator` |
+| Debug a runtime error in R source (not a check failure) | `r-debugging` |
 
 **Lazy references:**
 - `references/description-fields.md` — every DESCRIPTION field, valid values, CRAN-safe templates
@@ -49,8 +58,6 @@ All code uses base pipe `|>`, `<-` for assignment, and tidyverse style.
 ---
 
 ## Package Scaffold
-
-> **Boundary:** Package scaffold as part of ongoing development. For initial project scaffolding only, use r-project-setup instead.
 
 ```r
 usethis::create_package("path/to/mypkg")
@@ -176,8 +183,6 @@ read `references/pkgdown-site-config.md`.
 ---
 
 ## Testing in Packages
-
-> **Boundary:** R CMD check and package-level quality gates. For TDD workflow, test-first methodology, and snapshot tests, use r-tdd instead.
 
 Package-level gates (not test authoring):
 
