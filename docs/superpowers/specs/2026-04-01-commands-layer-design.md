@@ -1,7 +1,7 @@
 # Commands Layer — Workflow Skills for supeRpowers
 
 **Date:** 2026-04-01  
-**Status:** Approved  
+**Status:** SUPERSEDED 2026-04-29 — Claude Code plugins do support a native `commands/` directory; the 5 `r-cmd-*` skills have been migrated to `commands/r-*.md`. See `docs/superpowers/plans/2026-04-29-cmd-skills-to-commands-migration.md` for the migration plan.  
 **Scope:** Add 5 workflow command skills, agent chaining protocol, updated skill/agent descriptions
 
 ## Context
