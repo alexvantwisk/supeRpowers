@@ -9,8 +9,24 @@ Comprehensive R programming assistant for Claude Code — tidyverse-first data a
 
 ## Installation
 
+Add this repo as a Claude Code plugin marketplace, then install the plugin:
+
 ```bash
-claude plugin add supeRpowers
+claude plugin marketplace add alexvantwisk/supeRpowers
+claude plugin install supeRpowers@supeRpowers
+```
+
+Or from a local clone (handy for development):
+
+```bash
+claude plugin marketplace add /path/to/supeRpowers
+claude plugin install supeRpowers@supeRpowers
+```
+
+Verify it's installed:
+
+```bash
+claude plugin list
 ```
 
 ## How It Works
