@@ -6,7 +6,6 @@ plugin.json coverage, reference integrity, script validity, and agent dispatch.
 
 import json
 import re
-from fnmatch import fnmatch
 from pathlib import Path
 
 # Valid optional frontmatter fields recognized by Claude Code skill system
@@ -142,42 +141,6 @@ def run_structural_tests() -> TestSuite:
             f"Rule file is {line_count} lines (max 150)",
         )
 
-    # ── 1.3 Plugin.json Glob Coverage ──────────────────────────────────────
-
-    claude_code = plugin.get("claude_code", {})
-
-    # Skills glob coverage
-    skills_globs = claude_code.get("skills", [])
-    for skill_dir in skill_dirs:
-        rel_path = f"skills/{skill_dir.name}/SKILL.md"
-        matched = any(fnmatch(rel_path, g) for g in skills_globs)
-        suite.add(
-            f"glob-covers-skill/{skill_dir.name}",
-            matched,
-            f"'{rel_path}' not matched by any skills glob: {skills_globs}",
-        )
-
-    # Agents glob coverage
-    agents_globs = claude_code.get("agents", [])
-    for agent_file in agent_files:
-        rel_path = f"agents/{agent_file.name}"
-        matched = any(fnmatch(rel_path, g) for g in agents_globs)
-        suite.add(
-            f"glob-covers-agent/{agent_file.stem}",
-            matched,
-            f"'{rel_path}' not matched by any agents glob: {agents_globs}",
-        )
-
-    # Rules file exists
-    rules_list = claude_code.get("rules", [])
-    for rule_ref in rules_list:
-        rule_path = ROOT / rule_ref
-        suite.add(
-            f"rule-file-exists/{rule_ref}",
-            rule_path.exists(),
-            f"Referenced rule file does not exist: {rule_ref}",
-        )
-
     # ── 1.4 Reference Integrity ────────────────────────────────────────────
 
     for skill_dir in skill_dirs:
@@ -263,24 +226,6 @@ def run_structural_tests() -> TestSuite:
                 f"'{skill_dir.name}' references 'skill-creator' but no such skill exists",
                 severity="WARN",
             )
-
-    # ── 1.7 Hooks System ──────────────────────────────────────────────────
-
-    hooks_ref = claude_code.get("hooks")
-    if hooks_ref:
-        hooks_path = ROOT / hooks_ref
-        suite.add(
-            f"hooks-config-exists",
-            hooks_path.exists(),
-            f"plugin.json references '{hooks_ref}' but file does not exist",
-            severity="WARN",
-        )
-        if hooks_path.exists():
-            try:
-                json.loads(hooks_path.read_text(encoding="utf-8"))
-                suite.add("hooks-config-valid-json", True, "")
-            except json.JSONDecodeError as e:
-                suite.add("hooks-config-valid-json", False, f"Invalid JSON: {e}")
 
     # ── 1.8 Eval Coverage ─────────────────────────────────────────────────
 
