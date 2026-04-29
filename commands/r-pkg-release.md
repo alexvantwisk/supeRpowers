@@ -1,15 +1,7 @@
 ---
-name: r-cmd-pkg-release
-description: >
-  Use when starting an R package release workflow. Orchestrates r-package-dev
-  and r-tdd skills with r-pkg-check, r-dependency-manager, and r-code-reviewer
-  agents through a guided check-test-document-build-submit pipeline. Invoke as
-  /r-cmd-pkg-release.
-  Triggers: release package, CRAN submission, package release, version bump,
-  prepare release, submit to CRAN, pre-release check.
-  Do NOT use for ongoing package development — use r-package-dev instead.
-  Do NOT use for writing new tests — use r-cmd-tdd-cycle instead.
+description: Guided R package release workflow — audit deps, test, document, R CMD check, version bump, review, submit
 ---
+
 
 # Package Release
 
