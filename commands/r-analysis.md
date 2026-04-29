@@ -1,14 +1,7 @@
 ---
-name: r-cmd-analysis
-description: >
-  Use when starting a data analysis pipeline in R. Orchestrates r-data-analysis,
-  r-visualization, and r-stats skills with the r-statistician agent through a
-  guided import-clean-explore-model-visualize workflow. Invoke as /r-cmd-analysis.
-  Triggers: start analysis, data analysis pipeline, explore dataset, new analysis,
-  analyze data, EDA workflow, analyze CSV.
-  Do NOT use for data wrangling reference — use r-data-analysis instead.
-  Do NOT use for standalone visualization — use r-visualization instead.
+description: Guided data analysis pipeline — import, clean, explore, model, visualize, report
 ---
+
 
 # Analysis Pipeline
 
