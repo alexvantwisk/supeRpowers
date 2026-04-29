@@ -12,6 +12,7 @@ SKILLS_DIR = ROOT / "skills"
 AGENTS_DIR = ROOT / "agents"
 RULES_DIR = ROOT / "rules"
 HOOKS_DIR = ROOT / "hooks"
+COMMANDS_DIR = ROOT / "commands"
 PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 CONVENTIONS_FILE = RULES_DIR / "r-conventions.md"
 ROUTING_MATRIX = Path(__file__).resolve().parent / "routing_matrix.json"
@@ -107,6 +108,13 @@ def get_agent_files() -> list[Path]:
 def get_rule_files() -> list[Path]:
     """Return sorted list of rule markdown files."""
     return sorted(RULES_DIR.glob("*.md"))
+
+
+def get_command_files() -> list[Path]:
+    """Return sorted list of command markdown files."""
+    if not COMMANDS_DIR.exists():
+        return []
+    return sorted(COMMANDS_DIR.glob("*.md"))
 
 
 def load_plugin_json() -> dict:
