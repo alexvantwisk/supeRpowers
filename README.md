@@ -2,7 +2,8 @@
 
 ![Version](https://img.shields.io/badge/version-0.2.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Skills](https://img.shields.io/badge/skills-15-purple)
+![Skills](https://img.shields.io/badge/skills-17-purple)
+![Commands](https://img.shields.io/badge/commands-5-orange)
 ![R](https://img.shields.io/badge/R-%3E%3D%204.1.0-blue)
 
 Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, biostatistics, and more.
@@ -31,26 +32,31 @@ claude plugin list
 
 ## How It Works
 
-supeRpowers uses a three-layer architecture:
+supeRpowers uses a four-layer architecture:
 
 ```
 Foundation:  rules/r-conventions.md
                (loaded into every R conversation)
                         |
-Domain:      15 specialized skills
+Domain:      17 specialized skills
              (activated by user intent)
                         |
+Workflows:   5 slash commands
+             (user-invoked: /r-tdd-cycle, /r-debug, ...)
+                        |
 Service:     5 shared agents
-             (dispatched from skills or invoked directly)
+             (dispatched from skills/commands or invoked directly)
 ```
 
 **Foundation** — `rules/r-conventions.md` enforces tidyverse-first coding: base pipe `|>`, `<-` assignment, snake_case, and modern toolchain conventions across every R interaction.
 
-**Domain** — 15 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
+**Domain** — 17 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
 
-**Service** — 5 agents handle specialized tasks like code review, statistical consulting, and dependency auditing. Skills dispatch to agents automatically, or you can invoke them directly.
+**Workflows** — 5 slash commands provide guided multi-step procedures (TDD cycle, debugging, package release, Shiny scaffold, analysis pipeline). Invoke explicitly with `/r-<name>`.
 
-**Hooks** — A session-start hook detects your R project type (package, Shiny, targets, Quarto, analysis) and surfaces the most relevant skills and agents.
+**Service** — 5 agents handle specialized tasks like code review, statistical consulting, and dependency auditing. Skills and commands dispatch to agents automatically, or you can invoke them directly.
+
+**Hooks** — A session-start hook detects your R project type (package, Shiny, targets, Quarto, analysis) and surfaces the most relevant skills, commands, and agents.
 
 ## Skills
 
@@ -70,7 +76,22 @@ Service:     5 shared agents
 | r-tidymodels | Machine learning, predictive modeling, tuning | tidymodels, recipes, tune, yardstick |
 | r-targets | Reproducible pipelines, workflow orchestration | targets, tarchetypes, crew |
 | r-project-setup | Scaffold new R projects of any type | usethis, renv, golem, quarto |
+| r-mcp-setup | MCP server setup for live R session awareness | btw, mcptools |
 | r-package-skill-generator | Generate skills from R package repos | (meta-tool) |
+
+> Plus the `skill-auditor` meta-skill that audits and scores other skills against the project conventions.
+
+## Commands
+
+Slash commands provide guided multi-step workflows. Invoke explicitly with `/r-<name>`:
+
+| Command | Workflow |
+|---------|----------|
+| /r-tdd-cycle | Test-driven development — Red, Green, Refactor, Review |
+| /r-debug | Systematic debugging — reproduce, isolate, diagnose, fix, regression test, verify |
+| /r-pkg-release | Package release pipeline — audit deps, test, document, R CMD check, version bump, review, submit |
+| /r-shiny-app | Shiny app scaffold — structure, modules, reactivity, test, architecture review |
+| /r-analysis | Data analysis pipeline — import, clean, explore, model, visualize, report |
 
 ## Agents
 

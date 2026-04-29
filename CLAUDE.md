@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 22 skills, 5 agents, and 1 rule — covering data analysis, visualization, statistics, clinical trials, Shiny, package development, tables, Quarto publishing, performance, machine learning, pipelines, TDD, debugging, MCP setup, and workflow commands.
+A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 17 skills, 5 commands, 5 agents, and 1 rule — covering data analysis, visualization, statistics, clinical trials, Shiny, package development, tables, Quarto publishing, performance, machine learning, pipelines, TDD, debugging, MCP setup, and guided workflow commands.
 
 ## Project Structure
 
