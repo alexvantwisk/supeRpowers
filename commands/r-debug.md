@@ -1,14 +1,7 @@
 ---
-name: r-cmd-debug
-description: >
-  Use when starting a systematic debugging session for R code. Orchestrates
-  r-debugging and r-tdd skills with the r-code-reviewer agent through a guided
-  reproduce-isolate-diagnose-fix-verify workflow. Invoke as /r-cmd-debug.
-  Triggers: debug this, find bug, fix error, diagnose issue, start debugging,
-  something is wrong, unexpected behavior, wrong result.
-  Do NOT use for debugging tool reference — use r-debugging instead.
-  Do NOT use for writing tests outside a bug fix — use r-cmd-tdd-cycle instead.
+description: Guided debugging workflow — reproduce, isolate, diagnose, fix, regression test, verify
 ---
+
 
 # Debug
 
