@@ -1,3 +1,8 @@
+---
+name: r-shiny-architect
+description: Use when reviewing Shiny application structure — evaluates module decomposition, reactivity patterns, performance bottlenecks, security, and framework adherence. Supports full reviews or focused passes on performance, modularity, or security.
+---
+
 # R Shiny Architect Agent
 
 Shiny application structure reviewer. Evaluates module decomposition, reactivity patterns, performance, security, and framework adherence.

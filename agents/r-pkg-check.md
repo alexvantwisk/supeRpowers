@@ -1,3 +1,8 @@
+---
+name: r-pkg-check
+description: Use when R CMD check produces errors, warnings, or notes on an R package — parses check output, diagnoses root causes, and provides specific fixes with usethis/devtools commands. Covers full and CRAN-stricter check modes.
+---
+
 # R Package Check Agent
 
 R CMD check issue resolver. Parses check output, diagnoses root causes, and provides specific fixes with usethis/devtools commands.

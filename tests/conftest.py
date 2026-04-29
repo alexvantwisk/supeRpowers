@@ -12,7 +12,7 @@ SKILLS_DIR = ROOT / "skills"
 AGENTS_DIR = ROOT / "agents"
 RULES_DIR = ROOT / "rules"
 HOOKS_DIR = ROOT / "hooks"
-PLUGIN_JSON = ROOT / "plugin.json"
+PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 CONVENTIONS_FILE = RULES_DIR / "r-conventions.md"
 ROUTING_MATRIX = Path(__file__).resolve().parent / "routing_matrix.json"
 

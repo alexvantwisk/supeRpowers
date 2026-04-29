@@ -7,7 +7,8 @@ A Claude Code marketplace plugin providing expert-level R programming assistance
 ## Project Structure
 
 ```
-plugin.json              # Plugin manifest — declares rules, skills, agents, hooks
+.claude-plugin/
+  plugin.json            # Plugin manifest (name, version, author, license)
 hooks/                   # Session lifecycle hooks
   hooks.json             # SessionStart hook configuration
   session-start          # R project detection script
@@ -28,7 +29,7 @@ skills/                  # Skills (SKILL.md + optional references/, scripts/, ev
     r-cmd-shiny-app/       r-cmd-tdd-cycle/
   Meta skills:
     skill-auditor/
-agents/                  # Shared agents (no YAML frontmatter)
+agents/                  # Shared agents (YAML frontmatter required)
   r-code-reviewer.md     r-statistician.md      r-pkg-check.md
   r-shiny-architect.md   r-dependency-manager.md
 docs/                    # Reference documentation (e.g. docs/superpowers/)
@@ -47,9 +48,10 @@ tests/                   # Routing, structural, and convention test suites
 
 ### Agents (`agents/*.md`)
 
-- NO YAML frontmatter
-- Format: title, description, Inputs, Output, Procedure sections
-- Max 200 lines
+- YAML frontmatter with exactly two fields: `name` and `description`
+- `description` starts with "Use when..." and explains when to dispatch the agent
+- Format below frontmatter: title, summary, Inputs, Output, Procedure sections
+- Max 200 lines (including frontmatter)
 - Severity guide table at the end
 
 ### Rules (`rules/*.md`)
@@ -87,9 +89,9 @@ grep -rn '%>%' skills/ agents/ rules/ --exclude=eval.md
 
 ## Adding a New Agent
 
-1. Create `agents/<name>.md` with Inputs/Output/Procedure format
-2. No YAML frontmatter
-3. Keep under 200 lines
+1. Create `agents/<name>.md` with YAML frontmatter (`name`, `description`) and Inputs/Output/Procedure format
+2. `description` starts with "Use when..." so Claude Code knows when to dispatch
+3. Keep under 200 lines (including frontmatter)
 4. Include a severity guide table
 5. Include 2-3 examples at the end
 
@@ -99,10 +101,10 @@ Before committing any content changes:
 
 - [ ] No `%>%` in skills/, agents/, rules/ (excluding `eval.md` files)
 - [ ] SKILL.md files are ≤300 lines with correct frontmatter
-- [ ] Agent files are ≤200 lines with no frontmatter
+- [ ] Agent files are ≤200 lines with `name` + `description` frontmatter
 - [ ] Rule files are ≤150 lines with no frontmatter
 - [ ] All R code uses `<-`, `|>`, snake_case, double quotes
-- [ ] plugin.json glob patterns still match new files
+- [ ] `claude plugin validate .` passes (warnings acceptable)
 - [ ] Tests pass: `python tests/run_all.py`
 
 ## Hooks

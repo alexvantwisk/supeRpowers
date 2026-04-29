@@ -1,3 +1,8 @@
+---
+name: r-code-reviewer
+description: Use when reviewing R code for style, correctness, performance, and documentation against supeRpowers conventions (base pipe |>, tidyverse-first, snake_case, double quotes). Supports full reviews or focused style-only and performance passes.
+---
+
 # R Code Reviewer Agent
 
 Opinionated R code reviewer. Checks style, correctness, performance, and documentation against supeRpowers conventions defined in `rules/r-conventions.md`.
