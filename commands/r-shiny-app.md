@@ -1,15 +1,7 @@
 ---
-name: r-cmd-shiny-app
-description: >
-  Use when starting a new Shiny application. Orchestrates r-project-setup,
-  r-shiny, and r-tdd skills with r-shiny-architect and r-code-reviewer agents
-  through a guided scaffold-module-wire-test-review workflow. Invoke as
-  /r-cmd-shiny-app.
-  Triggers: new Shiny app, build dashboard, start Shiny, create Shiny,
-  scaffold app, new dashboard, build interactive app.
-  Do NOT use for Shiny API reference — use r-shiny instead.
-  Do NOT use for project scaffolding without Shiny — use r-project-setup instead.
+description: Guided Shiny app workflow — scaffold, design modules, wire reactivity, test, architecture review
 ---
+
 
 # Shiny App
 
