@@ -1,13 +1,5 @@
 ---
-name: r-cmd-tdd-cycle
-description: >
-  Use when starting a test-driven development cycle for R code. Orchestrates
-  r-tdd and r-debugging skills with the r-code-reviewer agent through a guided
-  Red-Green-Refactor-Review workflow. Invoke as /r-cmd-tdd-cycle.
-  Triggers: start TDD, TDD cycle, red green refactor, new feature with tests,
-  test-first workflow, build with tests.
-  Do NOT use for testthat API reference without a full cycle — use r-tdd instead.
-  Do NOT use for debugging existing code — use r-debugging instead.
+description: Guided TDD workflow — Red, Green, Refactor, Review for R packages using testthat 3e
 ---
 
 # TDD Cycle
