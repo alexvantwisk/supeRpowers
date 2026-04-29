@@ -91,10 +91,10 @@ fi
 # --- Build context ---
 skills=""
 if [ "$is_r_package" = true ]; then
-  skills="${skills}R package detected. Key skills: /r-package-dev, /r-tdd, /r-cmd-pkg-release, /r-cmd-tdd-cycle. Agents: r-pkg-check, r-code-reviewer, r-dependency-manager.\\n"
+  skills="${skills}R package detected. Key skills: /r-package-dev, /r-tdd, /r-pkg-release, /r-tdd-cycle. Agents: r-pkg-check, r-code-reviewer, r-dependency-manager.\\n"
 fi
 if [ "$is_shiny" = true ]; then
-  skills="${skills}Shiny app detected. Key skills: /r-shiny, /r-cmd-shiny-app. Agent: r-shiny-architect.\\n"
+  skills="${skills}Shiny app detected. Key skills: /r-shiny, /r-shiny-app. Agent: r-shiny-architect.\\n"
 fi
 if [ "$is_quarto" = true ]; then
   skills="${skills}Quarto project detected. Key skill: /r-quarto.\\n"
@@ -106,7 +106,7 @@ if [ "$is_clinical" = true ]; then
   skills="${skills}Clinical/pharma project detected. Key skill: /r-clinical. Agent: r-statistician.\\n"
 fi
 if [ "$is_r_project" = true ] && [ "$is_r_package" = false ]; then
-  skills="${skills}R project detected. Key skills: /r-data-analysis, /r-visualization, /r-stats, /r-cmd-analysis. Agent: r-statistician.\\n"
+  skills="${skills}R project detected. Key skills: /r-data-analysis, /r-visualization, /r-stats, /r-analysis. Agent: r-statistician.\\n"
 fi
 
 # Nothing detected — exit silently
@@ -130,7 +130,7 @@ r_info=""
 if [ -n "$r_session_info" ]; then
   r_info="${r_session_info}\\n"
 fi
-context="supeRpowers R plugin active.\\n${r_info}${skills}Use /r-cmd-* workflow skills to start guided workflows, or /r-* knowledge skills for reference.\\nTip: btw/mcptools MCP enhances all skills with live R session awareness."
+context="supeRpowers R plugin active.\\n${r_info}${skills}Use /r-* commands to start guided workflows, or /r-* knowledge skills for reference.\\nTip: btw/mcptools MCP enhances all skills with live R session awareness."
 escaped_context=$(escape_for_json "$context")
 
 # Platform-aware JSON output
