@@ -16,6 +16,9 @@ hooks/                   # Session lifecycle hooks
   run-hook.cmd           # Cross-platform wrapper
 rules/                   # Foundation rules (loaded into every R conversation)
   r-conventions.md       # Base pipe |>, tidyverse-first, style guide
+commands/                # Slash commands (user-invoked via /<name>)
+  r-analysis.md          r-debug.md             r-pkg-release.md
+  r-shiny-app.md         r-tdd-cycle.md
 skills/                  # Skills (SKILL.md + optional references/, scripts/, eval.md)
   Domain skills:
     r-data-analysis/       r-visualization/       r-tdd/
@@ -24,9 +27,6 @@ skills/                  # Skills (SKILL.md + optional references/, scripts/, ev
     r-quarto/              r-performance/         r-package-skill-generator/
     r-project-setup/       r-tidymodels/          r-targets/
     r-mcp-setup/
-  Workflow command skills (user-invoked via /<name>):
-    r-cmd-analysis/        r-cmd-debug/           r-cmd-pkg-release/
-    r-cmd-shiny-app/       r-cmd-tdd-cycle/
   Meta skills:
     skill-auditor/
 agents/                  # Shared agents (YAML frontmatter required)
@@ -45,6 +45,14 @@ tests/                   # Routing, structural, and convention test suites
 - Body: max 300 lines (including frontmatter)
 - Optional `references/` subdirectory for deep-dive content (lazy-loaded)
 - Optional `scripts/` subdirectory for helper scripts
+
+### Commands (`commands/*.md`)
+
+- YAML frontmatter with a single field: `description` (one-line, shown in `/` autocomplete)
+- Filename (without `.md`) is the slash command name (e.g. `commands/r-tdd-cycle.md` → `/r-tdd-cycle`)
+- Body is the prompt that runs when the user invokes the command
+- Max 200 lines (including frontmatter)
+- May reference skills and agents inline ("Skill: r-tdd", "Agent: r-code-reviewer") to delegate domain knowledge
 
 ### Agents (`agents/*.md`)
 
@@ -74,7 +82,7 @@ All R code in this project — in skills, agents, rules, references, and example
 Run this to check for violations (eval.md files reference `%>%` inside eval
 questions and should be excluded):
 ```bash
-grep -rn '%>%' skills/ agents/ rules/ --exclude=eval.md
+grep -rn '%>%' skills/ commands/ agents/ rules/ --exclude=eval.md
 ```
 
 ## Adding a New Skill
@@ -86,6 +94,14 @@ grep -rn '%>%' skills/ agents/ rules/ --exclude=eval.md
 5. Include agent dispatch lines if the skill hands off to an agent
 6. Include 3-5 example prompts at the end
 7. Verify: no `%>%`, line count, frontmatter format
+
+## Adding a New Command
+
+1. Create `commands/<name>.md` with frontmatter `description: <one-line summary>`
+2. Body is the prompt that runs on `/<name>` — Prerequisites, Progress Tracking, Steps, Abort Conditions, Examples
+3. Reference skills and agents inline (e.g. `**Skill:** r-tdd`) so Claude dispatches them at the right step
+4. Keep under 200 lines (including frontmatter)
+5. No eval.md — commands are explicit invocations, not intent-routed
 
 ## Adding a New Agent
 
@@ -99,8 +115,9 @@ grep -rn '%>%' skills/ agents/ rules/ --exclude=eval.md
 
 Before committing any content changes:
 
-- [ ] No `%>%` in skills/, agents/, rules/ (excluding `eval.md` files)
+- [ ] No `%>%` in skills/, commands/, agents/, rules/ (excluding `eval.md` files)
 - [ ] SKILL.md files are ≤300 lines with correct frontmatter
+- [ ] Command files are ≤200 lines with `description` frontmatter
 - [ ] Agent files are ≤200 lines with `name` + `description` frontmatter
 - [ ] Rule files are ≤150 lines with no frontmatter
 - [ ] All R code uses `<-`, `|>`, snake_case, double quotes
