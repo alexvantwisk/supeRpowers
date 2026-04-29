@@ -9,7 +9,7 @@ description: >
   behavior, stack trace, warning, object not found, wrong results.
   Do NOT use for performance profiling and optimization — use r-performance instead.
   Do NOT use for writing tests — use r-tdd instead.
-  For a guided debugging workflow, invoke /r-cmd-debug instead.
+  For a guided debugging workflow, invoke /r-debug instead.
 ---
 
 # R Debugging

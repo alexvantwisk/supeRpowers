@@ -15,7 +15,7 @@ description: >
   use r-tables. Do NOT use for Quarto docs — use r-quarto. Do NOT use
   for crash debugging — use r-debugging. Do NOT use for ADaM/SDTM
   semantics — use r-clinical. Shiny for Python is out of scope.
-  /r-cmd-shiny-app scaffolds apps.
+  /r-shiny-app scaffolds apps.
 ---
 
 # R Shiny

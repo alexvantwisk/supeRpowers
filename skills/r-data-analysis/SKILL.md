@@ -15,7 +15,7 @@ description: >
   Do NOT use for statistical modeling or hypothesis testing — use r-stats instead.
   Do NOT use for performance optimization of large datasets — use r-performance instead.
   Do NOT use for pipeline orchestration — use r-targets instead.
-  For a guided analysis pipeline, invoke /r-cmd-analysis instead.
+  For a guided analysis pipeline, invoke /r-analysis instead.
 ---
 
 # R Data Analysis

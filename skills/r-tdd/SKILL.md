@@ -10,7 +10,7 @@ description: >
   Do NOT use for R CMD check or package-level quality gates — use r-package-dev instead.
   Do NOT use for debugging existing code — use r-debugging instead.
   Do NOT use for statistical hypothesis testing — use r-stats instead.
-  For a guided Red-Green-Refactor cycle, invoke /r-cmd-tdd-cycle instead.
+  For a guided Red-Green-Refactor cycle, invoke /r-tdd-cycle instead.
 ---
 
 # R Test-Driven Development

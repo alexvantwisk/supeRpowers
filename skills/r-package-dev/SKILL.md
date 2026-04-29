@@ -9,7 +9,7 @@ description: >
   pkgdown, CRAN submission, vignette, R CMD check, package development.
   Do NOT use for initial project scaffolding only — use r-project-setup instead.
   Do NOT use for writing package tests — use r-tdd instead.
-  For a guided release workflow, invoke /r-cmd-pkg-release instead.
+  For a guided release workflow, invoke /r-pkg-release instead.
 ---
 
 # R Package Development
@@ -24,7 +24,7 @@ This skill owns: development loop, documentation, NAMESPACE, dependencies, class
 |----------------|-------------|
 | Scaffold a new project (only) | `r-project-setup` |
 | Write tests / TDD cycle | `r-tdd` |
-| Run an interactive guided release | `/r-cmd-pkg-release` |
+| Run an interactive guided release | `/r-pkg-release` |
 | Generate a Claude skill FROM an R package | `r-package-skill-generator` |
 | Debug a runtime error in R source (not a check failure) | `r-debugging` |
 
