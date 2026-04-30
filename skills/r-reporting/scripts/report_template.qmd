@@ -1,0 +1,110 @@
+---
+title: "{{report_title}}"
+author: "{{author}}"
+date: "`r if (nzchar(params$date)) params$date else format(Sys.Date())`"
+format:
+  docx:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    fig-width: 8
+    fig-height: 5
+    reference-doc: reference.docx
+resource-path:
+  - "."
+  - ".."
+  - "../.."
+params:
+  date: ""
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE,
+  fig.width = 8, fig.height = 5, dpi = 150
+)
+knitr::opts_knit$set(root.dir = here::here())
+
+suppressPackageStartupMessages({
+  library(dplyr)
+  library(ggplot2)
+  library(flextable)
+  library(here)
+  library(readr)
+})
+
+fig <- function(file) file.path("output", "figures", file)
+tbl <- function(file) here::here("output", "tables",  file)
+mod <- function(file) here::here("output", "models",  file)
+
+read_csv_safe <- function(p) suppressMessages(readr::read_csv(p, show_col_types = FALSE))
+```
+
+# Executive Summary
+
+(One-page synthesis. Replace this with bottom-line findings, key effect estimates with uncertainty, and recommendations.)
+
+# Background and Objectives
+
+(Scientific background, research questions, scope.)
+
+# Data and Methods
+
+## Data sources
+
+(Source documentation; provenance; data quality.)
+
+## Statistical methods
+
+(Methods with citations for non-standard approaches; software versions; assumption checking; missing data handling.)
+
+# Results
+
+## Demographics
+
+```{r tbl-demographics}
+#| tbl-cap: "Participant characteristics by group."
+table_one_path <- tbl("01_table_one.rds")
+if (file.exists(table_one_path)) {
+  readRDS(table_one_path) |>
+    as_flex_table() |>
+    flextable::set_table_properties(width = 1, layout = "autofit", align = "center") |>
+    flextable::fontsize(size = 10, part = "all")
+} else {
+  flextable::flextable(data.frame(Note = "Build the table upstream and saveRDS to output/tables/01_table_one.rds."))
+}
+```
+
+## Primary outcome
+
+```{r fig-primary}
+#| fig-cap: "Primary outcome trajectory by group."
+primary_fig_path <- fig("01_primary.png")
+if (file.exists(here::here(primary_fig_path))) {
+  knitr::include_graphics(primary_fig_path)
+} else {
+  cat("Build the figure upstream and write to output/figures/01_primary.png.")
+}
+```
+
+# Sensitivity Analyses
+
+(Document robustness under alternative assumptions.)
+
+# Limitations
+
+(Honest acknowledgment of biases, precision constraints, generalisability.)
+
+# Recommendations
+
+(Actionable, prioritised, tied to findings; respect consultant-client boundary.)
+
+# Reproducibility
+
+```{r reproducibility}
+sessionInfo()
+```
+
+# References
+
+(Citations for non-standard methods, guidelines followed, background literature.)

@@ -511,5 +511,69 @@
     "must_not_fire": [],
     "discriminator": "Posit Connect + renv + Shiny = r-shiny deployment reference",
     "category": "deployment-routing"
+  },
+  {
+    "id": "route-065",
+    "prompt": "Render this analysis report to Word and make sure tables and figures come out right",
+    "expected_skill": "r-reporting",
+    "must_not_fire": ["r-quarto", "r-tables"],
+    "discriminator": "Word/.docx output + tables and figures",
+    "category": "report-mechanics"
+  },
+  {
+    "id": "route-066",
+    "prompt": "The figures in my Word document aren't centered — how do I fix the reference docx?",
+    "expected_skill": "r-reporting",
+    "must_not_fire": ["r-visualization", "r-quarto"],
+    "discriminator": "reference docx + Word centering",
+    "category": "report-mechanics"
+  },
+  {
+    "id": "route-067",
+    "prompt": "Build a Word reference template with 1.5 line spacing, full justify, and Heading 1 starting on a new page",
+    "expected_skill": "r-reporting",
+    "must_not_fire": ["r-quarto"],
+    "discriminator": "reference.docx authoring",
+    "category": "report-mechanics"
+  },
+  {
+    "id": "route-068",
+    "prompt": "Convert this gtsummary regression table to flextable so it renders correctly in docx",
+    "expected_skill": "r-reporting",
+    "must_not_fire": ["r-tables"],
+    "discriminator": "gtsummary -> flextable -> docx pipeline (Word context)",
+    "category": "report-mechanics"
+  },
+  {
+    "id": "route-069",
+    "prompt": "Every section in my consulting report should start on a new page in the Word output",
+    "expected_skill": "r-reporting",
+    "must_not_fire": ["r-quarto"],
+    "discriminator": "Heading 1 page break in Word",
+    "category": "report-mechanics"
+  },
+  {
+    "id": "route-070",
+    "prompt": "Set up a clean docx report pipeline for my client deliverable — tables from gtsummary, figures from ggplot, page numbers in the footer",
+    "expected_skill": "r-reporting",
+    "must_not_fire": ["r-quarto", "r-tables"],
+    "discriminator": "end-to-end docx pipeline orchestration",
+    "category": "report-mechanics"
+  },
+  {
+    "id": "route-071",
+    "prompt": "Render this Quarto book to HTML with a custom theme and embedded resources",
+    "expected_skill": "r-quarto",
+    "must_not_fire": ["r-reporting"],
+    "discriminator": "HTML output (not Word) -> r-quarto, NOT r-reporting",
+    "category": "report-mechanics"
+  },
+  {
+    "id": "route-072",
+    "prompt": "Generate a regulatory TLF package for FDA submission with admiral-derived ADaM data",
+    "expected_skill": "r-clinical",
+    "must_not_fire": ["r-reporting", "r-tables"],
+    "discriminator": "regulatory TLF (FDA + admiral + ADaM) -> r-clinical, NOT r-reporting",
+    "category": "report-mechanics"
   }
 ]
