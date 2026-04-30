@@ -1,0 +1,18 @@
+project:
+  type: default
+
+  # Render only the report by default; other .qmd files in the repo are not
+  # treated as project documents unless explicitly listed.
+  render:
+    - {{report_qmd_path}}
+
+  # Run R chunks from the project root so here::here() and project-relative
+  # paths (output/figures/*.png, output/tables/*.html) resolve correctly.
+  execute-dir: project
+
+  # Make generated figures and tables visible to Quarto's resource resolver
+  # so quarto render and quarto preview can find them.
+  resources:
+    - "output/figures/*.png"
+    - "output/tables/*.html"
+    - "output/tables/*.csv"
