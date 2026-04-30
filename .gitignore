@@ -1,2 +1,10 @@
+# macOS
+.DS_Store
+
+# Python (test suite)
 __pycache__/
-.worktrees/
+*.pyc
+
+# Claude Code local state
+.claude/worktrees/
+.claude/settings.local.json

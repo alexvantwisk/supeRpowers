@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 17 skills, 5 commands, 5 agents, and 1 rule — covering data analysis, visualization, statistics, clinical trials, Shiny, package development, tables, Quarto publishing, performance, machine learning, pipelines, TDD, debugging, MCP setup, and guided workflow commands.
+A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 18 skills, 6 commands, 5 agents, and 1 rule — covering data analysis, visualization, statistics, clinical trials, Shiny, package development, tables, Quarto publishing, Word reporting, performance, machine learning, pipelines, TDD, debugging, MCP setup, and guided workflow commands.
 
 ## Project Structure
 
@@ -18,15 +18,15 @@ rules/                   # Foundation rules (loaded into every R conversation)
   r-conventions.md       # Base pipe |>, tidyverse-first, style guide
 commands/                # Slash commands (user-invoked via /<name>)
   r-analysis.md          r-debug.md             r-pkg-release.md
-  r-shiny-app.md         r-tdd-cycle.md
+  r-report.md            r-shiny-app.md         r-tdd-cycle.md
 skills/                  # Skills (SKILL.md + optional references/, scripts/, eval.md)
   Domain skills:
     r-data-analysis/       r-visualization/       r-tdd/
     r-debugging/           r-package-dev/         r-shiny/
     r-stats/               r-clinical/            r-tables/
-    r-quarto/              r-performance/         r-package-skill-generator/
-    r-project-setup/       r-tidymodels/          r-targets/
-    r-mcp-setup/
+    r-quarto/              r-reporting/           r-performance/
+    r-tidymodels/          r-targets/             r-project-setup/
+    r-mcp-setup/           r-package-skill-generator/
   Meta skills:
     skill-auditor/
 agents/                  # Shared agents (YAML frontmatter required)

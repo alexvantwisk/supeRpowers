@@ -2,33 +2,79 @@
 
 ![Version](https://img.shields.io/badge/version-0.2.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Skills](https://img.shields.io/badge/skills-17-purple)
-![Commands](https://img.shields.io/badge/commands-5-orange)
+![Skills](https://img.shields.io/badge/skills-18-purple)
+![Commands](https://img.shields.io/badge/commands-6-orange)
 ![R](https://img.shields.io/badge/R-%3E%3D%204.1.0-blue)
 
 Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, biostatistics, and more.
 
 ## Installation
 
-Add this repo as a Claude Code plugin marketplace, then install the plugin:
+> **Status:** beta. Verified end-to-end on macOS (Apple Silicon) with Claude Code via the GitHub-marketplace install path. Feedback welcome.
+
+### Prerequisites
+
+- [Claude Code](https://docs.claude.com/en/docs/claude-code) installed and authenticated
+- R **>= 4.1.0** on your `PATH` (required for the base pipe `|>`)
+- Optional but recommended:
+  - **Quarto CLI** if you'll use `r-quarto` or `/r-report`
+  - **`btw` / `mcptools`** for live R-session awareness — see `/r-mcp-setup` after install
+
+### Install from GitHub (recommended)
+
+Add this repository as a Claude Code marketplace, then install the plugin:
 
 ```bash
 claude plugin marketplace add alexvantwisk/supeRpowers
 claude plugin install supeRpowers@supeRpowers
 ```
 
-Or from a local clone (handy for development):
+The first command registers `https://github.com/alexvantwisk/supeRpowers` as a single-plugin marketplace; the second installs the `supeRpowers` plugin from it. The `@supeRpowers` suffix disambiguates plugin name from marketplace name (they happen to be identical here).
+
+### Install from a local clone (development)
 
 ```bash
-claude plugin marketplace add /path/to/supeRpowers
+git clone https://github.com/alexvantwisk/supeRpowers.git
+cd supeRpowers
+claude plugin marketplace add .
 claude plugin install supeRpowers@supeRpowers
 ```
 
-Verify it's installed:
+Use this path if you want to modify skills or commands locally — Claude Code reloads from the source directory.
+
+### Verify
 
 ```bash
 claude plugin list
 ```
+
+You should see `supeRpowers` with the current version. To confirm the session-start hook is wired up, open Claude Code in any directory containing R files and you should see a one-line banner reporting the detected R project type and key skills.
+
+### Update
+
+```bash
+claude plugin marketplace update supeRpowers
+claude plugin install supeRpowers@supeRpowers
+```
+
+### Uninstall
+
+```bash
+claude plugin uninstall supeRpowers@supeRpowers
+claude plugin marketplace remove supeRpowers
+```
+
+### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| `plugin not found` after `install` | Marketplace not added, or wrong suffix | Run `claude plugin marketplace list`; install with the `@supeRpowers` suffix |
+| Slash commands don't autocomplete | Plugin install incomplete | `claude plugin list` — reinstall if `supeRpowers` is missing |
+| R skills don't activate on R-flavored prompts | Foundation rule not loaded — usually a stale session | Restart your Claude Code session |
+| Session-start banner missing | Hook not enabled in your settings | Confirm `~/.claude/settings.json` doesn't disable plugin hooks |
+| `quarto: command not found` during `/r-report` | Quarto CLI not on PATH | Install Quarto from https://quarto.org and re-open the shell |
+
+If something else breaks, please open an issue at https://github.com/alexvantwisk/supeRpowers/issues with the output of `claude plugin list` and a minimal reproducer.
 
 ## How It Works
 
@@ -38,10 +84,10 @@ supeRpowers uses a four-layer architecture:
 Foundation:  rules/r-conventions.md
                (loaded into every R conversation)
                         |
-Domain:      17 specialized skills
+Domain:      18 specialized skills
              (activated by user intent)
                         |
-Workflows:   5 slash commands
+Workflows:   6 slash commands
              (user-invoked: /r-tdd-cycle, /r-debug, ...)
                         |
 Service:     5 shared agents
@@ -50,9 +96,9 @@ Service:     5 shared agents
 
 **Foundation** — `rules/r-conventions.md` enforces tidyverse-first coding: base pipe `|>`, `<-` assignment, snake_case, and modern toolchain conventions across every R interaction.
 
-**Domain** — 17 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
+**Domain** — 18 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
 
-**Workflows** — 5 slash commands provide guided multi-step procedures (TDD cycle, debugging, package release, Shiny scaffold, analysis pipeline). Invoke explicitly with `/r-<name>`.
+**Workflows** — 6 slash commands provide guided multi-step procedures (TDD cycle, debugging, package release, Shiny scaffold, analysis pipeline, Word report scaffold). Invoke explicitly with `/r-<name>`.
 
 **Service** — 5 agents handle specialized tasks like code review, statistical consulting, and dependency auditing. Skills and commands dispatch to agents automatically, or you can invoke them directly.
 
@@ -72,6 +118,7 @@ Service:     5 shared agents
 | r-clinical | Clinical trials, CDISC, biostatistics | admiral, pwr, gsDesign, pROC, meta |
 | r-tables | Publication-quality tables | gt, gtsummary, gtExtras, reactable |
 | r-quarto | Documents, presentations, websites, books | quarto, rmarkdown, tarchetypes |
+| r-reporting | Word (.docx) consulting reports — reference docx, flextable pipeline, page layout | quarto, flextable, gtsummary, knitr |
 | r-performance | Profiling, optimization, parallel processing | profvis, data.table, Rcpp, furrr, bench |
 | r-tidymodels | Machine learning, predictive modeling, tuning | tidymodels, recipes, tune, yardstick |
 | r-targets | Reproducible pipelines, workflow orchestration | targets, tarchetypes, crew |
@@ -92,6 +139,7 @@ Slash commands provide guided multi-step workflows. Invoke explicitly with `/r-<
 | /r-pkg-release | Package release pipeline — audit deps, test, document, R CMD check, version bump, review, submit |
 | /r-shiny-app | Shiny app scaffold — structure, modules, reactivity, test, architecture review |
 | /r-analysis | Data analysis pipeline — import, clean, explore, model, visualize, report |
+| /r-report | Word report scaffold — generate `reference.docx`, qmd, render script for an R consulting deliverable |
 
 ## Agents
 
@@ -114,6 +162,7 @@ Just describe what you need — skills activate automatically:
 "Create a reproducible pipeline with targets for my analysis"
 "Debug why my Shiny app is slow"
 "Generate a demographics table for my clinical trial data"
+"Scaffold a Word consulting report for this analysis"
 ```
 
 ## Requirements
