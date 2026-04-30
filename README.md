@@ -170,6 +170,14 @@ Just describe what you need — skills activate automatically:
 - R >= 4.1.0
 - Claude Code >= 1.0.0
 
+## Contributing
+
+supeRpowers is in public beta. Right now contribution is via **issues only** —
+bug reports, feature requests, and content suggestions for existing skills are
+all welcome. Pull requests are not accepted yet (the conventions are still
+moving). See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide and issue
+templates.
+
 ## License
 
 MIT — see [LICENSE](LICENSE)
