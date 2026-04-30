@@ -8,7 +8,7 @@
     {
       "name": "supeRpowers",
       "description": "Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, and biostatistics.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "source": "./",
       "author": {
         "name": "Alexander van Twisk"

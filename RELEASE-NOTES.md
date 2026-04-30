@@ -1,5 +1,38 @@
 # Release Notes
 
+## 0.2.1 (2026-04-30)
+
+Documentation patch. Adds an evidence-based content-structure reference to
+`r-reporting`, distilled from biostatistical reporting literature
+(ICH E9(R1), CONSORT, STROBE, JAMA SAP, ASA, TIER, NASEM). Lazy-loaded; no
+behavior changes for existing users.
+
+### Added
+
+- **`skills/r-reporting/references/report-content-structure.md`** — 12-section
+  spine for consulting reports, ICH E9(R1) five-attribute estimand framework,
+  prespecification labeling vocabulary, PICOTA multiplicity framework,
+  MCAR/MAR/MNAR missing-data handling with required sensitivity analyses,
+  R-flavored reproducibility appendix template, uncertainty-communication
+  language replacements, and the consultant-vs-client interpretation
+  boundary.
+- **`docs/compass_artifact_*.md`** — source research artifact behind the
+  reference, kept for traceability.
+
+### Changed
+
+- **`skills/r-reporting/SKILL.md`** — one-line pointer added to the lazy
+  references list. The skill description, frontmatter, and routing matrix are
+  unchanged; the new reference loads only when explicitly read.
+
+### Notes
+
+- The companion editorial-template skill (CONSORT/STROBE/TRIPOD-aware Quarto
+  scaffolds with section-by-section prompt text) remains on the deferred
+  scope list in `docs/superpowers/specs/2026-04-30-r-reporting-design.md`.
+
+---
+
 ## 0.2.0 (2026-04-29)
 
 First marketplace-ready release. supeRpowers is now a four-layer R programming plugin for Claude Code: 17 skills, 5 slash commands, 5 agents, 1 foundation rule, and a session-start hook — installable with one command.

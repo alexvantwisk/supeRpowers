@@ -1,6 +1,6 @@
 # supeRpowers
 
-![Version](https://img.shields.io/badge/version-0.2.0-blue)
+![Version](https://img.shields.io/badge/version-0.2.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Skills](https://img.shields.io/badge/skills-17-purple)
 ![Commands](https://img.shields.io/badge/commands-5-orange)
