@@ -34,6 +34,7 @@ existing R project. All R code uses `|>`, `<-`, snake_case, and double quotes.
 - Read `references/reference-docx-anatomy.md` for styles.xml structure, twentieths-of-a-point units, which Pandoc styles to patch (Normal, docDefaults, Heading 1, Figure, Table, ImageCaption), and the docx-zip "mirror mode" requirement.
 - Read `references/quarto-docx-pitfalls.md` for the Quarto/Pandoc/knitr landmines: `!r` not in YAML, `--output` breaking `_files/`, `library(quarto)` eager load, `include_graphics` path resolution, `gtsummary` 2.x argument hygiene.
 - Read `references/word-figure-table-patterns.md` for `as_flex_table()`, the RDS cache pattern, `gt -> PNG` fallback, conditional formatting in flextable, figure sizing and ggplot theming for print.
+- Read `references/report-content-structure.md` for biostatistical consulting report sections, the ICH E9(R1) estimand framework, prespecification/exploratory labeling, multiplicity (PICOTA), missing-data handling (MCAR/MAR/MNAR), and uncertainty communication. Use when drafting *content*, not formatting.
 
 **Agent dispatch:** For R/qmd code quality, dispatch to **r-code-reviewer**. For statistical content of inline tables, dispatch to **r-statistician**.
 
