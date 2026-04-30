@@ -195,13 +195,16 @@ make_reference_doc <- function(
   message("Patched styles.xml.")
 
   ## -------------------------------------------------------------------------
-  ## 5. Patch footer1.xml — minimalist centered page number
+  ## 5. Footer1.xml — minimalist centered page number
   ## -------------------------------------------------------------------------
+  ## Pandoc's modern reference.docx ships without a footer. When `page_numbers`
+  ## is TRUE, write `word/footer1.xml`, register it in `[Content_Types].xml`
+  ## and `word/_rels/document.xml.rels`, and reference it from the section
+  ## properties in `word/document.xml`. If a footer already exists, just
+  ## overwrite its content and reuse the existing wiring.
   if (page_numbers) {
     footer_path <- file.path(work_dir, "word", "footer1.xml")
-    if (file.exists(footer_path)) {
-      footer_xml <- sprintf(
-        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    footer_xml <- '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
   <w:p>
     <w:pPr>
@@ -213,13 +216,81 @@ make_reference_doc <- function(
     </w:fldSimple>
   </w:p>
 </w:ftr>'
+    writeLines(footer_xml, footer_path, useBytes = TRUE)
+    invisible(xml2::read_xml(footer_path))   # sanity check parses
+
+    # 5a. Content_Types: ensure footer override is present.
+    ct_path <- file.path(work_dir, "[Content_Types].xml")
+    stopifnot(file.exists(ct_path))
+    ct_ns <- c(ct = "http://schemas.openxmlformats.org/package/2006/content-types")
+    ct <- xml2::read_xml(ct_path)
+    footer_override <- xml2::xml_find_first(
+      ct, "//ct:Override[@PartName='/word/footer1.xml']", ct_ns
+    )
+    if (inherits(footer_override, "xml_missing")) {
+      xml2::xml_add_child(
+        xml2::xml_root(ct), "Override",
+        PartName = "/word/footer1.xml",
+        ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"
       )
-      writeLines(footer_xml, footer_path, useBytes = TRUE)
-      invisible(xml2::read_xml(footer_path))   # sanity check parses
-      message("Patched footer1.xml (centered page number).")
-    } else {
-      message("No footer1.xml in template; skipping page number patch.")
+      xml2::write_xml(ct, ct_path)
     }
+
+    # 5b. document.xml.rels: ensure a footer relationship exists.
+    rels_path <- file.path(work_dir, "word", "_rels", "document.xml.rels")
+    stopifnot(file.exists(rels_path))
+    rels_ns <- c(pr = "http://schemas.openxmlformats.org/package/2006/relationships")
+    rels <- xml2::read_xml(rels_path)
+    footer_rel <- xml2::xml_find_first(
+      rels,
+      "//pr:Relationship[@Type='http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer'][@Target='footer1.xml']",
+      rels_ns
+    )
+    if (inherits(footer_rel, "xml_missing")) {
+      existing_ids <- xml2::xml_attr(
+        xml2::xml_find_all(rels, "//pr:Relationship", rels_ns),
+        "Id"
+      )
+      i <- 100L
+      while (sprintf("rId%d", i) %in% existing_ids) i <- i + 1L
+      footer_rid <- sprintf("rId%d", i)
+      xml2::xml_add_child(
+        xml2::xml_root(rels), "Relationship",
+        Id = footer_rid,
+        Type = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer",
+        Target = "footer1.xml"
+      )
+      xml2::write_xml(rels, rels_path)
+    } else {
+      footer_rid <- xml2::xml_attr(footer_rel, "Id")
+    }
+
+    # 5c. document.xml: add <w:footerReference> inside the body's <w:sectPr>.
+    doc_path <- file.path(work_dir, "word", "document.xml")
+    stopifnot(file.exists(doc_path))
+    doc_ns <- c(
+      w = "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+      r = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    )
+    doc <- xml2::read_xml(doc_path)
+    sect_pr <- xml2::xml_find_first(doc, "//w:body/w:sectPr", doc_ns)
+    if (inherits(sect_pr, "xml_missing")) {
+      body <- xml2::xml_find_first(doc, "//w:body", doc_ns)
+      sect_pr <- xml2::xml_add_child(body, "w:sectPr")
+    }
+    existing_ref <- xml2::xml_find_first(
+      sect_pr, "w:footerReference[@w:type='default']", doc_ns
+    )
+    if (!inherits(existing_ref, "xml_missing")) xml2::xml_remove(existing_ref)
+    xml2::xml_add_child(
+      sect_pr, "w:footerReference",
+      `w:type` = "default",
+      `r:id` = footer_rid,
+      .where = 0L
+    )
+    xml2::write_xml(doc, doc_path)
+
+    message("Footer1.xml + Content_Types + rels + sectPr wired (centered page number).")
   }
 
   ## -------------------------------------------------------------------------
@@ -249,10 +320,12 @@ make_reference_doc <- function(
   invisible(ref_path_abs)
 }
 
-# When sourced (not loaded as a function), invoke with defaults.
-if (!exists(".reporting_test_skip_run", inherits = FALSE)) {
-  if (sys.nframe() == 0L || identical(sys.function(1L), make_reference_doc)) {
-    # script-mode invocation
-    make_reference_doc()
-  }
+# Two-step usage:
+#   source(here::here("analysis", "make_reference_doc.R"))
+#   make_reference_doc()                              # defaults
+#   make_reference_doc(ref_path = "report/reference.docx", body_line = "2")
+#
+# `Rscript make_reference_doc.R` also runs the function once with defaults.
+if (!interactive() && sys.nframe() == 0L) {
+  make_reference_doc()
 }

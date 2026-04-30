@@ -184,7 +184,7 @@ if (result != 0L) stop("quarto render failed.")
 
 ## Verification
 
-After render: exit code 0; the docx file exists and is non-empty (>20 KB typically); opening the docx shows figures embedded, tables centered, Heading 1 sections starting on new pages, page numbers in footer. Run `file output/report_*.docx` — should report `Microsoft Word 2007+`.
+After render: exit code 0; the docx file exists and is non-empty (a bare scaffold renders to ~10-15 KB; real reports with figures and tables go well past 50 KB); opening the docx shows figures embedded, tables centered, Heading 1 sections starting on new pages, page numbers in footer. Run `file output/report_*.docx` — should report `Microsoft Word 2007+`.
 
 ---
 
