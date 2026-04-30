@@ -36,6 +36,15 @@ if [ -f "_quarto.yml" ]; then
   is_quarto=true
 fi
 
+# Word report pipeline: any *.qmd with format: docx, OR a reference.docx file
+is_word_report=false
+if find . -maxdepth 4 -type f -name '*.qmd' -print0 2>/dev/null | xargs -0 grep -lE '^\s*(format:\s*docx|docx:|reference-doc:)' 2>/dev/null | head -n 1 | grep -q .; then
+  is_word_report=true
+fi
+if [ -f "reference.docx" ] || [ -f "inst/templates/reference.docx" ] || [ -f "report/reference.docx" ]; then
+  is_word_report=true
+fi
+
 # Targets pipeline
 if [ -f "_targets.R" ]; then
   is_targets=true
@@ -98,6 +107,9 @@ if [ "$is_shiny" = true ]; then
 fi
 if [ "$is_quarto" = true ]; then
   skills="${skills}Quarto project detected. Key skill: /r-quarto.\\n"
+fi
+if [ "$is_word_report" = true ]; then
+  skills="${skills}Word .docx report pipeline detected. Key skill: /r-reporting. Command: /r-report.\\n"
 fi
 if [ "$is_targets" = true ]; then
   skills="${skills}Targets pipeline detected. Key skill: /r-targets.\\n"
