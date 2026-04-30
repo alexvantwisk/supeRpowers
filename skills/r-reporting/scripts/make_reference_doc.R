@@ -218,24 +218,28 @@ make_reference_doc <- function(
   ## -------------------------------------------------------------------------
   ## 6. Re-zip into the final reference.docx
   ## -------------------------------------------------------------------------
-  unlink(ref_path)
+  # zip::zip() with mode = "mirror" chdir()s into `root` before writing the
+  # zipfile, so a relative `zipfile` path would resolve against `root` (the
+  # unzipped temp dir) instead of the caller's cwd. Resolve to absolute first.
+  ref_path_abs <- normalizePath(ref_path, mustWork = FALSE, winslash = "/")
+  unlink(ref_path_abs)
 
   if (requireNamespace("zip", quietly = TRUE)) {
     entries <- list.files(work_dir, recursive = TRUE, all.files = TRUE,
                           include.dirs = FALSE, no.. = TRUE)
-    zip::zip(zipfile = ref_path, files = entries, root = work_dir, mode = "mirror")
+    zip::zip(zipfile = ref_path_abs, files = entries, root = work_dir, mode = "mirror")
   } else {
     if (!nzchar(Sys.which("zip"))) {
       stop("Need either the `zip` R package or a system `zip` binary on PATH.")
     }
     old_wd <- setwd(work_dir)
     on.exit(setwd(old_wd), add = TRUE, after = FALSE)
-    status <- system2("zip", c("-rq", shQuote(ref_path), "."))
+    status <- system2("zip", c("-rq", shQuote(ref_path_abs), "."))
     if (status != 0L) stop("system zip failed (exit ", status, ").")
   }
 
-  message("Wrote: ", ref_path)
-  invisible(ref_path)
+  message("Wrote: ", ref_path_abs)
+  invisible(ref_path_abs)
 }
 
 # When sourced (not loaded as a function), invoke with defaults.
