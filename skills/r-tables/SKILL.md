@@ -144,6 +144,8 @@ tbl         # gtsummary prints via knitr
 tbl |> as_gt()  # gt renders via knitr
 ```
 
+For an end-to-end Word report scaffold (reference.docx + path helpers + render wrapper), see **r-reporting**.
+
 ---
 
 ## Interactive Tables (reactable)
