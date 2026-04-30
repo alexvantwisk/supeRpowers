@@ -1,44 +1,42 @@
 # Contributing to supeRpowers
 
 Thanks for your interest in supeRpowers — an R programming plugin for Claude
-Code. This document describes how the project accepts contributions **right
-now, during beta**. The model is intentionally narrow while the plugin is
-still evolving; it will open up as things stabilise.
+Code. Contributions are welcome. This guide covers both filing issues and
+submitting pull requests.
 
 ---
 
 ## Status: beta, single maintainer
 
-supeRpowers is currently maintained by a single author and is in **public
-beta**. The skill set, command surface, and content conventions are still
-moving. Until the API and conventions settle, contribution is restricted to
-**filing issues** — pull requests are not accepted yet (see
-[Why no pull requests yet?](#why-no-pull-requests-yet) below).
+supeRpowers is in public beta and is currently maintained by a single author.
+Two practical consequences:
 
-This isn't a hostile gate. Issues are the most valuable signal at this stage:
-they tell the maintainer where the plugin is rough, what's missing, and
-what's actually being used in practice. If you've used the plugin on a real
-project and have feedback, **please file an issue** — that's exactly what's
-wanted.
+- **Response times can be days, occasionally longer.** Please be patient.
+- **Conventions are still settling.** Frontmatter formats, the routing
+  matrix, and content patterns have shifted between minor versions and may
+  shift again. For anything bigger than a typo, please open an issue first
+  to align before spending time on a PR.
 
 ---
 
-## How to contribute right now
+## How to contribute
 
 | You want to... | Do this |
 |---|---|
 | Report a bug | [Open a bug-report issue](https://github.com/alexvantwisk/supeRpowers/issues/new?template=bug_report.md) |
 | Suggest a new skill, command, or agent | [Open a feature-request issue](https://github.com/alexvantwisk/supeRpowers/issues/new?template=feature_request.md) |
 | Suggest content for an existing skill | [Open a skill-suggestion issue](https://github.com/alexvantwisk/supeRpowers/issues/new?template=skill_suggestion.md) |
-| Report a documentation error or typo | Open a regular issue with a link to the file and line |
-| Share usage feedback | Open a regular issue and tell the maintainer what worked and what didn't |
-| Ask a question | Open an issue and prefix the title with `[Question]` |
+| Fix a typo or small documentation error | Open a PR directly |
+| Fix a bug or add a small feature | Open an issue, then PR (link the issue) |
+| Add a new skill, command, or agent | Open an issue **first**, then PR |
+| Refactor or restructure existing content | Open an issue first |
 
-Every issue is read. Most receive a response within a few days.
+Issues and PRs are both welcome. Issues are preferred for anything that
+needs design discussion before code.
 
 ---
 
-## What makes a good issue
+## Filing a good issue
 
 The bar is low — please don't let it stop you filing — but issues that
 include the following get triaged and resolved fastest.
@@ -48,72 +46,122 @@ include the following get triaged and resolved fastest.
 - **Plugin version** (`claude plugin list` output)
 - **Claude Code version** (`claude --version`)
 - **R version** and operating system
-- **Reproducer** — a one- or two-line prompt to Claude Code that triggers the
-  problem, plus what you expected vs what happened
+- **Reproducer** — a one- or two-line prompt to Claude Code that triggers
+  the problem, plus what you expected vs what happened
 - **Logs or output** if Claude Code returned an error or the wrong skill
   activated
 
 ### Feature / skill suggestions
 
-- **What problem you're trying to solve.** This is the most important field.
-  "I have to write a CDISC SDTM mapping every week and the plugin doesn't
-  help" is more useful than "add a CDISC SDTM skill."
+- **What problem you're trying to solve.** "I have to write a CDISC SDTM
+  mapping every week and the plugin doesn't help" is more useful than
+  "add a CDISC SDTM skill."
 - **What you've tried.** Which existing skills came close, and where they
   fell short.
 - **A concrete example prompt** you'd want the plugin to handle well.
 
 ### Skill content suggestions
 
-If you want to suggest a fix or addition to an existing skill (a new
-reference file, a missing example, a wrong recommendation):
+If you want to suggest a fix or addition to an existing skill:
 
 - Name the skill (`r-tdd`, `r-shiny`, ...)
 - Describe what's wrong or missing in plain prose
-- Link to authoritative sources (CRAN docs, package vignettes, R-blogger
-  articles) the maintainer can verify against
+- Link to authoritative sources (CRAN docs, package vignettes, Posit blog
+  posts) the maintainer can verify against
 
-You don't need to draft the actual change — describing what should be in the
-skill is enough.
-
----
-
-## Why no pull requests yet?
-
-Three reasons, all of which will go away as the plugin matures:
-
-1. **Conventions are still settling.** The skill frontmatter format, command
-   structure, and routing matrix have changed twice since 0.1.0. A PR written
-   against today's conventions could be obsolete by next month, which is
-   discouraging for contributors and creates merge churn.
-2. **No CONTRIBUTOR-level test infrastructure.** The current test suite
-   (`python tests/run_all.py`) catches structural issues but doesn't yet
-   guard the *content quality* of skills. Until that's in place, accepting
-   external content changes risks regressions that wouldn't be caught.
-3. **Single maintainer at beta.** Reviewing PRs well takes meaningful time;
-   right now that time is better spent making the plugin good enough to
-   merit external contributions.
-
-Filing an issue is *not* second-class. A clear issue describing what should
-change is often more valuable than a PR — it lets the maintainer
-implement the fix in a way that matches the plugin's evolving conventions
-without a lengthy revision cycle.
+You don't need to draft the actual change — describing what should be in
+the skill is enough.
 
 ---
 
-## When pull requests will open
+## Submitting a pull request
 
-PRs will be accepted once these are in place:
+### Before you start
 
-- A documented **content-quality test** for skills (the `skill-auditor`
-  meta-skill is the precursor; needs to be wired into CI)
-- A **CONTRIBUTING-CODE.md** describing skill/command/agent contribution
-  format with linting and structural checks
-- A **CHANGELOG-driven release process** that doesn't require manual file
-  hunting for version bumps
+- For anything bigger than a typo, please open an issue first so we can
+  align on direction before you invest time in code
+- Read [`CLAUDE.md`](CLAUDE.md) for content-format requirements (skill,
+  command, agent, and rule conventions)
+- Skim the [R coding conventions](#r-coding-conventions) below
 
-If you want to track this, watch the
-[v1.0 milestone](https://github.com/alexvantwisk/supeRpowers/milestones)
-once it's created.
+### Workflow
+
+1. Fork the repo and create a branch from `main`
+2. Make your change
+3. Run the test suite:
+
+   ```bash
+   python tests/run_all.py
+   ```
+
+   - Routing tests should remain at 141/141 (or higher if you added a
+     skill and routing entries)
+   - No NEW structural or convention failures. Ten pre-existing structural
+     failures (in `r-mcp-setup`, agent frontmatters, and one rule
+     line-limit) are documented as known issues for the 0.2.x patch
+     series — those don't block your PR.
+
+4. Run the convention spot-check:
+
+   ```bash
+   grep -rn '%>%' skills/ commands/ agents/ rules/ --exclude=eval.md
+   ```
+
+   This must produce zero output.
+
+5. Push your branch and open a PR against `main`
+6. Fill in the PR template
+7. Be patient — review may take a few days
+
+### Adding a new skill / command / agent
+
+See [`CLAUDE.md`](CLAUDE.md) for canonical procedures. Briefly:
+
+- **New skill:** create `skills/<name>/SKILL.md` with `name` + `description`
+  frontmatter; optional `references/`, `scripts/`, `eval.md`. Keep
+  SKILL.md ≤ 300 lines; offload detail to `references/`.
+- **New command:** create `commands/<name>.md` with single-field
+  `description:` frontmatter. ≤ 200 lines including frontmatter.
+- **New agent:** create `agents/<name>.md` with `name` + `description`
+  frontmatter and Inputs / Output / Procedure sections. ≤ 200 lines.
+
+For new skills, also update `tests/routing_matrix.json` with at least one
+positive test plus 1–2 negative tests against sibling skills.
+
+---
+
+## R coding conventions
+
+All R code in skills, agents, rules, references, and examples must follow:
+
+- `|>` only, never `%>%` (magrittr)
+- `<-` for assignment (not `=`, except in function arguments)
+- Tidyverse-first: `dplyr`, `tidyr`, `purrr`, `ggplot2`, `readr`,
+  `stringr`, `forcats`, `lubridate`
+- `snake_case` for identifiers
+- Double quotes for strings
+- Target R >= 4.1.0
+
+---
+
+## Commit message format
+
+```
+<type>(<scope>): <subject>
+
+<optional body explaining why, not what>
+```
+
+Types: `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `perf`. Scope is
+the skill, command, or agent name when applicable.
+
+Examples:
+
+```
+feat(r-targets): add crew integration reference for parallel pipelines
+fix(hooks): resolve session-start hook on Windows
+docs(readme): expand installation troubleshooting
+```
 
 ---
 
@@ -122,15 +170,15 @@ once it's created.
 Be respectful, be specific, and assume good intent. Discussion stays
 focused on the plugin and how to make it better. Personal attacks,
 discriminatory language, or off-topic disputes will result in the issue
-being locked.
+or PR being locked.
 
 ---
 
 ## Licensing
 
-supeRpowers is MIT-licensed (see [LICENSE](LICENSE)). By filing an issue you
-acknowledge that any content, examples, or text you include in the issue may
-be used by the maintainer in the plugin under the same MIT licence.
+supeRpowers is MIT-licensed (see [LICENSE](LICENSE)). By contributing —
+whether via issue or PR — you agree that your contribution may be used
+under the same MIT licence.
 
 ---
 

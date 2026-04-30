@@ -172,11 +172,11 @@ Just describe what you need — skills activate automatically:
 
 ## Contributing
 
-supeRpowers is in public beta. Right now contribution is via **issues only** —
-bug reports, feature requests, and content suggestions for existing skills are
-all welcome. Pull requests are not accepted yet (the conventions are still
-moving). See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide and issue
-templates.
+supeRpowers is in public beta and welcomes contributions — both issues and
+pull requests. For non-trivial changes, please open an issue first to align on
+direction before opening a PR. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+full guide: issue-quality bar, PR workflow, R coding conventions, and how to
+add a new skill / command / agent.
 
 ## License
 

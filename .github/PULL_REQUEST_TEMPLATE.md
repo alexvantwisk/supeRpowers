@@ -1,31 +1,38 @@
-<!--
-👋 Thanks for the interest, but please read this first.
+## What does this PR do
 
-supeRpowers is in public beta with a single maintainer, and pull requests
-are NOT being accepted right now. Conventions are still moving and there
-isn't yet content-quality test infrastructure to safely review external
-changes. See CONTRIBUTING.md for the full reasoning.
-
-If you have:
-  - a bug to report          → open a Bug report issue
-  - a skill or feature idea  → open a Feature request issue
-  - a fix for an existing skill → open a Skill content suggestion issue
-
-…the maintainer will pick it up from there. Pull requests opened against
-this repo will be politely closed with a pointer to CONTRIBUTING.md.
-
-Thanks for understanding — issues are genuinely the most useful signal at
-this stage of the project.
--->
-
-## Why I'm filing this PR despite the policy
-
-<!-- If you're sure a PR is the right path despite CONTRIBUTING.md, briefly
-say why here. Otherwise, please close this PR and open an issue instead. -->
+<!-- One or two sentences. -->
 
 ## Linked issue
 
-<!-- Link to the issue this PR addresses (PRs without a linked, accepted
-issue will be closed). -->
+<!-- For non-trivial changes, please link the issue this PR addresses. See
+CONTRIBUTING.md for the issue-first workflow. -->
 
 Closes #
+
+## Type of change
+
+- [ ] New skill
+- [ ] Edit / extend existing skill
+- [ ] New or edited command
+- [ ] New or edited agent
+- [ ] Edited rule
+- [ ] Documentation only (README, CONTRIBUTING, CLAUDE.md, release notes)
+- [ ] Tests / CI / repo infrastructure
+- [ ] Other (describe below)
+
+## Verification
+
+- [ ] `python tests/run_all.py` — no NEW failures
+      (the 10 pre-existing structural failures documented in 0.2.0
+      release notes are acceptable)
+- [ ] `grep -rn '%>%' skills/ commands/ agents/ rules/ --exclude=eval.md`
+      returns no output
+- [ ] Frontmatter and line limits per `CLAUDE.md`
+      (SKILL ≤ 300, command ≤ 200, agent ≤ 200, rule ≤ 150)
+- [ ] R code uses `<-`, `|>`, snake_case, double quotes
+- [ ] Routing matrix updated if I added or substantially changed a skill
+
+## Notes for the reviewer
+
+<!-- Anything that would help review: design rationale, edge cases, manual
+testing performed, screenshots if there's a visible behavioural change. -->
