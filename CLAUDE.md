@@ -138,3 +138,99 @@ The `tests/` directory contains the plugin evaluation framework:
 - `run_all.py` — runs the full suite
 
 See `tests/README.md` for usage.
+
+## Roadmap (next 3 priorities)
+
+Beta-readiness audit picked these three as the next priorities, in order. Each is independently shippable.
+
+### Phase 1 — GitHub Actions CI (foundation)
+
+**Goal:** Every push to `main` and every PR runs `python tests/run_all.py` automatically; CI is green from day 1.
+
+**Why first:** Unblocks the PR contribution path; gives automated regression coverage so subsequent phases land safely; prevents content drift as the plugin grows.
+
+**Scope:**
+
+1. Clean up the 5 *real* pre-existing test failures:
+   - Trim `agents/r-statistician.md` from 205 → ≤200 lines
+   - Trim `rules/r-conventions.md` from 159 → ≤150 lines
+   - Rewrite `skills/r-mcp-setup/SKILL.md` description to include 5+ trigger phrases and a `Do NOT use for...` boundary block
+   - Add `skills/r-mcp-setup/eval.md`
+2. Fix the 5 *stale* test assertions: invert the `agent-no-frontmatter` check in `tests/test_structural.py` so it requires frontmatter (matches the post-0.2.0 convention documented above).
+3. Add `.github/workflows/test.yml` — Ubuntu runner, Python 3.11, `python tests/run_all.py`, fail on non-zero exit.
+4. Add a CI status badge to README.
+
+**Effort:** ~1 day. Mostly mechanical.
+
+**Risk:** Very low. Self-contained. Convention fixes match what's already documented.
+
+**Release:** Patch bump to 0.2.2 (or fold into Phase 3's 0.3.0).
+
+### Phase 2 — PostToolUse auto-format hook
+
+**Goal:** When Claude edits a `.R`, `.Rmd`, or `.qmd` file via Edit/Write, the file is auto-formatted with `styler` afterwards. Optional: `lintr` results surfaced as a system reminder.
+
+**Why second:** Highest daily-impact lever. Every R interaction produces tidier code without anyone remembering to run `styler`. Self-contained — no skill or content changes.
+
+**Scope:**
+
+1. `hooks/post-tool-use-format` shell script:
+   - Read tool name + file path from hook stdin
+   - Skip unless `Edit`/`Write` and path matches `*.R|*.Rmd|*.qmd`
+   - Detect `styler` availability (`Rscript -e 'requireNamespace("styler")'`); skip silently if missing
+   - Run `Rscript -e 'styler::style_file("<path>")'` with a 5s timeout
+   - Optional second pass: `lintr::lint("<path>")` → emit findings as a `<system-reminder>` so Claude sees them
+2. Extend `hooks/run-hook.cmd` to dispatch `post-tool-use-format`.
+3. Register a `PostToolUse` matcher in `hooks/hooks.json` for `Edit|Write`.
+4. Document opt-out via `~/.claude/settings.json` in README.
+5. Manual smoke test on a sample R project.
+
+**Effort:** ~half a day.
+
+**Risk:** Low. Two design questions to nail down: (a) when styler changes line counts, the hook should announce the format ran so Claude re-reads the file; (b) start with lintr output silent, escalate to surfacing later if useful.
+
+**Release:** Patch bump to 0.2.3 (or fold into 0.3.0).
+
+### Phase 3 — `r-bayesian` skill
+
+**Goal:** A new domain skill covering Bayesian modeling with `brms`, `rstanarm`, `cmdstanr`, `posterior`, and `tidybayes`. SKILL.md plus 3–4 references.
+
+**Why third:** Largest single content gap. Bayesian is a major statistical paradigm where Claude's defaults are notably weaker than for frequentist work — priors, MCMC diagnostics, and posterior summarization are full of subtle traps the plugin can encode. Builds on stable CI + hook foundations.
+
+**Scope:**
+
+1. `skills/r-bayesian/SKILL.md` — frontmatter with 5+ trigger phrases (`brms`, `MCMC`, `posterior`, `stan`, `Bayesian`), boundaries against r-stats (frequentist) and r-tidymodels (ML); body covering the brms workflow.
+2. `skills/r-bayesian/references/`:
+   - `model-formulas.md` — brms formula syntax: hierarchical, distributional, mixture, nonlinear
+   - `prior-choice.md` — weakly informative defaults, prior predictive checks, sensitivity
+   - `mcmc-diagnostics.md` — Rhat, ESS bulk/tail, divergences, max treedepth, posterior predictive checks
+   - `tidybayes-patterns.md` — `gather_draws` / `spread_draws`, `ggdist` visualization, `linpred_draws` for predictions
+3. Update r-stats negative-boundary line to point at r-bayesian; same for r-clinical and r-tidymodels.
+4. Routing matrix — 4–6 new entries (positive: brms / MCMC / posterior; negative against r-stats and r-tidymodels).
+5. README + CLAUDE.md — bump skill count 18 → 19 in badge, table, architecture diagram, ship line.
+6. Session-start hook — detect `.stan` files, `_brms_*.rds` artifacts, and `brms`/`posterior` in `DESCRIPTION` / `Imports`.
+7. `eval.md` — 10 binary eval questions + happy/edge/adversarial/boundary prompts.
+8. Release notes — 0.3.0 entry.
+
+**Effort:** ~2–3 days for high-quality content with references.
+
+**Risk:** Low on infra (additive skill). Some content judgment needed on prior-choice guidance.
+
+**Release:** Minor bump to 0.3.0 (new skill = minor bump).
+
+### Sequencing
+
+```
+Phase 1  →  Phase 2  →  Phase 3
+  CI         hook        Bayesian
+  ~1 day     ~0.5 day    ~2–3 days
+```
+
+Each phase is independently shippable. Phases 1 + 2 are together ≤2 days; Phase 3 is the biggest content win.
+
+### Deferred (revisit after Phase 3)
+
+- `r-timeseries`, `r-spatial`, `r-causal` skills — comparable value to Bayesian but lower differentiation per unit effort
+- `/r-deploy`, `/r-bench`, `/r-renv` commands — pull from real user requests
+- Docker / rocker / pkgdown CI patterns — production-readiness; warrants its own brainstorm
+- Example gallery / FAQ — seed from user feedback once it arrives
