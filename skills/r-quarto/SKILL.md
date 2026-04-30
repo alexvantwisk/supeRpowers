@@ -17,7 +17,7 @@ Quarto publishing system for R: documents, presentations, websites, books,
 and multi-format output. All code uses base pipe `|>`, `<-` for assignment,
 and tidyverse/knitr conventions.
 
-> **Boundary:** Quarto documents, sites, and presentations. For R package vignettes, use r-package-dev instead.
+> **Boundary:** Quarto documents, sites, and presentations. For R package vignettes, use r-package-dev instead. For Word/.docx deliverables (reference docx, page breaks, footers, figure/table centering), use **r-reporting**.
 
 **Agent dispatch:** For R code quality in `.qmd` files, dispatch to **r-code-reviewer** agent.
 
