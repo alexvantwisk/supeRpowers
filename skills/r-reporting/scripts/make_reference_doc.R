@@ -163,6 +163,13 @@ make_reference_doc <- function(
       for (existing in xml2::xml_find_all(h1_ppr, "w:jc", ns)) xml2::xml_remove(existing)
       xml2::xml_add_child(h1_ppr, "w:jc", `w:val` = "center")
     }
+    # Bold for Heading 1 — patch run properties so the invariant holds even
+    # if the base reference.docx inherited Heading 1's run styling differently.
+    h1_rpr <- ensure_rPr(heading1)
+    for (existing in xml2::xml_find_all(h1_rpr, "w:b",   ns)) xml2::xml_remove(existing)
+    for (existing in xml2::xml_find_all(h1_rpr, "w:bCs", ns)) xml2::xml_remove(existing)
+    xml2::xml_add_child(h1_rpr, "w:b")
+    xml2::xml_add_child(h1_rpr, "w:bCs")
   }
 
   # 4c. Figure — center

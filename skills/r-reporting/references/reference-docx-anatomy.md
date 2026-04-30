@@ -150,15 +150,16 @@ In `word/footer1.xml`, replace the body paragraph with:
 ```xml
 <w:p>
   <w:pPr><w:jc w:val="center"/></w:pPr>
-  <w:r>
-    <w:fldSimple w:instr=" PAGE \* MERGEFORMAT "/>
-  </w:r>
+  <w:fldSimple w:instr=" PAGE \* MERGEFORMAT ">
+    <w:r><w:t>1</w:t></w:r>
+  </w:fldSimple>
 </w:p>
 ```
 
-The leading and trailing spaces inside `w:instr` are required. For "Page X of Y",
-append a literal ` of ` run and a second `fldSimple` with
-`instr=" NUMPAGES \* MERGEFORMAT "`.
+`w:fldSimple` is a paragraph-level element that wraps `w:r` children — it cannot
+nest inside `w:r`. The leading and trailing spaces inside `w:instr` are required.
+For "Page X of Y", append a second `fldSimple` with
+`instr=" NUMPAGES \* MERGEFORMAT "` after a literal ` of ` run.
 
 ## The xml2 Patching Idiom
 
@@ -202,8 +203,9 @@ body <- xml2::xml_find_first(footer, "//w:body", ns)
 p_node <- xml2::xml_add_child(body, "w:p")
 ppr_node <- xml2::xml_add_child(p_node, "w:pPr")
 xml2::xml_add_child(ppr_node, "w:jc", `w:val` = "center")
-r_node <- xml2::xml_add_child(p_node, "w:r")
-xml2::xml_add_child(r_node, "w:fldSimple", `w:instr` = " PAGE \\* MERGEFORMAT ")
+fld_node <- xml2::xml_add_child(p_node, "w:fldSimple", `w:instr` = " PAGE \\* MERGEFORMAT ")
+r_node <- xml2::xml_add_child(fld_node, "w:r")
+xml2::xml_add_child(r_node, "w:t", "1")
 xml2::write_xml(footer, footer_path)
 ```
 
