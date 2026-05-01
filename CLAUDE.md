@@ -139,34 +139,11 @@ The `tests/` directory contains the plugin evaluation framework:
 
 See `tests/README.md` for usage.
 
-## Roadmap (next 3 priorities)
+## Roadmap (next 2 priorities)
 
-Beta-readiness audit picked these three as the next priorities, in order. Each is independently shippable.
+Phase 1 (GitHub Actions CI) shipped in 0.2.2. The remaining two phases are independently shippable.
 
-### Phase 1 — GitHub Actions CI (foundation)
-
-**Goal:** Every push to `main` and every PR runs `python tests/run_all.py` automatically; CI is green from day 1.
-
-**Why first:** Unblocks the PR contribution path; gives automated regression coverage so subsequent phases land safely; prevents content drift as the plugin grows.
-
-**Scope:**
-
-1. Clean up the 5 *real* pre-existing test failures:
-   - Trim `agents/r-statistician.md` from 205 → ≤200 lines
-   - Trim `rules/r-conventions.md` from 159 → ≤150 lines
-   - Rewrite `skills/r-mcp-setup/SKILL.md` description to include 5+ trigger phrases and a `Do NOT use for...` boundary block
-   - Add `skills/r-mcp-setup/eval.md`
-2. Fix the 5 *stale* test assertions: invert the `agent-no-frontmatter` check in `tests/test_structural.py` so it requires frontmatter (matches the post-0.2.0 convention documented above).
-3. Add `.github/workflows/test.yml` — Ubuntu runner, Python 3.11, `python tests/run_all.py`, fail on non-zero exit.
-4. Add a CI status badge to README.
-
-**Effort:** ~1 day. Mostly mechanical.
-
-**Risk:** Very low. Self-contained. Convention fixes match what's already documented.
-
-**Release:** Patch bump to 0.2.2 (or fold into Phase 3's 0.3.0).
-
-### Phase 2 — PostToolUse auto-format hook
+### Phase 1 — PostToolUse auto-format hook
 
 **Goal:** When Claude edits a `.R`, `.Rmd`, or `.qmd` file via Edit/Write, the file is auto-formatted with `styler` afterwards. Optional: `lintr` results surfaced as a system reminder.
 
@@ -191,7 +168,7 @@ Beta-readiness audit picked these three as the next priorities, in order. Each i
 
 **Release:** Patch bump to 0.2.3 (or fold into 0.3.0).
 
-### Phase 3 — `r-bayesian` skill
+### Phase 2 — `r-bayesian` skill
 
 **Goal:** A new domain skill covering Bayesian modeling with `brms`, `rstanarm`, `cmdstanr`, `posterior`, and `tidybayes`. SKILL.md plus 3–4 references.
 
@@ -221,12 +198,12 @@ Beta-readiness audit picked these three as the next priorities, in order. Each i
 ### Sequencing
 
 ```
-Phase 1  →  Phase 2  →  Phase 3
-  CI         hook        Bayesian
-  ~1 day     ~0.5 day    ~2–3 days
+Phase 1  →  Phase 2
+  hook        Bayesian
+  ~0.5 day    ~2–3 days
 ```
 
-Each phase is independently shippable. Phases 1 + 2 are together ≤2 days; Phase 3 is the biggest content win.
+Each phase is independently shippable. Phase 1 is ~half a day; Phase 2 is the biggest content win.
 
 ### Deferred (revisit after Phase 3)
 

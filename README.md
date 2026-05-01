@@ -1,6 +1,7 @@
 # supeRpowers
 
-![Version](https://img.shields.io/badge/version-0.2.1-blue)
+[![Tests](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml/badge.svg)](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml)
+![Version](https://img.shields.io/badge/version-0.2.2-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Skills](https://img.shields.io/badge/skills-18-purple)
 ![Commands](https://img.shields.io/badge/commands-6-orange)
