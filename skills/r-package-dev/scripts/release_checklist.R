@@ -26,17 +26,12 @@ if (!file.exists(desc_file)) {
   stop(sprintf("No DESCRIPTION file in %s — not an R package.", pkg_path))
 }
 
-need <- function(pkg) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    stop(sprintf(
-      "Package '%s' required. Install with install.packages(\"%s\").",
-      pkg, pkg
-    ))
-  }
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  stop("Package devtools is required. Install with: install.packages(\"devtools\")")
 }
-
-need("devtools")
-need("desc")
+if (!requireNamespace("desc", quietly = TRUE)) {
+  stop("Package desc is required. Install with: install.packages(\"desc\")")
+}
 
 results <- list()
 record <- function(name, ok, details = "") {
@@ -185,7 +180,7 @@ if (with_revdep) {
     }
   } else {
     record("revdepcheck", FALSE,
-           "revdepcheck not installed -- run pak::pkg_install(\"r-lib/revdepcheck\")")
+           "revdepcheck not installed -- install via pak (pkg_install r-lib/revdepcheck)")
   }
 } else {
   cat("\n>> Skipping revdepcheck (pass --with-revdep to run; takes 30+ min).\n")

@@ -24,13 +24,11 @@ if (!file.exists(desc_file)) {
   stop(sprintf("No DESCRIPTION in %s -- not an R package.", pkg_path))
 }
 
-need <- function(pkg) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    stop(sprintf(
-      "Package '%s' required. Install with install.packages(\"%s\").",
-      pkg, pkg
-    ))
-  }
+if (!requireNamespace("roxygen2", quietly = TRUE)) {
+  stop("Package roxygen2 is required. Install with: install.packages(\"roxygen2\")")
+}
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  stop("Package devtools is required. Install with: install.packages(\"devtools\")")
 }
 
 results <- list()
@@ -45,7 +43,6 @@ cat(sprintf("\n=== Preflight: %s ===\n\n", pkg_path))
 
 # ---- 1. roxygen2::roxygenize() ----
 cat(">> Regenerating man/ and NAMESPACE...\n")
-need("roxygen2")
 rox_result <- tryCatch(
   roxygen2::roxygenize(pkg_path),
   error = function(e) e

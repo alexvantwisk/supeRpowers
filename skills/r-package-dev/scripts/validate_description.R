@@ -22,7 +22,7 @@ if (!file.exists(desc_file)) {
   stop(sprintf("No DESCRIPTION in %s.", pkg_path))
 }
 if (!requireNamespace("desc", quietly = TRUE)) {
-  stop("Package 'desc' required. install.packages(\"desc\").")
+  stop("Package desc required. install.packages(\"desc\").")
 }
 
 desc_obj <- desc::desc(file = desc_file)
@@ -131,9 +131,9 @@ if (desc_obj$has_fields("Authors@R")) {
     roles <- unlist(lapply(authors, function(a) a$role))
     n_cre <- sum(roles == "cre")
     if (n_cre == 0L) {
-      add_err("Authors@R must include exactly one person with role 'cre'.")
+      add_err("Authors@R must include exactly one person with role \"cre\".")
     } else if (n_cre > 1L) {
-      add_err(sprintf("Authors@R has %d 'cre' roles; exactly one required.",
+      add_err(sprintf("Authors@R has %d \"cre\" roles; exactly one required.",
                       n_cre))
     }
     # Check cre has email
@@ -187,7 +187,7 @@ if (desc_obj$has_fields("Encoding")) {
     add_warn(sprintf("Encoding '%s'; prefer UTF-8.", enc))
   }
 } else {
-  add_warn("Missing Encoding field; add 'Encoding: UTF-8'.")
+  add_warn("Missing Encoding field; add Encoding: UTF-8.")
 }
 
 # ---- Output ----

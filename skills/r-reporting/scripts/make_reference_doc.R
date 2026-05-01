@@ -19,10 +19,12 @@
 ## R packages:  here, xml2, zip
 ## ============================================================================
 
-suppressPackageStartupMessages({
-  library(here)
-  library(xml2)
-})
+if (!requireNamespace("here", quietly = TRUE)) {
+  stop("Package here is required. Install with: install.packages(\"here\")")
+}
+if (!requireNamespace("xml2", quietly = TRUE)) {
+  stop("Package xml2 is required. Install with: install.packages(\"xml2\")")
+}
 
 make_reference_doc <- function(
   ref_path           = here::here("inst", "templates", "reference.docx"),
@@ -145,14 +147,14 @@ make_reference_doc <- function(
     xml2::xml_add_child(doc_default_rpr, "w:szCs", `w:val` = font_size_halfpt)
   }
 
-  normal <- xml2::xml_find_first(styles, "//w:style[@w:styleId='Normal']", ns)
+  normal <- xml2::xml_find_first(styles, "//w:style[@w:styleId=\"Normal\"]", ns)
   if (inherits(normal, "xml_missing")) {
     stop("Normal style not found in reference.docx styles.xml.")
   }
   patch_body_styling(ensure_pPr(normal))
 
   # 4b. Heading 1 — page break + center
-  heading1 <- xml2::xml_find_first(styles, "//w:style[@w:styleId='Heading1']", ns)
+  heading1 <- xml2::xml_find_first(styles, "//w:style[@w:styleId=\"Heading1\"]", ns)
   if (!inherits(heading1, "xml_missing")) {
     h1_ppr <- ensure_pPr(heading1)
     if (heading1_pagebreak) {
@@ -173,7 +175,7 @@ make_reference_doc <- function(
   }
 
   # 4c. Figure — center
-  figure <- xml2::xml_find_first(styles, "//w:style[@w:styleId='Figure']", ns)
+  figure <- xml2::xml_find_first(styles, "//w:style[@w:styleId=\"Figure\"]", ns)
   if (!inherits(figure, "xml_missing")) {
     fig_ppr <- ensure_pPr(figure)
     for (existing in xml2::xml_find_all(fig_ppr, "w:jc", ns)) xml2::xml_remove(existing)
@@ -181,7 +183,7 @@ make_reference_doc <- function(
   }
 
   # 4d. Table — center (paragraph style on Pandoc-emitted Table style if present)
-  tbl <- xml2::xml_find_first(styles, "//w:style[@w:styleId='Table']", ns)
+  tbl <- xml2::xml_find_first(styles, "//w:style[@w:styleId=\"Table\"]", ns)
   if (!inherits(tbl, "xml_missing")) {
     tbl_ppr <- ensure_pPr(tbl)
     for (existing in xml2::xml_find_all(tbl_ppr, "w:jc", ns)) xml2::xml_remove(existing)
@@ -225,7 +227,7 @@ make_reference_doc <- function(
     ct_ns <- c(ct = "http://schemas.openxmlformats.org/package/2006/content-types")
     ct <- xml2::read_xml(ct_path)
     footer_override <- xml2::xml_find_first(
-      ct, "//ct:Override[@PartName='/word/footer1.xml']", ct_ns
+      ct, "//ct:Override[@PartName=\"/word/footer1.xml\"]", ct_ns
     )
     if (inherits(footer_override, "xml_missing")) {
       xml2::xml_add_child(
@@ -243,7 +245,7 @@ make_reference_doc <- function(
     rels <- xml2::read_xml(rels_path)
     footer_rel <- xml2::xml_find_first(
       rels,
-      "//pr:Relationship[@Type='http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer'][@Target='footer1.xml']",
+      "//pr:Relationship[@Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer\"][@Target=\"footer1.xml\"]",
       rels_ns
     )
     if (inherits(footer_rel, "xml_missing")) {
@@ -279,7 +281,7 @@ make_reference_doc <- function(
       sect_pr <- xml2::xml_add_child(body, "w:sectPr")
     }
     existing_ref <- xml2::xml_find_first(
-      sect_pr, "w:footerReference[@w:type='default']", doc_ns
+      sect_pr, "w:footerReference[@w:type=\"default\"]", doc_ns
     )
     if (!inherits(existing_ref, "xml_missing")) xml2::xml_remove(existing_ref)
     xml2::xml_add_child(

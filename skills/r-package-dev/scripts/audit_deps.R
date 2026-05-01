@@ -19,7 +19,7 @@ if (!file.exists(desc_file)) {
   stop(sprintf("No DESCRIPTION in %s.", pkg_path))
 }
 if (!requireNamespace("desc", quietly = TRUE)) {
-  stop("Package 'desc' required. install.packages(\"desc\").")
+  stop("Package desc required. install.packages(\"desc\").")
 }
 
 desc_obj <- desc::desc(file = desc_file)
@@ -29,14 +29,14 @@ imports_pkgs <- deps$package[deps$type %in% c("Imports", "Depends")]
 imports_pkgs <- setdiff(imports_pkgs, "R")
 suggests_pkgs <- deps$package[deps$type == "Suggests"]
 
-# Scan R/ files for pkg::fun and @importFrom references
+# Scan R/ files for namespaced calls and @importFrom references
 r_files <- list.files(file.path(pkg_path, "R"), pattern = "\\.[RrSsQq]$",
                       full.names = TRUE, recursive = TRUE)
 
 collect_used <- function(files) {
   if (length(files) == 0L) return(character())
   lines <- unlist(lapply(files, readLines, warn = FALSE))
-  # Match pkg::fn or pkg:::fn
+  # Match namespace-qualified function calls (with double or triple colon)
   ns_refs <- regmatches(
     lines,
     gregexpr("([a-zA-Z][a-zA-Z0-9._]+)(?=:::?)", lines, perl = TRUE)
@@ -115,7 +115,7 @@ if (length(missing_in_desc) == 0L) {
   cat("  (none — every referenced package is declared)\n\n")
 } else {
   for (p in sort(missing_in_desc)) {
-    cat(sprintf("  * %s — run usethis::use_package(\"%s\")\n", p, p))
+    cat(sprintf("  * %s — declare with usethis use_package(\"%s\")\n", p, p))
   }
   cat("\n")
 }

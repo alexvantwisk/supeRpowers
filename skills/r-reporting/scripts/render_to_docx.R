@@ -14,7 +14,9 @@
 ## R packages:  here
 ## ============================================================================
 
-suppressPackageStartupMessages(library(here))
+if (!requireNamespace("here", quietly = TRUE)) {
+  stop("Package here is required. Install with: install.packages(\"here\")")
+}
 
 render_to_docx <- function(
   input_qmd  = here::here("inst", "templates", "report.qmd"),

@@ -15,7 +15,7 @@ if (!file.exists(file.path(pkg_path, "DESCRIPTION"))) {
   stop("Not an R package (no DESCRIPTION).")
 }
 if (!requireNamespace("lintr", quietly = TRUE)) {
-  stop("Package 'lintr' required. install.packages(\"lintr\").")
+  stop("Package lintr required. install.packages(\"lintr\").")
 }
 
 `%||%` <- function(a, b) if (is.null(a)) b else a

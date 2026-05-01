@@ -22,7 +22,7 @@ if (!dir.exists(pkg_path)) stop(sprintf("Directory not found: %s", pkg_path))
 desc_file <- file.path(pkg_path, "DESCRIPTION")
 if (!file.exists(desc_file)) stop("Not an R package (no DESCRIPTION).")
 if (!requireNamespace("roxygen2", quietly = TRUE)) {
-  stop("Package 'roxygen2' required.")
+  stop("Package roxygen2 required.")
 }
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
@@ -151,5 +151,5 @@ for (file in names(by_file)) {
   cat("\n")
 }
 
-cat("Fix roxygen blocks, then run devtools::document().\n")
+cat("Fix roxygen blocks, then regenerate docs (devtools document or roxygen2).\n")
 quit(status = 1L)

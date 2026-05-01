@@ -1,10 +1,14 @@
 # cc-helpers.R — IDE-awareness helpers for Claude Code
 # Source from .Rprofile to make these available in interactive R sessions.
-# Pairs with mcptools::mcp_session() to close the gap with Positron Assistant.
+# Pairs with mcp_session() from the mcptools package to close the gap with
+# Positron Assistant.
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
 cc_plot <- function(name = NULL, width = 8, height = 5, dpi = 120) {
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    stop("Package ggplot2 is required. Install with: install.packages(\"ggplot2\")")
+  }
   dir <- ".claude/scratch/plots"
   dir.create(dir, recursive = TRUE, showWarnings = FALSE)
   name <- name %||% format(Sys.time(), "%Y%m%d-%H%M%S")
@@ -15,6 +19,11 @@ cc_plot <- function(name = NULL, width = 8, height = 5, dpi = 120) {
 }
 
 cc_env <- function() {
+  if (!requireNamespace("purrr", quietly = TRUE) ||
+      !requireNamespace("tibble", quietly = TRUE)) {
+    stop("Packages purrr and tibble are required. ",
+         "Install with: install.packages(c(\"purrr\", \"tibble\"))")
+  }
   objs <- ls(envir = .GlobalEnv)
   if (!length(objs)) {
     cat("(empty)\n")
