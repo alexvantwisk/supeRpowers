@@ -1,9 +1,15 @@
 ---
 name: r-mcp-setup
 description: >
-  Use when the user wants to set up MCP tools for R, connect Claude Code to a
-  live R session, register R-based MCP servers, or when another skill needs
-  MCP tool guidance.
+  Use when the user wants to set up MCP tools in R or connect Claude Code to a
+  running R session — installing mcptools/btw, registering R-based MCP servers
+  via `claude mcp add`, choosing the right btw tool groups (docs, pkg, env,
+  run, search, session), or troubleshooting an MCP setup that isn't appearing
+  in Claude Code. Triggers: mcptools, btw, MCP server, live R session,
+  claude mcp add, btw_tool_*, "Claude can't see my R session". Do NOT use
+  for: writing R code that uses already-configured MCP tools (use the relevant
+  domain skill — r-data-analysis, r-stats, etc.); generic Claude Code MCP
+  setup unrelated to R; building new MCP servers from scratch.
 ---
 
 # R MCP Setup
