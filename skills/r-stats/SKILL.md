@@ -3,14 +3,15 @@ name: r-stats
 description: >
   Use when performing statistical modeling, hypothesis testing, or model
   diagnostics in R. Provides expert guidance on linear models, GLMs, mixed
-  models, survival analysis, Bayesian methods, time series, model comparison,
-  assumption checking, and effect-size reporting.
+  models, survival analysis, time series, model comparison, assumption
+  checking, and effect-size reporting.
   Triggers: statistical model, hypothesis test, regression, ANOVA, t-test,
   chi-squared, lm, glm, mixed model, survival analysis, p-value, confidence
   interval, diagnostics, significantly different, statistical test, odds ratio,
   effect size, model assumptions, Cox model.
   Do NOT use for machine learning or predictive modeling — use r-tidymodels instead.
   Do NOT use for clinical trial-specific analysis — use r-clinical instead.
+  Do NOT use for Bayesian MCMC fitting, prior choice, or posterior diagnostics — use r-bayesian instead.
 ---
 
 # R Statistics & Modeling
@@ -90,13 +91,12 @@ fit_tv <- coxph(Surv(tstart, tstop, event) ~ x_tv, data = df_tv)
 
 ---
 
-## Bayesian Models (brms / rstanarm)
+## Bayesian Models — Defer to r-bayesian
 
-**Prior guidance:** Start with weakly-informative priors (`normal(0, 1)` on scaled predictors, `exponential(1)` for scale). Use `prior_summary()` to inspect defaults. Use `brm(..., sample_prior = "only")` for prior predictive checks.
-
-**Convergence thresholds:** Rhat < 1.01, ESS > 400. Check with `posterior::summarise_draws()`. Diagnose with `pp_check()` (posterior predictive) and `bayesplot::mcmc_trace()` (mixing).
-
-Use `rstanarm::stan_glm()` for standard models (faster compilation); `brms::brm()` for custom families and complex structures.
+> **Boundary:** Any time the user mentions `brms`, `rstanarm`, `cmdstanr`,
+> Stan, MCMC, posterior, prior, Rhat, divergences, or `pp_check`, use
+> r-bayesian instead. That skill covers prior choice, MCMC diagnostics,
+> tidybayes summaries, and the full Bayesian workflow.
 
 ---
 

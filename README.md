@@ -1,9 +1,9 @@
 # supeRpowers
 
 [![Tests](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml/badge.svg)](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml)
-![Version](https://img.shields.io/badge/version-0.2.3-blue)
+![Version](https://img.shields.io/badge/version-0.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Skills](https://img.shields.io/badge/skills-18-purple)
+![Skills](https://img.shields.io/badge/skills-19-purple)
 ![Commands](https://img.shields.io/badge/commands-6-orange)
 ![R](https://img.shields.io/badge/R-%3E%3D%204.1.0-blue)
 
@@ -88,7 +88,7 @@ supeRpowers uses a four-layer architecture:
 Foundation:  rules/r-conventions.md
                (loaded into every R conversation)
                         |
-Domain:      18 specialized skills
+Domain:      19 specialized skills
              (activated by user intent)
                         |
 Workflows:   6 slash commands
@@ -100,7 +100,7 @@ Service:     5 shared agents
 
 **Foundation** — `rules/r-conventions.md` enforces tidyverse-first coding: base pipe `|>`, `<-` assignment, snake_case, and modern toolchain conventions across every R interaction.
 
-**Domain** — 18 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
+**Domain** — 19 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
 
 **Workflows** — 6 slash commands provide guided multi-step procedures (TDD cycle, debugging, package release, Shiny scaffold, analysis pipeline, Word report scaffold). Invoke explicitly with `/r-<name>`.
 
@@ -121,7 +121,8 @@ Service:     5 shared agents
 | r-debugging | Bug diagnosis, profiling, common R pitfalls | browser(), rlang, profvis, reprex |
 | r-package-dev | Full package lifecycle, CRAN submission | usethis, devtools, roxygen2, pkgdown |
 | r-shiny | Web apps, reactivity, modules, deployment | shiny, bslib, golem, shinytest2 |
-| r-stats | Statistical modeling, diagnostics, inference | lm, glm, lme4, survival, brms |
+| r-stats | Statistical modeling, diagnostics, inference | lm, glm, lme4, survival |
+| r-bayesian | Bayesian inference, MCMC, priors, posterior diagnostics | brms, rstanarm, cmdstanr, posterior, tidybayes |
 | r-clinical | Clinical trials, CDISC, biostatistics | admiral, pwr, gsDesign, pROC, meta |
 | r-tables | Publication-quality tables | gt, gtsummary, gtExtras, reactable |
 | r-quarto | Documents, presentations, websites, books | quarto, rmarkdown, tarchetypes |

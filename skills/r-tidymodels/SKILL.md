@@ -12,6 +12,7 @@ description: >
   model comparison, train test split, predict.
   Do NOT use for inferential statistics or hypothesis testing — use r-stats instead.
   Do NOT use for clinical trial endpoints — use r-clinical instead.
+  Do NOT use for Bayesian posterior inference or MCMC tuning — use r-bayesian instead.
 ---
 
 # R Tidymodels — Machine Learning

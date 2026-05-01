@@ -11,6 +11,7 @@ description: >
   design, power analysis.
   Do NOT use for general statistical methodology — use r-stats instead.
   Do NOT use for general survival analysis outside clinical context — use r-stats instead.
+  Do NOT use for Bayesian MCMC fitting and posterior diagnostics outside regulatory submissions — use r-bayesian instead.
 ---
 
 # R Clinical Trials & Biostatistics

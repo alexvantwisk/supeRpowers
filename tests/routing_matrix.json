@@ -575,5 +575,53 @@
     "must_not_fire": ["r-reporting", "r-tables"],
     "discriminator": "regulatory TLF (FDA + admiral + ADaM) -> r-clinical, NOT r-reporting",
     "category": "report-mechanics"
+  },
+  {
+    "id": "route-073",
+    "prompt": "Fit a brms multilevel model and report posterior medians with 95% HDIs",
+    "expected_skill": "r-bayesian",
+    "must_not_fire": ["r-stats"],
+    "discriminator": "brms + posterior + HDI = Bayesian territory",
+    "category": "bayesian-routing"
+  },
+  {
+    "id": "route-074",
+    "prompt": "My brms fit has 47 divergent transitions — how do I fix them?",
+    "expected_skill": "r-bayesian",
+    "must_not_fire": ["r-stats", "r-debugging"],
+    "discriminator": "divergences = MCMC diagnostic = r-bayesian, not generic R debug",
+    "category": "bayesian-routing"
+  },
+  {
+    "id": "route-075",
+    "prompt": "Set weakly-informative priors on a Bayesian logistic regression and run a prior predictive check",
+    "expected_skill": "r-bayesian",
+    "must_not_fire": ["r-stats", "r-tidymodels"],
+    "discriminator": "prior + prior predictive = Bayesian workflow",
+    "category": "bayesian-routing"
+  },
+  {
+    "id": "route-076",
+    "prompt": "Use tidybayes spread_draws to extract posterior samples and make a forest plot of group-level effects",
+    "expected_skill": "r-bayesian",
+    "must_not_fire": ["r-visualization", "r-stats"],
+    "discriminator": "tidybayes + spread_draws = Bayesian posterior tooling, not generic viz",
+    "category": "bayesian-routing"
+  },
+  {
+    "id": "route-077",
+    "prompt": "Fit a linear regression on customer churn and interpret p-values for each predictor",
+    "expected_skill": "r-stats",
+    "must_not_fire": ["r-bayesian"],
+    "discriminator": "p-values + frequentist interpretation = r-stats, not Bayesian",
+    "category": "bayesian-routing"
+  },
+  {
+    "id": "route-078",
+    "prompt": "Tune an XGBoost classifier with cross-validation and report ROC-AUC on a held-out set",
+    "expected_skill": "r-tidymodels",
+    "must_not_fire": ["r-bayesian"],
+    "discriminator": "XGBoost tuning + cross-validation = ML, not Bayesian inference",
+    "category": "bayesian-routing"
   }
 ]

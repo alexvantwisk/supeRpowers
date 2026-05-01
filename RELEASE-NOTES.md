@@ -1,5 +1,72 @@
 # Release Notes
 
+## 0.3.0 (2026-05-01)
+
+`r-bayesian` skill — Bayesian inference with the Stan ecosystem. Adds 19th
+domain skill covering the prior-fit-diagnose-summarize workflow for
+`brms`, `rstanarm`, `cmdstanr`, `posterior`, and `tidybayes`. Aimed at the
+common silent failure modes: improper-flat priors on regression
+coefficients, ignored divergences, bare posterior means without intervals,
+and AIC/BIC misuse on Bayesian fits.
+
+### Added
+
+- **`skills/r-bayesian/SKILL.md`** — 5+ trigger phrases (`brms`, `MCMC`,
+  `posterior`, `Stan`, `Bayesian`, `divergences`, `Rhat`, `tidybayes`,
+  `pp_check`); explicit negative boundaries against r-stats (frequentist
+  inference), r-tidymodels (ML tuning), and r-clinical (regulatory). Body
+  covers engine choice (brms vs rstanarm vs cmdstanr), the mandatory
+  five-step workflow, and the four-diagnostic battery (Rhat, ESS,
+  divergences, posterior predictive).
+- **Four lazy references:**
+  - `references/model-formulas.md` — multilevel, distributional,
+    nonlinear, mixture, monotonic, ordinal, censored, multivariate.
+  - `references/prior-choice.md` — weakly-informative defaults table,
+    family-specific guidance, mandatory prior predictive check, sensitivity
+    analysis pattern.
+  - `references/mcmc-diagnostics.md` — Rhat / ESS thresholds, divergence
+    diagnosis with `mcmc_pairs`, `adapt_delta` escalation, treedepth,
+    E-BFMI, posterior predictive failure decoder, LOO Pareto-k.
+  - `references/tidybayes-patterns.md` — `spread_draws` /
+    `gather_draws`, `add_epred_draws` / `add_linpred_draws` /
+    `add_predicted_draws`, `ggdist` visualization, ROPE,
+    `compare_levels`.
+- **`skills/r-bayesian/eval.md`** — 10 binary eval questions plus
+  happy / edge / adversarial / boundary test prompts and ten success
+  criteria including frequentist-deferral and divergence-handling rules.
+- **Session-start hook** detects Bayesian projects: `.stan` files,
+  `_brms_*.rds` cache artifacts, and `brms` / `rstanarm` / `cmdstanr` /
+  `posterior` / `tidybayes` in `DESCRIPTION`. Surfaces `/r-bayesian` and
+  the `r-statistician` agent.
+
+### Changed
+
+- **r-stats** — Bayesian section replaced with a hard boundary deferring
+  to r-bayesian; description trigger list trimmed to remove "Bayesian
+  methods"; negative-boundary line added.
+- **r-tidymodels** — negative-boundary line added pointing at r-bayesian.
+- **r-clinical** — negative-boundary line added pointing at r-bayesian
+  (clinical Bayesian work outside regulatory submissions belongs there).
+- **Routing matrix** (`tests/routing_matrix.json`) — six new entries
+  under category `bayesian-routing`: brms multilevel + HDI; divergence
+  diagnosis; prior predictive check; tidybayes spread_draws + forest plot;
+  frequentist p-value framing stays in r-stats; XGBoost tuning stays in
+  r-tidymodels.
+- **README / CLAUDE.md** — skill count bumped 18 → 19 in badge, four-layer
+  diagram, and skill table; r-bayesian row added to skill table; project
+  structure list updated.
+
+### Notes
+
+- The skill works fully without `cmdstanr`, but the SKILL.md and
+  references recommend `backend = "cmdstanr"` because it ships HMC
+  improvements faster than rstan. Surface `cmdstanr::install_cmdstan()`
+  to users before they fit if it isn't installed.
+- All R code in the new content uses `|>`, `<-`, `snake_case`, and double
+  quotes. Verified with `grep -rn '%>%' skills/r-bayesian/ --exclude=eval.md`.
+
+---
+
 ## 0.2.3 (2026-05-01)
 
 PostToolUse auto-format hook. Whenever Claude edits an `.R`, `.r`, `.Rmd`,

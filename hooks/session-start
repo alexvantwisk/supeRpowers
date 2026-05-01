@@ -13,6 +13,7 @@ is_shiny=false
 is_quarto=false
 is_targets=false
 is_clinical=false
+is_bayesian=false
 is_r_project=false
 
 # R Package: DESCRIPTION + (R/ or NAMESPACE)
@@ -58,6 +59,19 @@ if [ "$is_r_package" = true ] && [ -f "DESCRIPTION" ]; then
 fi
 if [ -d "adam" ] || [ -d "sdtm" ] || [ -d "ADAM" ] || [ -d "SDTM" ]; then
   is_clinical=true
+fi
+
+# Bayesian: brms/rstanarm/cmdstanr/posterior in DESCRIPTION, .stan files, or _brms_*.rds artifacts
+if [ "$is_r_package" = true ] && [ -f "DESCRIPTION" ]; then
+  if grep -qiE 'brms|rstanarm|cmdstanr|^posterior$|tidybayes' "DESCRIPTION" 2>/dev/null; then
+    is_bayesian=true
+  fi
+fi
+if find . -maxdepth 4 -type f -name '*.stan' -print -quit 2>/dev/null | grep -q .; then
+  is_bayesian=true
+fi
+if find . -maxdepth 4 -type f -name '_brms_*.rds' -print -quit 2>/dev/null | grep -q .; then
+  is_bayesian=true
 fi
 
 # General R project: .Rproj, .R files, or R/ dir (but not already a package)
@@ -116,6 +130,9 @@ if [ "$is_targets" = true ]; then
 fi
 if [ "$is_clinical" = true ]; then
   skills="${skills}Clinical/pharma project detected. Key skill: /r-clinical. Agent: r-statistician.\\n"
+fi
+if [ "$is_bayesian" = true ]; then
+  skills="${skills}Bayesian / Stan project detected. Key skill: /r-bayesian. Agent: r-statistician.\\n"
 fi
 if [ "$is_r_project" = true ] && [ "$is_r_package" = false ]; then
   skills="${skills}R project detected. Key skills: /r-data-analysis, /r-visualization, /r-stats, /r-analysis. Agent: r-statistician.\\n"

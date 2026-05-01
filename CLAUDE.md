@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 18 skills, 6 commands, 5 agents, and 1 rule — covering data analysis, visualization, statistics, clinical trials, Shiny, package development, tables, Quarto publishing, Word reporting, performance, machine learning, pipelines, TDD, debugging, MCP setup, and guided workflow commands.
+A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 19 skills, 6 commands, 5 agents, and 1 rule — covering data analysis, visualization, statistics, Bayesian modeling, clinical trials, Shiny, package development, tables, Quarto publishing, Word reporting, performance, machine learning, pipelines, TDD, debugging, MCP setup, and guided workflow commands.
 
 ## Project Structure
 
@@ -23,10 +23,10 @@ skills/                  # Skills (SKILL.md + optional references/, scripts/, ev
   Domain skills:
     r-data-analysis/       r-visualization/       r-tdd/
     r-debugging/           r-package-dev/         r-shiny/
-    r-stats/               r-clinical/            r-tables/
-    r-quarto/              r-reporting/           r-performance/
-    r-tidymodels/          r-targets/             r-project-setup/
-    r-mcp-setup/           r-package-skill-generator/
+    r-stats/               r-bayesian/            r-clinical/
+    r-tables/              r-quarto/              r-reporting/
+    r-performance/         r-tidymodels/          r-targets/
+    r-project-setup/       r-mcp-setup/           r-package-skill-generator/
   Meta skills:
     skill-auditor/
 agents/                  # Shared agents (YAML frontmatter required)
@@ -145,47 +145,11 @@ Shipped:
 
 - 0.2.2 — GitHub Actions CI workflow
 - 0.2.3 — PostToolUse auto-format hook (`hooks/post-tool-use-format` runs `styler::style_file()` on `.R`/`.Rmd`/`.qmd` after Edit/Write/MultiEdit; emits `additionalContext` only when the file actually changes; opt-out via `SUPERPOWERS_DISABLE_AUTOFORMAT=1`)
+- 0.3.0 — `r-bayesian` skill. Covers the prior-fit-diagnose-summarize workflow for `brms` / `rstanarm` / `cmdstanr` / `posterior` / `tidybayes` with four lazy-loaded references (`model-formulas.md`, `prior-choice.md`, `mcmc-diagnostics.md`, `tidybayes-patterns.md`). Session-start hook detects `.stan` files, `_brms_*.rds` artifacts, and brms/rstanarm/cmdstanr/posterior/tidybayes in `DESCRIPTION`. Negative boundaries from r-stats, r-clinical, and r-tidymodels now point at r-bayesian. Routing matrix gains six new entries (positive: brms, divergences, prior predictive, tidybayes; negative: frequentist p-values stay in r-stats, ML tuning stays in r-tidymodels). 18 → 19 skills.
 
-One phase remains and is independently shippable.
+All planned phases shipped. Future work pulls from real user feedback.
 
-### Phase 3 — `r-bayesian` skill
-
-**Goal:** A new domain skill covering Bayesian modeling with `brms`, `rstanarm`, `cmdstanr`, `posterior`, and `tidybayes`. SKILL.md plus 3–4 references.
-
-**Why second:** Largest single content gap. Bayesian is a major statistical paradigm where Claude's defaults are notably weaker than for frequentist work — priors, MCMC diagnostics, and posterior summarization are full of subtle traps the plugin can encode. Builds on stable CI + hook foundations.
-
-**Scope:**
-
-1. `skills/r-bayesian/SKILL.md` — frontmatter with 5+ trigger phrases (`brms`, `MCMC`, `posterior`, `stan`, `Bayesian`), boundaries against r-stats (frequentist) and r-tidymodels (ML); body covering the brms workflow.
-2. `skills/r-bayesian/references/`:
-   - `model-formulas.md` — brms formula syntax: hierarchical, distributional, mixture, nonlinear
-   - `prior-choice.md` — weakly informative defaults, prior predictive checks, sensitivity
-   - `mcmc-diagnostics.md` — Rhat, ESS bulk/tail, divergences, max treedepth, posterior predictive checks
-   - `tidybayes-patterns.md` — `gather_draws` / `spread_draws`, `ggdist` visualization, `linpred_draws` for predictions
-3. Update r-stats negative-boundary line to point at r-bayesian; same for r-clinical and r-tidymodels.
-4. Routing matrix — 4–6 new entries (positive: brms / MCMC / posterior; negative against r-stats and r-tidymodels).
-5. README + CLAUDE.md — bump skill count 18 → 19 in badge, table, architecture diagram, ship line.
-6. Session-start hook — detect `.stan` files, `_brms_*.rds` artifacts, and `brms`/`posterior` in `DESCRIPTION` / `Imports`.
-7. `eval.md` — 10 binary eval questions + happy/edge/adversarial/boundary prompts.
-8. Release notes — 0.3.0 entry.
-
-**Effort:** ~2–3 days for high-quality content with references.
-
-**Risk:** Low on infra (additive skill). Some content judgment needed on prior-choice guidance.
-
-**Release:** Minor bump to 0.3.0 (new skill = minor bump).
-
-### Sequencing
-
-```
-Phase 3
-Bayesian
-~2–3 days
-```
-
-Phase 3 is the biggest remaining content win — independently shippable on the now-stable CI + hook foundations.
-
-### Deferred (revisit after Phase 3)
+### Deferred (revisit when user feedback arrives)
 
 - `r-timeseries`, `r-spatial`, `r-causal` skills — comparable value to Bayesian but lower differentiation per unit effort
 - `/r-deploy`, `/r-bench`, `/r-renv` commands — pull from real user requests
