@@ -129,27 +129,16 @@ my_filter <- function(data, col_name, threshold) {
 | `setwd()` / `rm(list=ls())` | `here::here()` / restart R session |
 | Modify input in place | Return new object — immutability preferred |
 
-## Environment-Aware Coding
+## Environment-Aware Coding (with MCP)
 
-When an R session is available via btw/mcptools:
+When an R session is available via btw/mcptools, enhance — don't replace — these conventions:
 
-- **Before writing code:** Inspect data frames (`btw_tool_env_describe_data_frame`), check installed packages, read function docs
-- **When uncertain about a function:** Read the help page (`btw_tool_docs_help_page`) rather than guessing from training data
-- **After writing non-trivial code:** Run it and verify the output (see Verify After Write below)
-- **When recommending packages:** Check if they're installed first (`btw_tool_sessioninfo_is_package_installed`)
+- **Before writing:** inspect data frames (`btw_tool_env_describe_data_frame`), check installed packages, read help pages instead of guessing from training data
+- **For non-trivial code** (transformations, model fits, table generation): run it via btw, check errors/warnings, verify output dimensions/structure, fix before presenting
+- **When recommending packages:** check `btw_tool_sessioninfo_is_package_installed` first
+- **Skip verification** for: one-liners, scaffolding, config files, code that needs data not in the session
 
-These are enhancement behaviors. All conventions work without MCP — MCP makes them more precise.
-
-## Verify After Write
-
-For non-trivial R code (data transformations, model fits, table generation), verify output when an R session is available:
-
-1. Run the code via btw
-2. Check for errors and warnings
-3. Verify output dimensions and structure match expectations
-4. Fix issues before presenting to the user
-
-Skip verification for: simple one-liners, package scaffolding, configuration files, code that requires data not in the session.
+All conventions work without MCP — MCP makes them more precise.
 
 ## Function Design
 

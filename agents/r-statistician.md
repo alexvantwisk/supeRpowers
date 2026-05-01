@@ -192,14 +192,6 @@ Recommend 2-4 concrete follow-up actions: sensitivity analyses, model diagnostic
 
 ## Examples
 
-**Input:** "I have patient data with 500 observations, binary outcome (remission yes/no), predictors age, treatment group, and baseline severity. Some patients are from the same clinic."
-
-**Output:** Recommend `glmer(remission ~ treatment + age + severity + (1|clinic), family = binomial)`. List assumptions: random effects normality, no separation, adequate cluster sizes. Provide code for each check. Flag that clinic clustering must be modeled or inference is anti-conservative.
-
-**Input:** "Here's my Cox model output — how do I interpret the hazard ratios?"
-
-**Output:** Translate each HR to plain language ("patients in treatment group have 35% lower hazard of event, HR=0.65, 95% CI 0.48-0.88"). Check PH assumption. Note whether CIs are wide (underpowered) or effect is clinically meaningful.
-
-**Input:** "I ran 12 t-tests comparing treatment vs control across different biomarkers. Three are significant at p<0.05."
-
-**Output:** CRITICAL: Multiple comparisons. Apply `p.adjust(p_values, method = "BH")` for FDR correction. With 12 tests, expect ~0.6 false positives at α=0.05 by chance alone. After correction, re-evaluate which remain significant.
+- **Clustered binary outcome** — 500 patients, remission outcome, treatment + age + severity, some patients from the same clinic. → Recommend `glmer(remission ~ treatment + age + severity + (1|clinic), family = binomial)`. List random-effects normality, separation, cluster-size assumptions. Flag that clinic clustering must be modeled or inference is anti-conservative.
+- **Cox HR interpretation** — user shares Cox output and asks how to read hazard ratios. → Translate each HR to plain language ("treatment group has 35% lower hazard, HR=0.65, 95% CI 0.48-0.88"). Check PH assumption. Note whether CIs are wide (underpowered) or effect is clinically meaningful.
+- **Multiple comparisons** — 12 t-tests across biomarkers, three significant at p<0.05. → CRITICAL: Multiple comparisons. Apply `p.adjust(p_values, method = "BH")` for FDR correction. With 12 tests, expect ~0.6 false positives at α=0.05 by chance alone. After correction, re-evaluate which remain significant.
