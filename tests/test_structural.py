@@ -106,14 +106,32 @@ def run_structural_tests() -> TestSuite:
             "No 'Do NOT use for' boundary found in description",
         )
 
-    # Agent files: no YAML frontmatter
+    # Agent files: must have YAML frontmatter with name + description matching the file stem
     for agent_file in agent_files:
         content = agent_file.read_text(encoding="utf-8")
         fm = parse_frontmatter(content)
+
+        # Frontmatter present
         suite.add(
-            f"agent-no-frontmatter/{agent_file.stem}",
-            not fm["found"],
-            f"Agent file {agent_file.name} has YAML frontmatter (should not)",
+            f"agent-frontmatter-exists/{agent_file.stem}",
+            fm["found"],
+            f"Agent file {agent_file.name} is missing YAML frontmatter",
+        )
+        if not fm["found"]:
+            continue
+
+        # Name + description fields populated
+        suite.add(
+            f"agent-frontmatter-fields/{agent_file.stem}",
+            fm["name"] is not None and fm["description"] is not None,
+            f"Agent {agent_file.name} frontmatter missing name or description",
+        )
+
+        # Name matches file stem
+        suite.add(
+            f"agent-name-matches-file/{agent_file.stem}",
+            fm["name"] == agent_file.stem,
+            f"Agent name '{fm['name']}' != file stem '{agent_file.stem}'",
         )
 
     # ── 1.2 Line Count Limits ──────────────────────────────────────────────
