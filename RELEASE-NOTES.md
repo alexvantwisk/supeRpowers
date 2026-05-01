@@ -1,5 +1,28 @@
 # Release Notes
 
+## 0.3.1 (2026-05-01)
+
+Manifest validation patch. The `repository` field in `.claude-plugin/plugin.json`
+must be a string under the current Claude Code plugin schema, not the
+npm-style `{type, url}` object. The 0.3.0 manifest used the object form, which
+caused `/doctor` to flag the plugin with `repository: Invalid input: expected
+string, received object`. This release ships the corrected manifest under a
+new version so cached installs refresh.
+
+### Fixed
+
+- **`.claude-plugin/plugin.json`** — `repository` now a plain URL string
+  (`"https://github.com/alexvantwisk/supeRpowers"`). No behavior change beyond
+  clearing the manifest validation error.
+
+### Notes
+
+- If you installed 0.3.0 and saw `/doctor` errors, run
+  `claude plugin marketplace update supeRpowers` followed by
+  `claude plugin install supeRpowers@supeRpowers` to pick up 0.3.1.
+
+---
+
 ## 0.3.0 (2026-05-01)
 
 `r-bayesian` skill — Bayesian inference with the Stan ecosystem. Adds 19th
