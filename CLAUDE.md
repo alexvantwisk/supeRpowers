@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 19 skills, 6 commands, 5 agents, and 1 rule — covering data analysis, visualization, statistics, Bayesian modeling, clinical trials, Shiny, package development, tables, Quarto publishing, Word reporting, performance, machine learning, pipelines, TDD, debugging, MCP setup, and guided workflow commands.
+A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 20 skills, 7 commands, 5 agents, and 1 rule — covering data analysis, visualization, statistics, Bayesian modeling, clinical trials, Shiny, package development, tables, Quarto publishing, Word reporting, performance, machine learning, pipelines, TDD, debugging, MCP setup, plugin discovery, and guided workflow commands.
 
 ## Project Structure
 
@@ -17,8 +17,9 @@ hooks/                   # Session lifecycle hooks
 rules/                   # Foundation rules (loaded into every R conversation)
   r-conventions.md       # Base pipe |>, tidyverse-first, style guide
 commands/                # Slash commands (user-invoked via /<name>)
-  r-analysis.md          r-debug.md             r-pkg-release.md
-  r-report.md            r-shiny-app.md         r-tdd-cycle.md
+  r-analysis.md          r-debug.md             r-overview.md
+  r-pkg-release.md       r-report.md            r-shiny-app.md
+  r-tdd-cycle.md
 skills/                  # Skills (SKILL.md + optional references/, scripts/, eval.md)
   Domain skills:
     r-data-analysis/       r-visualization/       r-tdd/
@@ -28,7 +29,7 @@ skills/                  # Skills (SKILL.md + optional references/, scripts/, ev
     r-performance/         r-tidymodels/          r-targets/
     r-project-setup/       r-mcp-setup/           r-package-skill-generator/
   Meta skills:
-    skill-auditor/
+    r-overview/            skill-auditor/
 agents/                  # Shared agents (YAML frontmatter required)
   r-code-reviewer.md     r-statistician.md      r-pkg-check.md
   r-shiny-architect.md   r-dependency-manager.md
@@ -146,6 +147,8 @@ Shipped:
 - 0.2.2 — GitHub Actions CI workflow
 - 0.2.3 — PostToolUse auto-format hook (`hooks/post-tool-use-format` runs `styler::style_file()` on `.R`/`.Rmd`/`.qmd` after Edit/Write/MultiEdit; emits `additionalContext` only when the file actually changes; opt-out via `SUPERPOWERS_DISABLE_AUTOFORMAT=1`)
 - 0.3.0 — `r-bayesian` skill. Covers the prior-fit-diagnose-summarize workflow for `brms` / `rstanarm` / `cmdstanr` / `posterior` / `tidybayes` with four lazy-loaded references (`model-formulas.md`, `prior-choice.md`, `mcmc-diagnostics.md`, `tidybayes-patterns.md`). Session-start hook detects `.stan` files, `_brms_*.rds` artifacts, and brms/rstanarm/cmdstanr/posterior/tidybayes in `DESCRIPTION`. Negative boundaries from r-stats, r-clinical, and r-tidymodels now point at r-bayesian. Routing matrix gains six new entries (positive: brms, divergences, prior predictive, tidybayes; negative: frequentist p-values stay in r-stats, ML tuning stays in r-tidymodels). 18 → 19 skills.
+- 0.3.1 — Manifest patch: `repository` field now a plain URL string to satisfy the current Claude Code plugin schema (was an `{type, url}` object that tripped `/doctor`).
+- 0.4.0 — Discovery surface: low-trigger `r-overview` skill (fires on "what can supeRpowers do", "list R skills", "what's in supeRpowers", etc.) and matching `/r-overview` command. Both render the same grouped inventory of skills, commands, agents, and hooks so users coming in cold can find the right tool without the session-start hook needing to broaden its triggers. Counts: 19 → 20 skills, 6 → 7 commands.
 
 All planned phases shipped. Future work pulls from real user feedback.
 

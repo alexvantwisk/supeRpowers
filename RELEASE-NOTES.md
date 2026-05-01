@@ -1,5 +1,64 @@
 # Release Notes
 
+## 0.4.0 (2026-05-01)
+
+Discovery surface for users coming in cold. Adds an `r-overview` skill that
+fires on plain-English orientation questions ("what can supeRpowers do?",
+"what R skills do you have?", "list available R helpers") and a matching
+`/r-overview` slash command for explicit invocation. Both render the same
+grouped inventory of every skill, command, and agent shipped here, so the
+unfamiliar-user path is obvious in two complementary ways — explicit
+(typed `/`) and conversational (asked in plain English).
+
+Counts move 19 → 20 skills and 6 → 7 commands.
+
+The tradeoff considered against broadening the session-start hook to fire on
+any `Rscript` presence: the broader hook adds noise for users who have R
+installed but aren't asking about R. The discovery surface only renders when
+explicitly invoked or asked for, so the quiet-mode behavior of the
+session-start hook is preserved.
+
+### Added
+
+- **`skills/r-overview/SKILL.md`** — low-trigger discovery skill. Description
+  is intentionally narrow ("Use when the user asks what supeRpowers can do,
+  requests a list or directory of available R skills / commands / agents…")
+  with explicit boundaries against actual R work and against the closest
+  meta-skills (r-mcp-setup, r-package-skill-generator). Body renders a
+  grouped inventory (Data & visualization / Modeling / Engineering /
+  Publishing / Tooling & meta) with trigger words per skill so the user
+  learns the routing vocabulary while orienting.
+- **`skills/r-overview/eval.md`** — 10 binary eval questions plus
+  happy / edge / adversarial / boundary prompts. Boundary tests cover
+  the two highest-risk over-fire cases: concrete domain tasks
+  (e.g. "fit a brms model") that should bypass the inventory, and
+  meta-tasks that belong to sibling skills (MCP setup, skill generation).
+- **`commands/r-overview.md`** — thin command that invokes the
+  `r-overview` skill so the rendered inventory stays in lockstep with the
+  on-disk skill content. No multi-step workflow; explicit "stop after
+  rendering" guard.
+
+### Changed
+
+- **`README.md`** — skills badge 19 → 20, commands badge 6 → 7,
+  architecture diagram, skills table (new `r-overview` row in the meta-tool
+  group), commands table (new `/r-overview` row). Quick-Start prose
+  updated.
+- **`CLAUDE.md`** — project structure listing adds `r-overview/` under
+  meta skills and `r-overview.md` under commands. Roadmap "Shipped" log
+  gains 0.3.1 (manifest patch) and 0.4.0 (discovery surface) entries.
+- **`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`** —
+  version bump to `0.4.0`.
+
+### Notes
+
+- This release is purely additive on the content surface. No existing skill
+  triggers, command bodies, or agent definitions were touched, so 0.3.x
+  users see no behavior change unless they invoke `/r-overview` or ask the
+  plugin what it can do.
+
+---
+
 ## 0.3.1 (2026-05-01)
 
 Manifest validation patch. The `repository` field in `.claude-plugin/plugin.json`

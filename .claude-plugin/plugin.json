@@ -1,6 +1,6 @@
 {
   "name": "supeRpowers",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, and biostatistics.",
   "keywords": ["r", "rstats", "tidyverse", "shiny", "biostatistics", "clinical-trials", "tidymodels", "targets"],
   "author": {

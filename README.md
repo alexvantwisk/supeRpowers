@@ -1,10 +1,10 @@
 # supeRpowers
 
 [![Tests](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml/badge.svg)](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml)
-![Version](https://img.shields.io/badge/version-0.3.1-blue)
+![Version](https://img.shields.io/badge/version-0.4.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Skills](https://img.shields.io/badge/skills-19-purple)
-![Commands](https://img.shields.io/badge/commands-6-orange)
+![Skills](https://img.shields.io/badge/skills-20-purple)
+![Commands](https://img.shields.io/badge/commands-7-orange)
 ![R](https://img.shields.io/badge/R-%3E%3D%204.1.0-blue)
 
 Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, biostatistics, and more.
@@ -88,10 +88,10 @@ supeRpowers uses a four-layer architecture:
 Foundation:  rules/r-conventions.md
                (loaded into every R conversation)
                         |
-Domain:      19 specialized skills
+Domain:      20 specialized skills
              (activated by user intent)
                         |
-Workflows:   6 slash commands
+Workflows:   7 slash commands
              (user-invoked: /r-tdd-cycle, /r-debug, ...)
                         |
 Service:     5 shared agents
@@ -100,9 +100,9 @@ Service:     5 shared agents
 
 **Foundation** — `rules/r-conventions.md` enforces tidyverse-first coding: base pipe `|>`, `<-` assignment, snake_case, and modern toolchain conventions across every R interaction.
 
-**Domain** — 19 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
+**Domain** — 20 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
 
-**Workflows** — 6 slash commands provide guided multi-step procedures (TDD cycle, debugging, package release, Shiny scaffold, analysis pipeline, Word report scaffold). Invoke explicitly with `/r-<name>`.
+**Workflows** — 7 slash commands provide guided multi-step procedures (TDD cycle, debugging, package release, Shiny scaffold, analysis pipeline, Word report scaffold, plugin overview). Invoke explicitly with `/r-<name>`.
 
 **Service** — 5 agents handle specialized tasks like code review, statistical consulting, and dependency auditing. Skills and commands dispatch to agents automatically, or you can invoke them directly.
 
@@ -133,6 +133,7 @@ Service:     5 shared agents
 | r-project-setup | Scaffold new R projects of any type | usethis, renv, golem, quarto |
 | r-mcp-setup | MCP server setup for live R session awareness | btw, mcptools |
 | r-package-skill-generator | Generate skills from R package repos | (meta-tool) |
+| r-overview | Print an inventory of every skill, command, and agent | (discovery) |
 
 > Plus the `skill-auditor` meta-skill that audits and scores other skills against the project conventions.
 
@@ -148,6 +149,7 @@ Slash commands provide guided multi-step workflows. Invoke explicitly with `/r-<
 | /r-shiny-app | Shiny app scaffold — structure, modules, reactivity, test, architecture review |
 | /r-analysis | Data analysis pipeline — import, clean, explore, model, visualize, report |
 | /r-report | Word report scaffold — generate `reference.docx`, qmd, render script for an R consulting deliverable |
+| /r-overview | Plugin directory — every skill, command, and agent at a glance |
 
 ## Agents
 
