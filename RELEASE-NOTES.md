@@ -1,5 +1,42 @@
 # Release Notes
 
+## 0.2.3 (2026-05-01)
+
+PostToolUse auto-format hook. Whenever Claude edits an `.R`, `.r`, `.Rmd`,
+`.rmd`, `.Rmarkdown`, or `.qmd` file via `Edit`, `Write`, or `MultiEdit`, the
+plugin now runs `styler::style_file()` on it automatically — keeping on-disk
+code tidyverse-styled without anyone remembering to run it. When the file
+actually changes, Claude is nudged to re-read before further edits so shifted
+line numbers don't cause stale-edit errors.
+
+### Added
+
+- **`hooks/post-tool-use-format`** — bash hook that parses the hook payload
+  with `python3` (preferred) or a `grep`/`sed` fallback, runs styler under
+  `timeout`/`gtimeout` (default 15s, configurable via
+  `SUPERPOWERS_AUTOFORMAT_TIMEOUT`), hashes the file before/after to detect
+  real changes, and emits `additionalContext` only when something was
+  reformatted.
+- **`hooks/hooks.json`** — `PostToolUse` matcher for `Edit|Write|MultiEdit`
+  wired through the existing `run-hook.cmd` polyglot dispatcher.
+- **README** — new "Hooks" section, troubleshooting rows for the auto-format
+  hook, and opt-out instructions (env var, hooks.json edit, settings.json).
+
+### Behavior notes
+
+- Skips silently when `Rscript` or `styler` is not installed (no install nag).
+- Skips silently on non-R file extensions and on non-write tools.
+- Disable per-shell with `export SUPERPOWERS_DISABLE_AUTOFORMAT=1`.
+- Output JSON shape adapts to host (Claude Code, Cursor, Copilot CLI).
+
+### Skipped from initial design
+
+- `lintr::lint()` second pass — design called for it to be silent by default,
+  so the simpler choice is to not ship it until there's a clear need. Open an
+  issue if you'd find it useful.
+
+---
+
 ## 0.2.1 (2026-04-30)
 
 Documentation patch. Adds an evidence-based content-structure reference to

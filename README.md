@@ -1,7 +1,7 @@
 # supeRpowers
 
 [![Tests](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml/badge.svg)](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml)
-![Version](https://img.shields.io/badge/version-0.2.2-blue)
+![Version](https://img.shields.io/badge/version-0.2.3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Skills](https://img.shields.io/badge/skills-18-purple)
 ![Commands](https://img.shields.io/badge/commands-6-orange)
@@ -73,6 +73,9 @@ claude plugin marketplace remove supeRpowers
 | Slash commands don't autocomplete | Plugin install incomplete | `claude plugin list` — reinstall if `supeRpowers` is missing |
 | R skills don't activate on R-flavored prompts | Foundation rule not loaded — usually a stale session | Restart your Claude Code session |
 | Session-start banner missing | Hook not enabled in your settings | Confirm `~/.claude/settings.json` doesn't disable plugin hooks |
+| Auto-format hook seems to do nothing | `styler` not installed in your default R library | `Rscript -e 'install.packages("styler")'` — the hook silently no-ops when it can't find the package |
+| Auto-format hook is too slow on big files | R startup + styler on large `.qmd` | Increase the timeout: `export SUPERPOWERS_AUTOFORMAT_TIMEOUT=30` (default 15s) |
+| Want to disable auto-formatting | Per-shell or per-project | `export SUPERPOWERS_DISABLE_AUTOFORMAT=1`, or remove the `PostToolUse` block in `hooks/hooks.json`, or disable the plugin's hooks in `~/.claude/settings.json` |
 | `quarto: command not found` during `/r-report` | Quarto CLI not on PATH | Install Quarto from https://quarto.org and re-open the shell |
 
 If something else breaks, please open an issue at https://github.com/alexvantwisk/supeRpowers/issues with the output of `claude plugin list` and a minimal reproducer.
@@ -103,7 +106,10 @@ Service:     5 shared agents
 
 **Service** — 5 agents handle specialized tasks like code review, statistical consulting, and dependency auditing. Skills and commands dispatch to agents automatically, or you can invoke them directly.
 
-**Hooks** — A session-start hook detects your R project type (package, Shiny, targets, Quarto, analysis) and surfaces the most relevant skills, commands, and agents.
+**Hooks** — Two lifecycle hooks ship with the plugin:
+
+- *Session-start* — detects your R project type (package, Shiny, targets, Quarto, analysis) and surfaces the most relevant skills, commands, and agents.
+- *Auto-format* (PostToolUse) — runs `styler::style_file()` on `.R`, `.Rmd`, `.Rmarkdown`, and `.qmd` files after Claude edits them, so the on-disk code stays tidyverse-styled. The hook is silent when the file is already clean and skips silently when `styler` isn't installed. See [Hooks](#hooks-1) below for opt-out and tuning.
 
 ## Skills
 
@@ -151,6 +157,54 @@ Slash commands provide guided multi-step workflows. Invoke explicitly with `/r-<
 | r-pkg-check | R CMD check issue resolution | r-package-dev |
 | r-shiny-architect | Shiny app structure and reactivity review | r-shiny |
 | r-dependency-manager | renv, dependency auditing, version conflicts | r-package-dev, r-project-setup, r-targets |
+
+## Hooks
+
+Two lifecycle hooks ship with supeRpowers. Both can be disabled in
+`~/.claude/settings.json`; the auto-format hook also honors a per-shell env var.
+
+### Session-start
+
+Fires on `startup`, `clear`, and `compact`. Detects whether the current working
+directory looks like an R package, Shiny app, Quarto project, targets pipeline,
+clinical project, or generic R project, and injects a one-line banner naming the
+relevant skills, commands, and agents. Reports R version + key tidyverse package
+versions when `Rscript` is on `PATH`.
+
+### Auto-format (`PostToolUse`)
+
+Fires after every successful `Edit`, `Write`, or `MultiEdit` tool call. If the
+edited file matches `*.R`, `*.r`, `*.Rmd`, `*.rmd`, `*.Rmarkdown`, or `*.qmd`,
+the hook runs `styler::style_file()` on it. When the file actually changes, the
+hook emits a `<system-reminder>` so Claude knows to re-read before the next edit
+(line numbers can shift). When the file is already clean, the hook is silent.
+
+**Behavior:**
+
+- Skips silently if `Rscript` or the `styler` package is not available (no
+  install nag, no error).
+- Wraps the `Rscript` call in `timeout` / `gtimeout` (default **15s**) when one
+  is on `PATH`. Raise via `SUPERPOWERS_AUTOFORMAT_TIMEOUT=30`.
+- Reads `tool_input.file_path` from the JSON payload Claude Code sends on stdin.
+  Uses `python3` (preferred) or `grep`/`sed` to parse — no `jq` dependency.
+- Output JSON shape adapts to host: Claude Code uses
+  `hookSpecificOutput.additionalContext`, Cursor uses `additional_context`,
+  others use `additionalContext`.
+
+**Opt-out, in order of preference:**
+
+```bash
+# Per-shell (recommended for one-off sessions)
+export SUPERPOWERS_DISABLE_AUTOFORMAT=1
+
+# Per-project (edit hooks/hooks.json and remove the PostToolUse block)
+
+# Globally (Claude Code: disable hooks for the supeRpowers plugin in
+# ~/.claude/settings.json — see Claude Code docs for the exact key path)
+```
+
+If you also want `lintr` feedback surfaced after every edit, that's not yet
+shipped — open an issue if it would be useful for your workflow.
 
 ## Quick Start
 

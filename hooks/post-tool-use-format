@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+# PostToolUse hook for supeRpowers plugin
+# Auto-formats .R / .Rmd / .qmd files after Edit / Write / MultiEdit using styler.
+# Emits a system-reminder via additionalContext when the file actually changed,
+# so Claude knows to re-read before further edits.
+#
+# Opt out:
+#   - export SUPERPOWERS_DISABLE_AUTOFORMAT=1     (per-shell)
+#   - or remove the PostToolUse matcher in hooks/hooks.json
+#   - or disable the plugin's hooks in ~/.claude/settings.json
+#
+# Tunables:
+#   - SUPERPOWERS_AUTOFORMAT_TIMEOUT (seconds, default 15)
+
+set -uo pipefail
+
+# --- Opt-out ---
+if [ "${SUPERPOWERS_DISABLE_AUTOFORMAT:-0}" = "1" ]; then
+  exit 0
+fi
+
+# --- Read stdin (JSON payload from Claude Code) ---
+input=""
+if [ ! -t 0 ]; then
+  input=$(cat)
+fi
+if [ -z "$input" ]; then
+  exit 0
+fi
+
+# --- Parse tool_name + file_path from JSON ---
+tool_name=""
+file_path=""
+if command -v python3 >/dev/null 2>&1; then
+  parsed=$(printf '%s' "$input" | python3 -c '
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print(d.get("tool_name", ""))
+    print((d.get("tool_input") or {}).get("file_path", ""))
+except Exception:
+    pass
+' 2>/dev/null || true)
+  tool_name=$(printf '%s' "$parsed" | sed -n '1p')
+  file_path=$(printf '%s' "$parsed" | sed -n '2p')
+fi
+
+# Fallback bash regex if python failed or is unavailable
+if [ -z "$tool_name" ]; then
+  tool_name=$(printf '%s' "$input" \
+    | grep -oE '"tool_name"[[:space:]]*:[[:space:]]*"[^"]+"' \
+    | head -n 1 \
+    | sed -E 's/.*"([^"]+)"$/\1/')
+fi
+if [ -z "$file_path" ]; then
+  file_path=$(printf '%s' "$input" \
+    | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"[^"]+"' \
+    | head -n 1 \
+    | sed -E 's/.*"([^"]+)"$/\1/')
+fi
+
+# --- Skip unless this is a write-style tool on a relevant file ---
+case "$tool_name" in
+  Edit|Write|MultiEdit) ;;
+  *) exit 0 ;;
+esac
+
+if [ -z "$file_path" ] || [ ! -f "$file_path" ]; then
+  exit 0
+fi
+
+case "$file_path" in
+  *.R|*.r|*.Rmd|*.rmd|*.Rmarkdown|*.qmd) ;;
+  *) exit 0 ;;
+esac
+
+# --- Require Rscript + styler; skip silently if missing ---
+if ! command -v Rscript >/dev/null 2>&1; then
+  exit 0
+fi
+
+if ! Rscript --vanilla -e 'q(status = !requireNamespace("styler", quietly = TRUE))' >/dev/null 2>&1; then
+  exit 0
+fi
+
+# --- Pick a timeout command (gtimeout on macOS via coreutils) ---
+TIMEOUT_SECS="${SUPERPOWERS_AUTOFORMAT_TIMEOUT:-15}"
+timeout_bin=""
+if command -v timeout >/dev/null 2>&1; then
+  timeout_bin="timeout"
+elif command -v gtimeout >/dev/null 2>&1; then
+  timeout_bin="gtimeout"
+fi
+
+# --- Hash the file before/after to detect actual change ---
+hash_file() {
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" 2>/dev/null | awk '{print $1}'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" 2>/dev/null | awk '{print $1}'
+  else
+    # Fallback: byte size + mtime, less reliable but good enough as a tiebreaker
+    stat -f '%z-%m' "$1" 2>/dev/null || stat -c '%s-%Y' "$1" 2>/dev/null
+  fi
+}
+
+before_hash=$(hash_file "$file_path")
+
+# --- Run styler ---
+# style_file dispatches on extension: .R uses tidyverse_style;
+# .Rmd / .qmd / .Rmarkdown style only the R code chunks.
+if [ -n "$timeout_bin" ]; then
+  "$timeout_bin" "$TIMEOUT_SECS" Rscript --vanilla -e '
+    args <- commandArgs(trailingOnly = TRUE)
+    suppressMessages(suppressWarnings(styler::style_file(args[[1]])))
+  ' "$file_path" >/dev/null 2>&1 || true
+else
+  Rscript --vanilla -e '
+    args <- commandArgs(trailingOnly = TRUE)
+    suppressMessages(suppressWarnings(styler::style_file(args[[1]])))
+  ' "$file_path" >/dev/null 2>&1 || true
+fi
+
+after_hash=$(hash_file "$file_path")
+
+# --- If unchanged, exit silently (most common case) ---
+if [ "$before_hash" = "$after_hash" ]; then
+  exit 0
+fi
+
+# --- File was reformatted: emit additionalContext so Claude re-reads it ---
+escape_for_json() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+msg="supeRpowers auto-format: styler reformatted ${file_path}. Re-read the file before further edits — line numbers and whitespace may have shifted."
+escaped=$(escape_for_json "$msg")
+
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{\n  "additional_context": "%s"\n}\n' "$escaped"
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -z "${COPILOT_CLI:-}" ]; then
+  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "PostToolUse",\n    "additionalContext": "%s"\n  }\n}\n' "$escaped"
+else
+  printf '{\n  "additionalContext": "%s"\n}\n' "$escaped"
+fi
+
+exit 0

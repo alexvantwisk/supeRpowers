@@ -139,36 +139,16 @@ The `tests/` directory contains the plugin evaluation framework:
 
 See `tests/README.md` for usage.
 
-## Roadmap (next 2 priorities)
+## Roadmap (next priority)
 
-Phase 1 (GitHub Actions CI) shipped in 0.2.2. The remaining two phases are independently shippable.
+Shipped:
 
-### Phase 1 — PostToolUse auto-format hook
+- 0.2.2 — GitHub Actions CI workflow
+- 0.2.3 — PostToolUse auto-format hook (`hooks/post-tool-use-format` runs `styler::style_file()` on `.R`/`.Rmd`/`.qmd` after Edit/Write/MultiEdit; emits `additionalContext` only when the file actually changes; opt-out via `SUPERPOWERS_DISABLE_AUTOFORMAT=1`)
 
-**Goal:** When Claude edits a `.R`, `.Rmd`, or `.qmd` file via Edit/Write, the file is auto-formatted with `styler` afterwards. Optional: `lintr` results surfaced as a system reminder.
+One phase remains and is independently shippable.
 
-**Why first:** Highest daily-impact lever. Every R interaction produces tidier code without anyone remembering to run `styler`. Self-contained — no skill or content changes.
-
-**Scope:**
-
-1. `hooks/post-tool-use-format` shell script:
-   - Read tool name + file path from hook stdin
-   - Skip unless `Edit`/`Write` and path matches `*.R|*.Rmd|*.qmd`
-   - Detect `styler` availability (`Rscript -e 'requireNamespace("styler")'`); skip silently if missing
-   - Run `Rscript -e 'styler::style_file("<path>")'` with a 5s timeout
-   - Optional second pass: `lintr::lint("<path>")` → emit findings as a `<system-reminder>` so Claude sees them
-2. Extend `hooks/run-hook.cmd` to dispatch `post-tool-use-format`.
-3. Register a `PostToolUse` matcher in `hooks/hooks.json` for `Edit|Write`.
-4. Document opt-out via `~/.claude/settings.json` in README.
-5. Manual smoke test on a sample R project.
-
-**Effort:** ~half a day.
-
-**Risk:** Low. Two design questions to nail down: (a) when styler changes line counts, the hook should announce the format ran so Claude re-reads the file; (b) start with lintr output silent, escalate to surfacing later if useful.
-
-**Release:** Patch bump to 0.2.3 (or fold into 0.3.0).
-
-### Phase 2 — `r-bayesian` skill
+### Phase 3 — `r-bayesian` skill
 
 **Goal:** A new domain skill covering Bayesian modeling with `brms`, `rstanarm`, `cmdstanr`, `posterior`, and `tidybayes`. SKILL.md plus 3–4 references.
 
@@ -198,14 +178,14 @@ Phase 1 (GitHub Actions CI) shipped in 0.2.2. The remaining two phases are indep
 ### Sequencing
 
 ```
-Phase 1  →  Phase 2
-  hook        Bayesian
-  ~0.5 day    ~2–3 days
+Phase 3
+Bayesian
+~2–3 days
 ```
 
-Each phase is independently shippable. Phase 1 is ~half a day; Phase 2 is the biggest content win.
+Phase 3 is the biggest remaining content win — independently shippable on the now-stable CI + hook foundations.
 
-### Deferred (revisit after Phase 2)
+### Deferred (revisit after Phase 3)
 
 - `r-timeseries`, `r-spatial`, `r-causal` skills — comparable value to Bayesian but lower differentiation per unit effort
 - `/r-deploy`, `/r-bench`, `/r-renv` commands — pull from real user requests
