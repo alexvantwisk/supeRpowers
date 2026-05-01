@@ -8,3 +8,4 @@ __pycache__/
 # Claude Code local state
 .claude/worktrees/
 .claude/settings.local.json
+.claude/plans/

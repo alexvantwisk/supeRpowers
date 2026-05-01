@@ -6,5 +6,11 @@
   "author": {
     "name": "Alexander van Twisk"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/alexvantwisk/supeRpowers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexvantwisk/supeRpowers.git"
+  },
+  "bugs": "https://github.com/alexvantwisk/supeRpowers/issues"
 }
