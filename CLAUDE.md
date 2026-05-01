@@ -147,7 +147,7 @@ Phase 1 (GitHub Actions CI) shipped in 0.2.2. The remaining two phases are indep
 
 **Goal:** When Claude edits a `.R`, `.Rmd`, or `.qmd` file via Edit/Write, the file is auto-formatted with `styler` afterwards. Optional: `lintr` results surfaced as a system reminder.
 
-**Why second:** Highest daily-impact lever. Every R interaction produces tidier code without anyone remembering to run `styler`. Self-contained — no skill or content changes.
+**Why first:** Highest daily-impact lever. Every R interaction produces tidier code without anyone remembering to run `styler`. Self-contained — no skill or content changes.
 
 **Scope:**
 
@@ -172,7 +172,7 @@ Phase 1 (GitHub Actions CI) shipped in 0.2.2. The remaining two phases are indep
 
 **Goal:** A new domain skill covering Bayesian modeling with `brms`, `rstanarm`, `cmdstanr`, `posterior`, and `tidybayes`. SKILL.md plus 3–4 references.
 
-**Why third:** Largest single content gap. Bayesian is a major statistical paradigm where Claude's defaults are notably weaker than for frequentist work — priors, MCMC diagnostics, and posterior summarization are full of subtle traps the plugin can encode. Builds on stable CI + hook foundations.
+**Why second:** Largest single content gap. Bayesian is a major statistical paradigm where Claude's defaults are notably weaker than for frequentist work — priors, MCMC diagnostics, and posterior summarization are full of subtle traps the plugin can encode. Builds on stable CI + hook foundations.
 
 **Scope:**
 
@@ -205,7 +205,7 @@ Phase 1  →  Phase 2
 
 Each phase is independently shippable. Phase 1 is ~half a day; Phase 2 is the biggest content win.
 
-### Deferred (revisit after Phase 3)
+### Deferred (revisit after Phase 2)
 
 - `r-timeseries`, `r-spatial`, `r-causal` skills — comparable value to Bayesian but lower differentiation per unit effort
 - `/r-deploy`, `/r-bench`, `/r-renv` commands — pull from real user requests
