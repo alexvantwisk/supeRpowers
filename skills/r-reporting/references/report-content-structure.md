@@ -324,6 +324,30 @@ scale > length > angle > area). Forest plots with CIs communicate uncertainty
 visually. Distinguish statistical from clinical significance every time.
 (ASA Statement; Harrell; Gelman)
 
+**Operator-aware p-value insertion in prose.** When p-values are spliced into
+running text via Quarto inline ``` `r ...` ``` chunks, the comparison operator
+(`=`, `≤`, `<`) must travel inside the helper, not stay loose in the prose.
+Otherwise authors end up writing "p `r fmt_p(x)` or smaller" or "p
+`r fmt_p(x)`" — both read awkwardly and the second is grammatically broken.
+The pattern (full source in the `/r-report` template's setup chunk):
+
+```r
+# Bare value — for tables and parenthesised lists where the operator is implied
+fmt_p <- function(p, d = 3) { ... }            # "0.042" or "<0.001"
+
+# Operator + value — for running prose
+fmt_p_inline <- function(p, op = "=", d = 3) { ... }
+# returns "= 0.042", "≤ 0.002", or "< 0.001"
+```
+
+The critical invariant: when `p < 10^(-d)`, `fmt_p_inline()` collapses the
+operator to `<`, so "p `r fmt_p_inline(p, op = "≤")`" renders as "p < 0.001"
+rather than the malformed "p ≤ < 0.001". Pass `op = "≤"` when reporting the
+maximum across a corrected family of tests ("all seven items had Holm-corrected
+p ≤ 0.002"); pass the default `op = "="` for a single test. This keeps
+prose-level p-values consistent with the ASA recommendation to report exact
+values, without forcing authors to hand-write inequalities case by case.
+
 ### Consultant vs client responsibility boundary
 
 | Consultant provides | Client provides |

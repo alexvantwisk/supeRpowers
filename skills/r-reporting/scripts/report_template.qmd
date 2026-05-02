@@ -34,10 +34,39 @@ suppressPackageStartupMessages({
 })
 
 fig <- function(file) file.path("output", "figures", file)
-tbl <- function(file) here::here("output", "tables",  file)
-mod <- function(file) here::here("output", "models",  file)
+tbl <- function(file) here::here("output", "tables", file)
+mod <- function(file) here::here("output", "models", file)
 
 read_csv_safe <- function(p) suppressMessages(readr::read_csv(p, show_col_types = FALSE))
+
+# Inline-prose formatters for `r ...` chunks embedded in body text.
+# fmt_p()        bare value: "0.042" or "<0.001"  (use inside tables or parenthesised lists)
+# fmt_p_inline() operator + value: "= 0.042", "< 0.001", "<= 0.002"
+#                pass op = "<=" for "p <= 0.042"; the < cap absorbs the operator
+#                for tiny p so prose never reads "p <= < 0.001".
+fmt_p <- function(p, d = 3) {
+  if (is.na(p)) {
+    return(NA_character_)
+  }
+  thr <- 10^(-d)
+  if (p < thr) {
+    paste0("<", formatC(thr, digits = d, format = "f"))
+  } else {
+    formatC(p, digits = d, format = "f")
+  }
+}
+
+fmt_p_inline <- function(p, op = "=", d = 3) {
+  if (is.na(p)) {
+    return(NA_character_)
+  }
+  thr <- 10^(-d)
+  if (p < thr) {
+    paste0("< ", formatC(thr, digits = d, format = "f"))
+  } else {
+    paste0(op, " ", formatC(p, digits = d, format = "f"))
+  }
+}
 ```
 
 # Executive Summary

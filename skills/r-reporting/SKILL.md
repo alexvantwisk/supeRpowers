@@ -134,6 +134,30 @@ Requires `knitr::opts_knit$set(root.dir = here::here())` in the setup chunk.
 
 ---
 
+## Inline Prose Helpers
+
+When values are spliced into running prose via inline ``` `r ...` ``` chunks, the *operator* (`=`, `≤`, `<`) belongs in the helper, not in the surrounding text. Writing ``p `r fmt_p(x)` `` and reading the result as "p 0.042" is awkward; appending "or smaller" to fake an inequality is worse. The fix is two helpers:
+
+```r
+fmt_p        <- function(p, d = 3) { ... }                    # "0.042" or "<0.001"
+fmt_p_inline <- function(p, op = "=", d = 3) { ... }          # "= 0.042", "≤ 0.002", "< 0.001"
+```
+
+The full implementations ship in the `/r-report` template; the key invariant is that `fmt_p_inline()` collapses the operator to `<` whenever `p < 10^(-d)` so prose never renders "p ≤ < 0.001".
+
+Usage:
+
+| Context | Helper | Renders |
+|---|---|---|
+| A single test in prose | ``p `r fmt_p_inline(t$p)` `` | "p = 0.487" or "p < 0.001" |
+| The maximum across a corrected family | ``p `r fmt_p_inline(max(p_holm), op = "≤")` `` | "p ≤ 0.002" |
+| Inside a parenthesised list of three p-values | ``BMI `r fmt_p(...)` `` | "BMI 0.231" — context already implies `=` |
+| Inside a table cell | `fmt_p()` (no operator) | "0.042" — column header carries the meaning |
+
+**Why two helpers, not one with `op = ""`.** Tables and parenthesised lists collapse better with bare values; running prose reads better with the operator attached. Keeping them separate prevents call sites from accidentally producing a leading space (`" 0.042"`).
+
+---
+
 ## Reference.docx
 
 Pandoc applies styles from a `reference.docx` you supply via YAML:
