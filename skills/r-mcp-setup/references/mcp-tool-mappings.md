@@ -1,4 +1,4 @@
-# MCP Tool Mappings — btw Groups to Skills
+# MCP Tool Mappings — btw Groups and mcp-repl to Skills
 
 Central reference for skill/agent MCP tool selection and Bash fallback commands.
 
@@ -7,18 +7,51 @@ Central reference for skill/agent MCP tool selection and Bash fallback commands.
 ## How Skills Detect MCP Availability
 
 The session-start hook injects `"MCP: available"` into context when btw tools
-are registered. Skills check for this substring to choose execution path:
+or mcp-repl are registered. Skills check for this substring to choose
+execution path:
 
 ```
 if context contains "MCP: available"
-  → use btw_tool_* (structured result, proper error reporting)
+  → use mcp-repl `repl` (persistent state) or btw_tool_* (structured result)
 else
   → use Bash Rscript fallback (parse text output)
 ```
 
 ---
 
-## Tool Group Reference
+## Persistent Execution (mcp-repl)
+
+Orthogonal to the btw introspection groups — `repl` is full agent-owned
+execution where state persists across calls.
+
+**Tools:**
+- `repl` — execute arbitrary R code in a long-lived Claude-owned subprocess
+- `repl_reset` — drop the subprocess and start a fresh R session
+
+**Benefits:** r-data-analysis, r-stats, r-tidymodels, r-bayesian, r-targets,
+r-debugging, r-performance — any skill that benefits from carrying objects
+across multiple tool calls (e.g. fit a model, then inspect coefficients,
+then run diagnostics — all without re-loading data).
+
+| Capability | mcp-repl | btw equivalent | Bash fallback |
+|---|---|---|---|
+| Execute R, state persists across calls | `repl(code)` | `btw_tool_run_r` (no persistence between calls in agent context) | `Rscript -e` (no persistence) |
+| Reset session state | `repl_reset()` | n/a (restart server) | n/a |
+| Sandbox network/FS | `--sandbox` flag | n/a | n/a |
+
+**Combine with btw** when both are registered: use `repl` to fit a model,
+then `btw_tool_env_describe_data_frame` to inspect a data frame that lives
+in the user's IDE session (different process, separate state).
+
+**Bash fallback:**
+```bash
+Rscript -e 'fit <- lm(mpg ~ wt, mtcars); summary(fit)'
+```
+Note: Bash spawns a fresh R process every call — no persistence.
+
+---
+
+## Tool Group Reference (btw)
 
 ### docs — Package Documentation
 
@@ -179,4 +212,4 @@ Rscript -e 'requireNamespace("targets", quietly = TRUE)'
 | r-project-setup | session, search |
 | r-quarto | run, docs |
 | r-tables | run, docs |
-| r-mcp-setup | session, pkg |
+| r-mcp-setup | session, pkg, repl |

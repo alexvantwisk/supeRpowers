@@ -623,5 +623,53 @@
     "must_not_fire": ["r-bayesian"],
     "discriminator": "XGBoost tuning + cross-validation = ML, not Bayesian inference",
     "category": "bayesian-routing"
+  },
+  {
+    "id": "route-079",
+    "prompt": "Set up mcp-repl for persistent R sessions in Claude Code",
+    "expected_skill": "r-mcp-setup",
+    "must_not_fire": [],
+    "discriminator": "mcp-repl + persistent R session = MCP setup",
+    "category": "mcp-setup"
+  },
+  {
+    "id": "route-080",
+    "prompt": "How do I install the Posit mcp-repl binary on macOS",
+    "expected_skill": "r-mcp-setup",
+    "must_not_fire": [],
+    "discriminator": "mcp-repl install = MCP setup",
+    "category": "mcp-setup"
+  },
+  {
+    "id": "route-081",
+    "prompt": "My repl tool isn't showing up after claude mcp add — what should I check?",
+    "expected_skill": "r-mcp-setup",
+    "must_not_fire": ["r-debugging"],
+    "discriminator": "repl tool + claude mcp add = MCP troubleshooting, not generic R debug",
+    "category": "mcp-setup"
+  },
+  {
+    "id": "route-082",
+    "prompt": "Connect Claude Code to my live R session in Positron",
+    "expected_skill": "r-mcp-setup",
+    "must_not_fire": [],
+    "discriminator": "live R session + Positron = MCP setup (mcptools)",
+    "category": "mcp-setup"
+  },
+  {
+    "id": "route-083",
+    "prompt": "What btw tool groups should I register for my package development workflow?",
+    "expected_skill": "r-mcp-setup",
+    "must_not_fire": ["r-package-dev"],
+    "discriminator": "btw tool group selection = MCP setup, not package dev",
+    "category": "mcp-setup"
+  },
+  {
+    "id": "route-084",
+    "prompt": "What's the difference between mcp-repl, mcptools, and btw — which should I use?",
+    "expected_skill": "r-mcp-setup",
+    "must_not_fire": [],
+    "discriminator": "comparison of MCP server options = MCP setup",
+    "category": "mcp-setup"
   }
 ]
