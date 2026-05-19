@@ -16,6 +16,9 @@
 10. When the user asks to build a new MCP server from scratch (not setup), does the skill decline as out-of-scope and point to mcptools docs?
 11. When the user wants MCP for a non-R service (Python session, Postgres DB), does the skill decline as out-of-scope?
 12. When `mcp_session()` is running but `env` tools still don't see live objects, does the skill check that the user is calling `mcp_session()` in the *same* interactive R process they're working in (not a one-off `Rscript` run)?
+13. When the user wants a persistent R session that survives across Claude Code tool calls (no IDE involved), does the skill lead with mcp-repl rather than mcptools/btw?
+14. When `mcp-repl` `install.packages()` fails with a network error, does the skill diagnose the `--sandbox` flag and recommend installing from the user's own R session first, before suggesting re-registration without sandbox?
+15. When the user already has btw/mcptools working and asks about mcp-repl, does the skill explain that both can be registered simultaneously (tool names don't collide) rather than telling the user to pick one?
 
 ## Test Prompts
 
@@ -26,12 +29,17 @@
 - "Add r-btw to my Shiny project, but only with the docs and run tool groups."
 - "Auto-start `mcp_session()` whenever I open this project."
 - "Walk me through closing the IDE-awareness gap with `cc_plot()`/`cc_env()`/`cc_view()`."
+- "Set up mcp-repl so Claude can keep R state across tool calls."
+- "I want Claude to have its own persistent R session without me having to keep Positron open."
+- "Should I uninstall btw if I switch to mcp-repl?"
 
 ### Edge Cases
 
 - "I use rig with R 4.5 and 4.6 installed. Which one will the MCP server use?"
 - "I'm on Positron, not RStudio. Does `mcp_session()` still work?"
 - "My `renv.lock` pins an old btw without `btw_tools()`. How do I upgrade safely?"
+- "mcp-repl `install.packages('janitor')` failed with cannot open URL — what's wrong?"
+- "I'm on Windows aarch64 — does the mcp-repl prebuilt binary work?"
 
 ### Adversarial Cases
 

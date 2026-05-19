@@ -1,8 +1,95 @@
 # MCP Troubleshooting
 
-Common issues and fixes for MCP server setup with btw and mcptools.
+Common issues and fixes for MCP server setup with mcp-repl, btw, and
+mcptools.
 
-## 1. MCP Server Won't Start
+## mcp-repl issues
+
+### M1. `mcp-repl: command not found`
+
+**Symptom:** `mcp-repl --help` fails with "command not found" or
+`claude mcp list` shows the server as disconnected.
+
+**Cause:** Binary not on `PATH`. Two common cases:
+
+1. **Built via `cargo install`** — binary is in `~/.cargo/bin`, which may
+   not be on `PATH`. Add to your shell rc:
+
+   ```bash
+   # ~/.zshrc or ~/.bashrc
+   export PATH="$HOME/.cargo/bin:$PATH"
+   ```
+
+2. **Prebuilt binary downloaded** — needs `chmod +x` and to live somewhere
+   on `PATH`:
+
+   ```bash
+   chmod +x mcp-repl
+   mv mcp-repl /usr/local/bin/        # macOS / Linux system-wide
+   # or
+   mkdir -p ~/.local/bin && mv mcp-repl ~/.local/bin/   # user-local
+   ```
+
+Verify with `which mcp-repl`.
+
+### M2. `claude mcp list` shows mcp-repl as `disconnected`
+
+**Symptom:** Server is registered but Claude Code can't connect.
+
+**Cause (usually):** mcp-repl can't find R. It calls `R RHOME` at startup.
+
+**Diagnose:**
+
+```bash
+R --version       # should print version
+R RHOME           # should print the R install root
+```
+
+If either fails, R isn't on `PATH` or `RHOME` is overridden by an env var.
+Fix the shell environment, then restart Claude Code.
+
+### M3. `install.packages()` fails with "cannot open URL"
+
+**Symptom:** `repl` returns a network error when you ask Claude to install
+a package.
+
+**Cause:** mcp-repl is running with `--sandbox`, which blocks network
+access.
+
+**Fixes (in order of preference):**
+
+1. **Install from your normal R session.** Open a terminal or RStudio and
+   run `install.packages("...")` there. mcp-repl shares the user library,
+   so the agent will see the package on the next call.
+2. **Re-register without `--sandbox`** for a one-off install, then put
+   sandbox back:
+
+   ```bash
+   claude mcp remove mcp-repl
+   claude mcp add -s "project" mcp-repl -- mcp-repl
+   # ... install package via Claude ...
+   claude mcp remove mcp-repl
+   claude mcp add -s "project" mcp-repl -- mcp-repl --sandbox
+   ```
+
+### M4. `repl` returns truncated output
+
+**Symptom:** A `summary()` on a wide model or `head(df, 100)` cuts off.
+
+**Fix:** Add `--oversized-output` to the registration:
+
+```bash
+claude mcp remove mcp-repl
+claude mcp add -s "project" mcp-repl -- mcp-repl --sandbox --oversized-output
+```
+
+Restart Claude Code so the connection re-establishes.
+
+---
+
+## btw / mcptools issues
+
+### 1. MCP Server Won't Start
 
 **Symptom:** `claude mcp list` shows the server, but no tools appear.
 

@@ -159,7 +159,31 @@ r_info=""
 if [ -n "$r_session_info" ]; then
   r_info="${r_session_info}\\n"
 fi
-context="supeRpowers R plugin active.\\n${r_info}${skills}Use /r-* commands to start guided workflows, or /r-* knowledge skills for reference.\\nTip: btw/mcptools MCP enhances all skills with live R session awareness."
+
+# --- MCP availability tip ---
+# Call detect-mcp.sh once and branch on mcp_repl / r-btw registration so
+# the tip reflects what the user actually has set up.
+mcp_tip="Tip: run /r-mcp-setup to enable persistent R sessions (mcp-repl) or live IDE awareness (btw/mcptools)."
+if [ -x "${SCRIPT_DIR}/detect-mcp.sh" ]; then
+  mcp_json=$("${SCRIPT_DIR}/detect-mcp.sh" 2>/dev/null || echo '{}')
+  has_repl=false
+  has_btw=false
+  if echo "$mcp_json" | grep -q '"mcp_repl_registered":true'; then
+    has_repl=true
+  fi
+  if echo "$mcp_json" | grep -q '"mcp_registered":true'; then
+    has_btw=true
+  fi
+  if [ "$has_repl" = true ] && [ "$has_btw" = true ]; then
+    mcp_tip="Tip: mcp-repl (persistent agent R session) + btw/mcptools (live IDE awareness) both active — use repl for stateful execution, btw_tool_* for IDE-bridged introspection."
+  elif [ "$has_repl" = true ]; then
+    mcp_tip="Tip: mcp-repl active — use repl for stateful R execution across calls, repl_reset for a clean slate."
+  elif [ "$has_btw" = true ]; then
+    mcp_tip="Tip: btw/mcptools MCP enhances all skills with live R session awareness."
+  fi
+fi
+
+context="supeRpowers R plugin active.\\n${r_info}${skills}Use /r-* commands to start guided workflows, or /r-* knowledge skills for reference.\\n${mcp_tip}"
 escaped_context=$(escape_for_json "$context")
 
 # Platform-aware JSON output
