@@ -111,6 +111,8 @@ orders |> anti_join(active_customers, join_by(customer_id))   # keep orphans
 Use `left_join()` to preserve all left-side rows (most common),
 `inner_join()` when both sides must match, `anti_join()` to find orphans.
 Read `references/join-guide.md` for inequality joins and complex strategies.
+Before a join, run `scripts/check_join_safety.R <data.csv> <key_column>` to
+detect duplicate keys that would silently fan out rows.
 
 ---
 

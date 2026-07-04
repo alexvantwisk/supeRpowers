@@ -135,6 +135,29 @@ Selection: `select_best()`, `select_by_one_std_err()`, `select_by_pct_loss()`.
 
 ---
 
+## Post-processing (tailor) and racing (finetune)
+
+Calibrate probabilities or move the classification threshold as an explicit post-processing step with `tailor`, added to the workflow:
+
+```r
+library(tailor)
+tlr <- tailor() |>
+  adjust_probability_calibration(method = "logistic") |>
+  adjust_probability_threshold(0.4)
+wf <- workflow() |> add_recipe(rec) |> add_model(rf_spec) |> add_tailor(tlr)
+```
+
+For expensive grids, race with `finetune`: ANOVA racing drops under-performing candidates early.
+
+```r
+library(finetune)
+race_results <- wf |>
+  tune_race_anova(resamples = folds, grid = 30,
+                  control = control_race(verbose_elim = TRUE))
+```
+
+---
+
 ## Evaluation (yardstick)
 
 Standard metrics — Claude already knows these. Key patterns:

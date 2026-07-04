@@ -72,7 +72,7 @@ auto-routes to each skill.
 
 **Tooling & meta**
 
-- **r-mcp-setup** — connect Claude Code to a live R session via mcptools/btw. Triggers: mcptools, btw, claude mcp add, live R session.
+- **r-mcp-setup** — connect Claude Code to R via mcp-repl (persistent agent session) or mcptools/btw (live IDE session). Triggers: mcp-repl, mcptools, btw, claude mcp add, persistent R session.
 - **r-package-skill-generator** — turn a GitHub R package into a Claude skill. Triggers: generate skill, learn package, skill from repo.
 - **r-overview** — this skill: lists every skill / command / agent.
 - **skill-auditor** *(meta)* — score an existing skill against project conventions.

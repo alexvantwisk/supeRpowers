@@ -61,7 +61,7 @@ Markdown report with state assessment, issues found, and recommended actions.
   - `data.table` for pure performance over `dplyr`
   - `vroom` for large file reading over `readr`
   - `collapse` for fast grouped operations
-  - `qs` for fast serialization over `saveRDS`
+  - `qs2` (the maintained successor to `qs`) for fast serialization over `saveRDS`
 - **Dev vs runtime:** Ensure dev-only packages (testthat, devtools) in Suggests, not Imports
 
 ### 3. Diagnose version conflicts
@@ -80,6 +80,8 @@ Markdown report with state assessment, issues found, and recommended actions.
 - Version alignment (Bioconductor releases tied to R versions):
   - R 4.3.x → Bioconductor 3.17/3.18
   - R 4.4.x → Bioconductor 3.19/3.20
+  - R 4.5.x → Bioconductor 3.21/3.22
+  - R 4.6.x → Bioconductor 3.23
 - Common issues:
   - `BiocManager` not available → `renv::install("BiocManager")`
   - Version mismatch → Verify renv Bioconductor version setting

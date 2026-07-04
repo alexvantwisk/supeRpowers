@@ -210,6 +210,8 @@ Is it a Bioconductor package?
 
 **Prompt:** "Generate a Claude skill for the pointblank R package: https://github.com/rstudio/pointblank"
 
+*(Package names, versions, and export counts below are illustrative snapshots of a run, not pinned requirements.)*
+
 ```
 Step 0 — Accept Input
   $ python3 scripts/setup_workspace.py https://github.com/rstudio/pointblank

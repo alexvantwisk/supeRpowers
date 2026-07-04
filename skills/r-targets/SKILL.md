@@ -71,7 +71,7 @@ tar_branches(target)           # Inspect individual dynamic branches
 
 Standard workflow (`tar_make()`, `tar_read()`, `tar_visnetwork()`, etc.) — Claude already knows these.
 
-**Target formats:** Default to `format = "qs"` globally via `tar_option_set()`. Use `"file"` for side-effect targets (plots, reports, exports). Use `"parquet"` for cross-language interop on large datasets.
+**Target formats:** Default to `format = "qs"` globally via `tar_option_set()` (install `qs2`, the maintained successor to `qs`, so the fast path is available). Use `"file"` for side-effect targets (plots, reports, exports). Use `"parquet"` for cross-language interop on large datasets.
 
 ---
 
@@ -178,7 +178,7 @@ tar_option_set(
 )
 ```
 
-`crew` is the recommended backend. Workers execute independent targets in parallel.
+`crew` is the recommended backend. Workers execute independent targets in parallel. For HPC scale-out (SLURM, SGE, PBS, LSF), use `crew.cluster` controllers (e.g. `crew_controller_slurm()`).
 
 ---
 
