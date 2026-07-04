@@ -79,38 +79,6 @@ if compgen -G "*.Rproj" >/dev/null 2>&1 || compgen -G "*.R" >/dev/null 2>&1 || [
   is_r_project=true
 fi
 
-# --- R session info ---
-# Capture R version, platform, and key package versions when Rscript is available.
-# This gives skills concrete version info so they know the actual API surface.
-r_session_info=""
-r_platform=""
-r_pkg_versions=""
-if command -v Rscript >/dev/null 2>&1; then
-  r_version=$(Rscript --vanilla -e 'cat(R.version$major, R.version$minor, sep=".")' 2>/dev/null || true)
-  if [ -n "$r_version" ]; then
-    r_platform=$(Rscript --vanilla -e 'cat(R.version$platform)' 2>/dev/null || true)
-    r_session_info="R ${r_version} detected. Platform: ${r_platform:-unknown}."
-    # Capture key tidyverse + infrastructure package versions
-    r_pkg_versions=$(Rscript --vanilla -e '
-      pkgs <- c("dplyr", "ggplot2", "tidyr", "purrr", "readr", "stringr",
-                "forcats", "lubridate", "shiny", "testthat", "gt", "targets")
-      installed <- pkgs[pkgs %in% rownames(installed.packages())]
-      if (length(installed) > 0) {
-        versions <- vapply(installed, \(p) as.character(packageVersion(p)), character(1))
-        cat(paste(installed, versions, sep = " "), sep = ", ")
-      }
-    ' 2>/dev/null || true)
-    if [ -n "$r_pkg_versions" ]; then
-      r_session_info="${r_session_info}\\n  Key packages: ${r_pkg_versions}"
-    fi
-  fi
-fi
-
-# Check for renv.lock to surface package versions hint
-if [ -f "renv.lock" ]; then
-  r_session_info="${r_session_info}\\n  renv.lock found — package versions locked."
-fi
-
 # --- Build context ---
 skills=""
 if [ "$is_r_package" = true ]; then
@@ -142,6 +110,39 @@ fi
 if [ -z "$skills" ]; then
   echo '{}'
   exit 0
+fi
+
+# --- R session info (only reached when a project was detected) ---
+# Pick a timeout command (mirror post-tool-use-format).
+r_probe_timeout=""
+if command -v timeout >/dev/null 2>&1; then
+  r_probe_timeout="timeout 5"
+elif command -v gtimeout >/dev/null 2>&1; then
+  r_probe_timeout="gtimeout 5"
+fi
+
+r_session_info=""
+if command -v Rscript >/dev/null 2>&1; then
+  r_version=$($r_probe_timeout Rscript --vanilla -e 'cat(R.version$major, R.version$minor, sep=".")' 2>/dev/null || true)
+  if [ -n "$r_version" ]; then
+    r_platform=$($r_probe_timeout Rscript --vanilla -e 'cat(R.version$platform)' 2>/dev/null || true)
+    r_session_info="R ${r_version} detected. Platform: ${r_platform:-unknown}."
+    r_pkg_versions=$($r_probe_timeout Rscript --vanilla -e '
+      pkgs <- c("dplyr", "ggplot2", "tidyr", "purrr", "readr", "stringr",
+                "forcats", "lubridate", "shiny", "testthat", "gt", "targets")
+      installed <- pkgs[pkgs %in% rownames(installed.packages())]
+      if (length(installed) > 0) {
+        versions <- vapply(installed, \(p) as.character(packageVersion(p)), character(1))
+        cat(paste(installed, versions, sep = " "), sep = ", ")
+      }
+    ' 2>/dev/null || true)
+    if [ -n "$r_pkg_versions" ]; then
+      r_session_info="${r_session_info}\\n  Key packages: ${r_pkg_versions}"
+    fi
+  fi
+fi
+if [ -f "renv.lock" ]; then
+  r_session_info="${r_session_info}\\n  renv.lock found — package versions locked."
 fi
 
 # --- Escape for JSON ---
@@ -183,7 +184,7 @@ if [ -x "${SCRIPT_DIR}/detect-mcp.sh" ]; then
   fi
 fi
 
-context="supeRpowers R plugin active.\\n${r_info}${skills}Use /r-* commands to start guided workflows, or /r-* knowledge skills for reference.\\n${mcp_tip}"
+context="supeRpowers R plugin active.\\n${r_info}${skills}Use /r-* commands to start guided workflows, or /r-* knowledge skills for reference.\\nNew here? Run /r-overview for the full inventory.\\n${mcp_tip}"
 escaped_context=$(escape_for_json "$context")
 
 # Platform-aware JSON output
