@@ -23,28 +23,24 @@ theme_gtsummary_journal("lancet")
 # NEJM — continuous variables as median [IQR] by default
 theme_gtsummary_journal("nejm")
 
-# The BMJ
-theme_gtsummary_journal("bmj")
-
 # Quarterly Journal of Economics
 theme_gtsummary_journal("qjecon")
 ```
+
+gtsummary 2.5.0 supports exactly four journal themes: `"jama"`,
+`"lancet"`, `"nejm"`, and `"qjecon"`. Other names (e.g. bmj) error.
 
 | Theme | Default continuous | P-value style | Notes |
 |-------|-------------------|---------------|-------|
 | jama | Mean (SD) | <0.001 threshold | No bold labels |
 | lancet | Median (IQR) | XX.X format | Bold p < 0.05 |
 | nejm | Median (IQR) | <0.001 threshold | Compact spacing |
-| bmj | Mean (SD) | Exact | Bold headers |
 
 ### Compact and Utility Themes
 
 ```r
 # Compact — reduced padding, smaller font, for supplements
 theme_gtsummary_compact()
-
-# Printer-friendly — removes color, uses black/white styling
-theme_gtsummary_printer_friendly()
 
 # Language — change default labels
 theme_gtsummary_language(
