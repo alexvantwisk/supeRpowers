@@ -2,4 +2,4 @@ blank_issues_enabled: true
 contact_links:
   - name: Read the contribution guide first
     url: https://github.com/alexvantwisk/supeRpowers/blob/main/CONTRIBUTING.md
-    about: How contribution works during the beta phase (issues yes, pull requests not yet).
+    about: How contribution works during the beta phase — issues and pull requests are both welcome.

@@ -35,5 +35,5 @@ draft the actual content — describing the right behaviour is enough. -->
 
 ## Real-world context (optional)
 
-<!-- "I hit this on a Robyn Blain MHSc consulting project where I needed
+<!-- "I hit this on a client consulting project where I needed
 to..." — concrete usage stories help prioritise. -->

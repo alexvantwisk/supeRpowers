@@ -21,7 +21,7 @@ MCP_REPL_REGISTERED=false
 TOOL_GROUPS="[]"
 
 # --- Check MCP server registration (btw/mcptools as "r-btw") ---
-for config_file in ".claude/settings.json" ".mcp.json" "${HOME}/.claude/settings.json"; do
+for config_file in ".claude/settings.json" ".mcp.json" "${HOME}/.claude/settings.json" "${HOME}/.claude.json"; do
     if [ -f "$config_file" ] && grep -q '"r-btw"' "$config_file" 2>/dev/null; then
         MCP_REGISTERED=true
         break
@@ -29,7 +29,7 @@ for config_file in ".claude/settings.json" ".mcp.json" "${HOME}/.claude/settings
 done
 
 # --- Check mcp-repl registration ---
-for config_file in ".claude/settings.json" ".mcp.json" "${HOME}/.claude/settings.json"; do
+for config_file in ".claude/settings.json" ".mcp.json" "${HOME}/.claude/settings.json" "${HOME}/.claude.json"; do
     if [ -f "$config_file" ] && grep -q '"mcp-repl"' "$config_file" 2>/dev/null; then
         MCP_REPL_REGISTERED=true
         break
