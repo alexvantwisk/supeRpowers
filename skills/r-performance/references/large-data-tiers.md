@@ -26,8 +26,8 @@ ds |>
 
 # duckplyr: dplyr syntax on the DuckDB engine (out-of-core, zero-copy)
 library(duckplyr)
-big <- duckplyr::as_duckplyr_df(large_df)
-big |> dplyr::summarise(.by = carrier, n = dplyr::n())
+big <- duckplyr::as_duckdb_tibble(large_df)
+big |> dplyr::summarise(.by = group, n = dplyr::n())
 
 # Or raw DuckDB SQL over a Parquet glob without loading it
 con <- DBI::dbConnect(duckdb::duckdb())

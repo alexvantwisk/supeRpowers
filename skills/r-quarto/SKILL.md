@@ -234,7 +234,7 @@ After render: check `quarto check` passes, cross-references resolve (no `?fig-` 
 | Forgetting `embed-resources: true` for self-contained HTML | Shared HTML files have broken images/CSS because assets are separate files | Add `embed-resources: true` under `format: html:` for portable single-file output |
 | PDF output fails without LaTeX installation | Quarto calls `pdflatex`/`xelatex` which is not bundled | Install TinyTeX: `quarto install tinytex` or `tinytex::install_tinytex()` |
 | Installing extensions via `install.packages()` instead of `quarto add` | Quarto extensions are not R packages; CRAN install does nothing | Use `quarto add <gh-org>/<repo>` from the terminal |
-| Cache not invalidating when data changes but chunk code stays the same | `cache: true` keys on chunk code only; stale results persist | Quarto's chunk cache keys on code alone — there is no data-hash option; use `freeze: auto` in `_quarto.yml`, force a rebuild with `quarto render --cache-refresh`, or move heavy data steps into a `targets` pipeline for real dependency tracking |
+| Cache not invalidating when data changes but chunk code stays the same | knitr's `cache: true` keys on the chunk code, not the data | Add `#| cache.extra: !expr digest::digest(data)` to key the cache on a data hash; or use `freeze: auto` in `_quarto.yml`, force a rebuild with `quarto render --cache-refresh`, or move heavy data steps into a `targets` pipeline |
 | Rewriting entire document structure when user asked for one fix | Scope creep — user wants a YAML tweak, not a full document redesign | Make the minimal targeted change; suggest broader restructuring only if asked |
 
 ## Examples
