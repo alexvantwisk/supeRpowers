@@ -76,7 +76,7 @@ test_that("plot_scatter produces expected output", {
 
 - First run creates reference SVGs in `tests/testthat/_snaps/`
 - Subsequent runs compare against references
-- Review changes: `vdiffr::manage_cases()` opens a Shiny app for visual diff
+- Review changes: `testthat::snapshot_review()` opens a Shiny app for visual diff
 - Accept changes: `testthat::snapshot_accept()`
 
 ### Tips
@@ -140,7 +140,7 @@ automatically revert when the test completes.
 
 ```r
 test_that("function reads from custom path", {
-  withr::local_tempdir()
+  withr::local_dir(withr::local_tempdir())
   writeLines("test data", "input.txt")
   expect_equal(read_my_file("input.txt"), "test data")
 })
@@ -181,7 +181,7 @@ test_that("function resolves relative paths", {
 | Function | Scoped Change |
 |----------|--------------|
 | `local_tempfile()` | Creates temp file, deleted on exit |
-| `local_tempdir()` | Changes working dir to temp dir, reverts on exit |
+| `local_tempdir()` | Creates a self-deleting temp dir (does *not* change working dir) |
 | `local_dir(path)` | Changes working dir, reverts on exit |
 | `local_options(list(...))` | Sets options, reverts on exit |
 | `local_envvar(...)` | Sets env vars, reverts on exit |
