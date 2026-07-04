@@ -198,7 +198,7 @@ df <- tibble(id = 1:6, status = c("A", "B", "C", "A", "B", "C"))
 # BAD: intended to keep A and B, but c("A", "B") recycles to match 6 rows
 # R compares element-wise: row1=="A", row2=="B", row3=="A", row4=="B"...
 df |> filter(status == c("A", "B"))
-#> Returns 4 rows — wrong! Recycling matched positions, not values
+#> Returns 2 rows — wrong! Recycling matched positions (1,2), not values
 
 # GOOD: use %in% for set membership
 df |> filter(status %in% c("A", "B"))

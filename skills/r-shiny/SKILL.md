@@ -199,7 +199,7 @@ for golem apps. See `references/deployment.md` for secrets, sizing, observabilit
 | `reactiveVal()` inside `observe()` | New reactive value on every invalidation | Define outside observers |
 | Missing `req()` for NULL inputs | NULL propagates and causes cryptic errors | Add `req(input$x)` at top of reactives |
 | Forgetting `session$ns()` in module dynamic UI | `renderUI()` inside module makes un-namespaced IDs | Use `session$ns("id")` inside `renderUI()` |
-| No `isolate()` in `observe()` | Reading multiple inputs causes infinite loops | Use `isolate()` on inputs you don't depend on |
+| Observer writes a reactive value it also reads | Self-triggering invalidation loop | Wrap the read in `isolate()` so the write doesn't re-trigger the observer |
 | Side effects inside `reactive()` | Side effects fire unpredictably | Move to `observe()` / `observeEvent()` |
 | Scope creep | Restructuring whole app to fix one reactive | Fix only the identified issue; minimal diff |
 | teal data schema mismatch | `cdisc_data()` requires each domain wrapped in `cdisc_dataset()` with `keys` | Wrap each domain with `cdisc_dataset()` and `keys = c("STUDYID", "USUBJID")` |
