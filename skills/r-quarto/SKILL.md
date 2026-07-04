@@ -24,6 +24,7 @@ and tidyverse/knitr conventions.
 **Lazy references:**
 - Read `references/yaml-config-cheatsheet.md` for complete YAML option reference
 - Read `references/cross-reference-syntax.md` for figures, tables, equations, sections
+- Read `references/formats-2026.md` for Typst (LaTeX-free PDF), `format: dashboard`, and brand.yml
 
 ---
 
@@ -31,8 +32,9 @@ and tidyverse/knitr conventions.
 
 | Type | Format value | Init command |
 |------|-------------|--------------|
-| Report / manuscript | `html`, `pdf`, `docx` | `quarto create document` |
-| Presentation | `revealjs` | `quarto create presentation` |
+| Report / manuscript | `html`, `pdf`, `typst`, `docx` | Author a `.qmd` file directly |
+| Dashboard | `dashboard` | Author a `.qmd` with `format: dashboard` |
+| Presentation | `revealjs` | `quarto create project` (or author a `.qmd`) |
 | Website | project type `website` | `quarto create project website` |
 | Blog | project type `blog` | `quarto create project blog` |
 | Book | project type `book` | `quarto create project book` |
@@ -211,12 +213,10 @@ Common extensions: `quarto-ext/fontawesome`, `quarto-ext/lightbox`,
 
 ---
 
-## Parameters & Multi-Format Output
+## Parameters
 
 Define in YAML with `params:`, access as `params$name` in R chunks.
 Override at render: `quarto render report.qmd -P region:South -P year:2023`.
-List multiple formats under `format:` (html, pdf, docx) with per-format options.
-Use conditional divs: `::: {.content-visible when-format="html"}`.
 
 ---
 
@@ -234,7 +234,7 @@ After render: check `quarto check` passes, cross-references resolve (no `?fig-` 
 | Forgetting `embed-resources: true` for self-contained HTML | Shared HTML files have broken images/CSS because assets are separate files | Add `embed-resources: true` under `format: html:` for portable single-file output |
 | PDF output fails without LaTeX installation | Quarto calls `pdflatex`/`xelatex` which is not bundled | Install TinyTeX: `quarto install tinytex` or `tinytex::install_tinytex()` |
 | Installing extensions via `install.packages()` instead of `quarto add` | Quarto extensions are not R packages; CRAN install does nothing | Use `quarto add <gh-org>/<repo>` from the terminal |
-| Cache not invalidating when data changes but chunk code stays the same | `cache: true` keys on chunk code only; stale results persist | Use `cache.extra` to depend on data hash, or use `freeze: auto` in `_quarto.yml` instead |
+| Cache not invalidating when data changes but chunk code stays the same | `cache: true` keys on chunk code only; stale results persist | Quarto's chunk cache keys on code alone — there is no data-hash option; use `freeze: auto` in `_quarto.yml`, force a rebuild with `quarto render --cache-refresh`, or move heavy data steps into a `targets` pipeline for real dependency tracking |
 | Rewriting entire document structure when user asked for one fix | Scope creep — user wants a YAML tweak, not a full document redesign | Make the minimal targeted change; suggest broader restructuring only if asked |
 
 ## Examples
