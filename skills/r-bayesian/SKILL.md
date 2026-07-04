@@ -204,9 +204,11 @@ loo_model_weights(list(fit1, fit2, fit3))
 ## Hierarchical Models — Non-Centered Parameterization
 
 Centered parameterization (`(1 | group)`) often diverges when group-level
-SD is small (the *funnel*). brms emits non-centered Stan code under
-`backend = "cmdstanr"`. If divergences persist after `adapt_delta = 0.99`,
-switch backends or simplify the random-effects structure.
+SD is small (the *funnel*). brms already emits a non-centered
+parameterization for group-level effects by default — regardless of
+backend — so switching backends is not a fix for divergences. If
+divergences persist after `adapt_delta = 0.99`, tighten priors,
+reparameterize, or simplify the random-effects structure.
 
 Read `references/model-formulas.md` for multi-level grouping syntax,
 distributional models (`sigma ~ x`), and mixture / monotonic / spline

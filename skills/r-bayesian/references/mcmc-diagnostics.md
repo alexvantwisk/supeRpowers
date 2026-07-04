@@ -8,7 +8,7 @@ All code uses base pipe `|>` and `<-` for assignment.
 
 ---
 
-## The Mandatory Four
+## The Seven Checks
 
 Run every one. A model that passes only three of these is not validated.
 
@@ -79,7 +79,9 @@ bayesplot::mcmc_pairs(fit,
 1. **Raise `adapt_delta`** — first-line fix. Default is 0.8;
    `0.95` → `0.99` → `0.999` shrinks step size.
 2. **Non-centered parameterization** — for hierarchical models with
-   small group SD. brms emits this with `backend = "cmdstanr"`.
+   small group SD. brms already applies this to group-level effects
+   by default (any backend); reach for tighter priors or
+   reparameterization rather than a backend switch.
 3. **Tighten priors** — wide priors create flat tails the sampler
    gets lost in.
 4. **Simplify model** — drop random slopes, collapse rare levels,
