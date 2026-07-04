@@ -26,6 +26,7 @@ def parse_frontmatter(content: str) -> dict:
         "found": False,
         "name": None,
         "description": None,
+        "when_to_use": None,
         "raw": "",
         "other_fields": [],
     }
@@ -59,6 +60,8 @@ def parse_frontmatter(content: str) -> dict:
                     result["name"] = val
                 elif current_key == "description":
                     result["description"] = val
+                elif current_key == "when_to_use":
+                    result["when_to_use"] = val
                 else:
                     result["other_fields"].append(current_key)
             current_key = key_match.group(1)
@@ -76,6 +79,8 @@ def parse_frontmatter(content: str) -> dict:
             result["name"] = val
         elif current_key == "description":
             result["description"] = val
+        elif current_key == "when_to_use":
+            result["when_to_use"] = val
         else:
             result["other_fields"].append(current_key)
 
@@ -98,6 +103,17 @@ def get_skill_frontmatters() -> dict[str, dict]:
         fm = parse_frontmatter(content)
         result[skill_dir.name] = fm
     return result
+
+
+def get_combined_trigger_text(fm: dict) -> str:
+    """Concatenate description + when_to_use for trigger/boundary extraction.
+
+    Post-migration, trigger phrases live in when_to_use while negative
+    boundaries stay in description. Extraction must see both.
+    """
+    desc = fm.get("description") or ""
+    wtu = fm.get("when_to_use") or ""
+    return f"{desc}\n{wtu}".strip()
 
 
 def get_agent_files() -> list[Path]:

@@ -12,7 +12,14 @@ from pathlib import Path
 RECOGNIZED_OPTIONAL_FIELDS = {
     "disable-model-invocation", "argument-hint", "user-invocable",
     "allowed-tools", "model", "effort", "context", "agent", "hooks",
-    "paths", "shell",
+    "paths", "shell", "when_to_use",
+}
+
+# Migrated command workflows: /-invoked only, never intent-routed.
+# Exempt from trigger/boundary/description-shape checks (Task 3 creates these dirs).
+WORKFLOW_SKILLS = {
+    "r-analysis", "r-debug", "r-pkg-release",
+    "r-report", "r-shiny-app", "r-tdd-cycle",
 }
 
 from conftest import (
@@ -105,6 +112,15 @@ def run_structural_tests() -> TestSuite:
             has_boundary,
             "No 'Do NOT use for' boundary found in description",
         )
+
+        # Combined description + when_to_use budget (listing truncates at 1536)
+        if skill_name not in WORKFLOW_SKILLS:
+            combined_len = len(desc) + len(fm.get("when_to_use") or "")
+            suite.add(
+                f"frontmatter-budget/{skill_name}",
+                combined_len <= 1536,
+                f"description + when_to_use is {combined_len} chars (max 1536)",
+            )
 
     # Agent files: must have YAML frontmatter with name + description matching the file stem
     for agent_file in agent_files:

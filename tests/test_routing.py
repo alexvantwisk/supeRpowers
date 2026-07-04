@@ -9,6 +9,7 @@ from conftest import (
     TestSuite,
     extract_negative_boundaries,
     extract_trigger_phrases,
+    get_combined_trigger_text,
     get_skill_frontmatters,
     load_routing_matrix,
 )
@@ -51,9 +52,9 @@ def run_routing_tests() -> TestSuite:
     skill_boundaries: dict[str, list[dict]] = {}
 
     for skill_name, fm in frontmatters.items():
-        desc = fm.get("description") or ""
-        skill_triggers[skill_name] = extract_trigger_phrases(desc)
-        skill_boundaries[skill_name] = extract_negative_boundaries(desc)
+        combined = get_combined_trigger_text(fm)
+        skill_triggers[skill_name] = extract_trigger_phrases(combined)
+        skill_boundaries[skill_name] = extract_negative_boundaries(combined)
 
     for test in matrix:
         test_id = test["id"]
@@ -89,7 +90,7 @@ def run_routing_tests() -> TestSuite:
         expected_matches = _phrase_match(prompt, expected_triggers)
 
         # Also check if discriminator keywords appear in expected skill's description
-        expected_desc = (frontmatters.get(expected, {}).get("description") or "").lower()
+        expected_desc = get_combined_trigger_text(frontmatters.get(expected, {})).lower()
         disc_tokens = _tokenize(discriminator)
         prompt_tokens = _tokenize(prompt)
         desc_tokens = _tokenize(expected_desc)
@@ -130,7 +131,7 @@ def run_routing_tests() -> TestSuite:
                 else:
                     # Check if discriminator keywords favor the expected skill
                     expected_disc_overlap = len(disc_tokens & desc_tokens)
-                    bad_desc = (frontmatters.get(bad_skill, {}).get("description") or "").lower()
+                    bad_desc = get_combined_trigger_text(frontmatters.get(bad_skill, {})).lower()
                     bad_disc_overlap = len(disc_tokens & _tokenize(bad_desc))
 
                     if expected_disc_overlap > bad_disc_overlap:
