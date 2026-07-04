@@ -1,5 +1,91 @@
 # Release Notes
 
+## 0.5.1 (2026-07-04)
+
+Trust release. Fixes every verified-broken or fabricated API in the content
+corpus and every documentation claim contradicted by the code, so a user's
+first contact never hits a runtime error, a dead end, or a false instruction.
+Content and documentation only — no new features, no hook behavior changes.
+
+### Fixed
+
+- **r-clinical** — replaced the `sfu = sfO'Brien-Fleming` parse error with
+  `sfu = sfLDOF` (Lan-DeMets O'Brien-Fleming); rewrote the subgroup-analysis
+  scaffold so it iterates observed `(subgroup, level)` pairs and fits a Cox
+  model per stratum (the old scaffold referenced an undefined `level`);
+  swapped the deprecated `geom_errorbarh()` in the forest-plot template for
+  `geom_errorbar(orientation = "y")`.
+- **r-tables** — removed two fabricated gtsummary APIs: the invalid
+  `theme_gtsummary_journal("bmj")` (gtsummary 2.5.0 supports only `jama`,
+  `lancet`, `nejm`, `qjecon`) and the nonexistent
+  `theme_gtsummary_printer_friendly()`.
+- **r-tdd** — `vdiffr::manage_cases()` (removed in vdiffr 1.0) →
+  `testthat::snapshot_review()`; corrected the `withr::local_tempdir()`
+  claim (it does not change the working directory) and switched the example
+  to `withr::local_dir(withr::local_tempdir())`.
+- **r-package-dev** — defunct `rhub::check_for_cran()` → `rhub::rhub_check()`
+  (rhub v2, GitHub Actions runners), in SKILL.md and both reference files;
+  moved "no visible global function definition" from the ERRORs section to
+  NOTEs (the shown excerpt is a NOTE).
+- **r-data-analysis** — replaced deprecated `across(..., na.rm = TRUE)`
+  dots-passing with anonymous-function form (`\(x) mean(x, na.rm = TRUE)`).
+- **r-bayesian** — corrected the non-centered-parameterization guidance:
+  brms emits non-centered group-level effects by default regardless of
+  backend, so a backend switch is not a divergence fix; renamed the
+  "Mandatory Four" heading that sat above a seven-row table.
+- **r-shiny / r-debugging** — fixed the `isolate()`/`observe()` gotcha
+  (infinite loops come from an observer writing a value it also reads) and
+  the vector-recycling reprex (`filter(status == c("A","B"))` returns 2 rows,
+  not 4).
+- **Docs** — README verify step and troubleshooting no longer promise a
+  visible session-start "banner" (the hook injects `additionalContext`);
+  CONTRIBUTING, the PR template, and tests/README now state the suite must
+  pass cleanly (exit 0) and drop the stale "141/141" / "ten pre-existing
+  failures" language; CLAUDE.md hook description aligned to the
+  `startup|clear|compact` matcher.
+- **Detection / hygiene** — `hooks/detect-mcp.sh` now checks `~/.claude.json`
+  (where `claude mcp add -s user` writes), so user-scoped registrations are
+  seen; the issue-template config now welcomes PRs; the skill-suggestion
+  example no longer names a real person.
+
+### Notes
+
+- No skill / command / agent counts change. No files created or deleted.
+
+---
+
+## 0.5.0 (2026-05-19)
+
+Persistent R sessions. Extends `r-mcp-setup` with
+[posit-dev/mcp-repl](https://github.com/posit-dev/mcp-repl) (Posit; Rust;
+Apache-2.0) as a second supported MCP path alongside btw/mcptools — an
+agent-owned, headless R session for autonomous work, complementing the
+IDE-attached btw/mcptools pairing path.
+
+### Added
+
+- **`skills/r-mcp-setup/references/mcp-repl-setup.md`** — install and
+  registration guide for the mcp-repl server.
+- **`hooks/detect-mcp.sh`** — `mcp_repl_installed` and `mcp_repl_registered`
+  booleans; session-start tips branch on which paths are active. Both paths
+  can be registered at once since their tool names don't collide.
+
+### Changed
+
+- **`skills/r-mcp-setup/SKILL.md`** — restructured into a two-paths decision
+  table (mcp-repl for agent-owned headless work, btw/mcptools for
+  IDE-attached pairing).
+- **Routing matrix** — six positive `r-mcp-setup` entries added (first-time
+  coverage).
+- **`.claude-plugin/plugin.json` + `.claude-plugin/marketplace.json`** —
+  version bump to `0.5.0`.
+
+### Notes
+
+- Skill count unchanged (additive within the existing `r-mcp-setup` skill).
+
+---
+
 ## 0.4.0 (2026-05-01)
 
 Discovery surface for users coming in cold. Adds an `r-overview` skill that
