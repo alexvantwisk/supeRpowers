@@ -83,7 +83,7 @@ dt <- data.table::fread("data.csv")   # often 5-10x faster
 library(vroom)
 df <- vroom::vroom("data.csv", col_select = c(id, date, value))
 
-# Larger-than-RAM: chunked
+# Larger-than-RAM (CSV): chunked
 library(readr)
 readr::read_csv_chunked(
   "huge.csv",
@@ -94,6 +94,13 @@ readr::read_csv_chunked(
   }),
   chunk_size = 100000
 )
+
+# Larger-than-RAM (Parquet): query on disk, never load the whole file
+library(arrow)
+open_dataset("data/parquet_dir/") |>           # multi-file, out-of-core
+  dplyr::filter(value > 0) |>
+  dplyr::summarise(n = dplyr::n(), .by = group) |>
+  dplyr::collect()
 ```
 
 ### Computation bottlenecks (loops)

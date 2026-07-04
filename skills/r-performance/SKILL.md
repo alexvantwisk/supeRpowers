@@ -35,7 +35,7 @@ Code is slow / using too much memory?
             └─ Loops / vectorizable?  → vectorize, purrr, vapply
             └─ Data manipulation?     → data.table (>1M rows)
             └─ Numerical inner loop?  → Rcpp
-            └─ Independent tasks?     → parallel (furrr)
+            └─ Independent tasks?     → mirai + purrr::in_parallel()
 ```
 
 Never parallelize before profiling — overhead often exceeds gains.
@@ -111,6 +111,17 @@ Read `references/data-table-translation.md` for dplyr ↔ data.table translation
 
 ---
 
+## Large-data tiers
+
+| Tier | Situation | Tools |
+|------|-----------|-------|
+| A | Fits in RAM | dplyr, `data.table`, `collapse` |
+| B | Larger than RAM, one machine | `arrow::open_dataset()` (multi-file Parquet), `duckdb`/`duckplyr` |
+| C | Parallel compute | `mirai` + `purrr::in_parallel()`; `crew` for pipelines |
+Read `references/large-data-tiers.md` for arrow/duckdb/mirai recipes.
+
+---
+
 ## Vectorization
 
 ```r
@@ -129,7 +140,7 @@ result <- vapply(items, f, numeric(1))  # vapply > sapply (type-safe)
 # Tidyverse style
 library(purrr)
 results <- purrr::map_dbl(items, transform)    # returns numeric vector
-results <- purrr::map_dfr(items, build_row)    # returns data frame
+results <- purrr::map(items, build_row) |> purrr::list_rbind()  # data frame
 
 # Column-wise with across
 df |> mutate(across(where(is.numeric), \(x) x / max(x, na.rm = TRUE)))
@@ -202,29 +213,18 @@ code with R-like syntax. Use `NumericVector`, `IntegerVector`, `LogicalVector`.
 
 ## Parallel Processing
 
+Lead with `mirai` (modern backend); purrr integrates via `in_parallel()`.
+
 ```r
-library(furrr)
-library(future)
-
-# Tidyverse-aligned parallel (PREFERRED)
-future::plan(future::multisession, workers = 4)
-
-results <- furrr::future_map(items, slow_fn)
-results_df <- furrr::future_map_dfr(items, build_row)
-totals <- furrr::future_map_dbl(items, compute_total)
-
-future::plan(future::sequential)    # restore sequential
-
-# Classic approach
-library(foreach); library(doParallel)
-cl <- parallel::makeCluster(4)
-doParallel::registerDoParallel(cl)
-result <- foreach::foreach(x = items, .combine = rbind) %dopar% slow_fn(x)
-parallel::stopCluster(cl)
+library(mirai); library(purrr)
+daemons(4)                                   # start workers
+results <- map(items, in_parallel(\(x) slow_fn(x)))   # purrr >= 1.1
+daemons(0)                                   # stop workers
 ```
 
-**When NOT to parallelize:** task takes <100ms, data transfer overhead dominates,
-or memory per worker exceeds available RAM.
+`crew` (mirai-powered) is the pipeline-scale backend — see r-targets. furrr and future still work for existing code; both are covered in `references/large-data-tiers.md`.
+
+**When NOT to parallelize:** task takes <100ms, data-transfer overhead dominates, or memory per worker exceeds available RAM.
 
 ---
 
