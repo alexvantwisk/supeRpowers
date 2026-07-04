@@ -1,5 +1,57 @@
 # Release Notes
 
+## 0.6.0 (2026-07-04)
+
+Currency pass: bring the content corpus from its early-2024 snapshot to
+July-2026 reality without changing skill/command/agent counts.
+
+### Changed
+
+- **r-visualization** — ggplot2 4.0 sweep: `legend.position = "inside"` +
+  `legend.position.inside`, `coord_transform()`, `transform =` /
+  `scales::new_transform()`; removed `legend.title.align`; added a "what
+  changed in 4.0" (S7, ink/paper/accent) orientation block to
+  `references/theme-guide.md`.
+- **r-stats, r-clinical, r-statistician, r-reporting** — migrated all
+  Kaplan-Meier / survival plotting from `survminer` to `ggsurvfit`
+  (`survfit2()` + `add_confidence_interval()`/`add_risktable()`/`add_pvalue()`);
+  replaced `ggcoxdiagnostics`/`ggcoxfunctional` with base-survival residual
+  diagnostics. survminer survives only as a one-line legacy note.
+- **r-performance** — three explicit large-data tiers (in-RAM;
+  arrow `open_dataset()` / duckdb / duckplyr; mirai + `purrr::in_parallel()` /
+  crew), with detail offloaded to `references/large-data-tiers.md`; furrr/future
+  demoted to a compatibility note.
+- **r-shiny** — `ExtendedTask` + `bslib::input_task_button()` is now the primary
+  async pattern; fixed the `output$` inside `observe()` anti-pattern in
+  `references/reactivity-guide.md`.
+- **r-quarto** — added Typst (LaTeX-free PDF), `format: dashboard`, and
+  brand.yml via `references/formats-2026.md`; corrected `quarto create document`
+  and the knitr `cache.extra` advice.
+- **rules/r-conventions, r-project-setup, r-package-dev** — Air-first formatter
+  story with styler as the in-R alternative; corrected Air install
+  instructions; removed the `setwd()` self-contradiction; Positron
+  acknowledgments.
+- **r-dependency-manager, r-targets, r-tidymodels** — Bioconductor 3.21–3.23,
+  `qs` → `qs2`, `crew.cluster` for HPC, tailor post-processing + `finetune`
+  racing.
+- **Smaller corrections** — Hosmer-Lemeshow caveat + calibration pointer;
+  `GVIF^(1/(2*Df))` adjustment in `check_assumptions.R`; `map_dfr` →
+  `map() |> list_rbind()` across the corpus; r-overview names mcp-repl; r-data-analysis
+  references `check_join_safety.R`; skill-generator versions marked illustrative.
+- **hooks/session-start** — R-version/package probes moved past the project
+  early-exit and wrapped in `timeout`/`gtimeout`; a non-R directory now spawns
+  zero `Rscript` processes; context gains a `/r-overview` pointer.
+- **tests/routing_matrix.json** — added discovery, bayesian↔clinical, bare-KM,
+  and project-setup↔targets scaffold seams; enriched the r-targets boundary.
+- **Version** — 0.5.1 → 0.6.0.
+
+### Notes
+
+- No new skills, commands, or agents. Counts stay 20 / 7 / 5.
+- styler remains the auto-format hook; Air is taught, not wired in.
+
+---
+
 ## 0.5.1 (2026-07-04)
 
 Trust release. Fixes every verified-broken or fabricated API in the content
