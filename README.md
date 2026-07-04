@@ -49,7 +49,7 @@ Use this path if you want to modify skills or commands locally — Claude Code r
 claude plugin list
 ```
 
-You should see `supeRpowers` with the current version. To confirm the session-start hook is wired up, open Claude Code in any directory containing R files and you should see a one-line banner reporting the detected R project type and key skills.
+You should see `supeRpowers` with the current version. The session-start hook injects its findings into Claude's context rather than printing anything visible, so to confirm it ran, open Claude Code in a directory containing R files and ask Claude: *what did the session-start hook detect?* — it should name the detected R project type and the relevant skills.
 
 ### Update
 
@@ -72,7 +72,7 @@ claude plugin marketplace remove supeRpowers
 | `plugin not found` after `install` | Marketplace not added, or wrong suffix | Run `claude plugin marketplace list`; install with the `@supeRpowers` suffix |
 | Slash commands don't autocomplete | Plugin install incomplete | `claude plugin list` — reinstall if `supeRpowers` is missing |
 | R skills don't activate on R-flavored prompts | Foundation rule not loaded — usually a stale session | Restart your Claude Code session |
-| Session-start banner missing | Hook not enabled in your settings | Confirm `~/.claude/settings.json` doesn't disable plugin hooks |
+| Session-start context missing (Claude can't name your project type) | Hook not enabled in your settings | Confirm `~/.claude/settings.json` doesn't disable plugin hooks, then ask Claude *what did the session-start hook detect?* |
 | Auto-format hook seems to do nothing | `styler` not installed in your default R library | `Rscript -e 'install.packages("styler")'` — the hook silently no-ops when it can't find the package |
 | Auto-format hook is too slow on big files | R startup + styler on large `.qmd` | Increase the timeout: `export SUPERPOWERS_AUTOFORMAT_TIMEOUT=30` (default 15s) |
 | Want to disable auto-formatting | Per-shell or per-project | `export SUPERPOWERS_DISABLE_AUTOFORMAT=1`, or remove the `PostToolUse` block in `hooks/hooks.json`, or disable the plugin's hooks in `~/.claude/settings.json` |
@@ -170,7 +170,7 @@ Two lifecycle hooks ship with supeRpowers. Both can be disabled in
 
 Fires on `startup`, `clear`, and `compact`. Detects whether the current working
 directory looks like an R package, Shiny app, Quarto project, targets pipeline,
-clinical project, or generic R project, and injects a one-line banner naming the
+clinical project, or generic R project, and injects, into Claude's context, a note naming the
 relevant skills, commands, and agents. Reports R version + key tidyverse package
 versions when `Rscript` is on `PATH`.
 

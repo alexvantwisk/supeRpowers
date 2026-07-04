@@ -22,9 +22,7 @@ Closes #
 
 ## Verification
 
-- [ ] `python tests/run_all.py` — no NEW failures
-      (the 10 pre-existing structural failures documented in 0.2.0
-      release notes are acceptable)
+- [ ] `python tests/run_all.py` — passes cleanly (exit 0)
 - [ ] `grep -rn '%>%' skills/ commands/ agents/ rules/ --exclude=eval.md`
       returns no output
 - [ ] Frontmatter and line limits per `CLAUDE.md`

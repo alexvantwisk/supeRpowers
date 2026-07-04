@@ -94,12 +94,8 @@ the skill is enough.
    python tests/run_all.py
    ```
 
-   - Routing tests should remain at 141/141 (or higher if you added a
-     skill and routing entries)
-   - No NEW structural or convention failures. Ten pre-existing structural
-     failures (in `r-mcp-setup`, agent frontmatters, and one rule
-     line-limit) are documented as known issues for the 0.2.x patch
-     series — those don't block your PR.
+   - The full suite must pass cleanly (exit 0). CI fails the PR on any
+     structural, convention, or routing failure.
 
 4. Run the convention spot-check:
 

@@ -127,7 +127,7 @@ Before committing any content changes:
 
 ## Hooks
 
-The plugin includes a session-start hook (`hooks/session-start`) that fires on startup, resume, clear, and compact. It detects the R project type in the current directory (package, Shiny, targets, Quarto, analysis, scripts), detects available MCP servers via `hooks/detect-mcp.sh`, and injects context about relevant skills and agents. Configuration is in `hooks/hooks.json`; cross-platform invocation goes through `hooks/run-hook.cmd`.
+The plugin includes a session-start hook (`hooks/session-start`) that fires on startup, clear, and compact. It detects the R project type in the current directory (package, Shiny, targets, Quarto, analysis, scripts), detects available MCP servers via `hooks/detect-mcp.sh`, and injects context about relevant skills and agents. Configuration is in `hooks/hooks.json`; cross-platform invocation goes through `hooks/run-hook.cmd`.
 
 ## Tests
 
@@ -150,6 +150,7 @@ Shipped:
 - 0.3.1 — Manifest patch: `repository` field now a plain URL string to satisfy the current Claude Code plugin schema (was an `{type, url}` object that tripped `/doctor`).
 - 0.4.0 — Discovery surface: low-trigger `r-overview` skill (fires on "what can supeRpowers do", "list R skills", "what's in supeRpowers", etc.) and matching `/r-overview` command. Both render the same grouped inventory of skills, commands, agents, and hooks so users coming in cold can find the right tool without the session-start hook needing to broaden its triggers. Counts: 19 → 20 skills, 6 → 7 commands.
 - 0.5.0 — Persistent R sessions: extend `r-mcp-setup` with [posit-dev/mcp-repl](https://github.com/posit-dev/mcp-repl) (Posit, Rust, Apache-2.0) as a second supported MCP path alongside btw/mcptools. Adds `references/mcp-repl-setup.md`, detection in `hooks/detect-mcp.sh` (`mcp_repl_installed` / `mcp_repl_registered` booleans), and conditional session-start tips that branch on which paths are active. SKILL.md restructured into a two-paths decision table (mcp-repl for agent-owned headless work, btw/mcptools for IDE-attached pairing); both can be registered simultaneously since tool names don't collide. Routing matrix gains six positive r-mcp-setup entries (first-time coverage). Skill count unchanged (additive within existing skill).
+- 0.5.1 — Trust release: fix every verified-broken or fabricated API in the content corpus and every doc claim contradicted by code. r-clinical parse error (`sfLDOF`) + subgroup-scaffold rewrite + forest geom; r-tables fabricated gtsummary themes removed (`"bmj"`, `theme_gtsummary_printer_friendly()`); r-tdd `manage_cases()`→`snapshot_review()` and withr working-dir example; r-package-dev defunct `rhub::check_for_cran()`→`rhub::rhub_check()` (3 files) + a NOTE reclassification; r-data-analysis deprecated `across()` dots→anonymous functions; r-bayesian non-centered-parameterization remediation corrected; r-shiny/r-debugging factual fixes; README/CONTRIBUTING/PR-template/tests-README/CLAUDE.md doc-sync; `detect-mcp.sh` `~/.claude.json` config path; issue-template hygiene. Content/docs only — no new features, no hook behavior changes. Skill/command/agent counts unchanged.
 
 All planned phases shipped. Future work pulls from real user feedback.
 

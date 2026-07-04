@@ -35,7 +35,7 @@ Scans all production code for R convention violations.
 ### Layer 2: Routing Matrix (`test_routing.py` + `routing_matrix.json`)
 Tests whether skill descriptions correctly disambiguate overlapping domains.
 
-42 test prompts across 9 categories:
+84 test prompts across 16 categories. Representative categories:
 1. Survival analysis ambiguity (r-stats vs r-clinical)
 2. Regression/ML boundary (r-stats vs r-tidymodels)
 3. Hypothesis test hijack (r-tdd vs r-stats)
@@ -79,15 +79,3 @@ Add an entry to `routing_matrix.json`:
 
 ### New structural check
 Add a check in `test_structural.py` using `suite.add(name, passed, message)`.
-
-## Known Issues Detected
-
-The test suite is designed to catch these known issues:
-- `skill-auditor` description exceeds 1024 char limit
-- `r-package-skill-generator` references 4 non-existent files
-- `r-data-analysis` references 2 non-existent files (missing references/ directory)
-- `r-tdd/scripts/run_coverage.R` uses `cli::` without requireNamespace guard
-- `hooks/hooks.json` referenced in plugin.json but doesn't exist
-- `skill-creator` referenced by 2 skills but doesn't exist as a skill
-- Survival analysis routing ambiguity between r-stats and r-clinical
-- "learn package" trigger in r-package-skill-generator is overly broad
