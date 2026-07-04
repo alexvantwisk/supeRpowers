@@ -16,37 +16,6 @@ frequency.
 
 ## ERRORs — Block Release
 
-### "no visible binding for global variable '.data'"
-
-**Cause:** You use `.data[[col]]` or `.env$var` without importing from
-rlang.
-
-**Fix:**
-
-```r
-usethis::use_import_from("rlang", ".data")
-devtools::document()
-```
-
-### "no visible binding for global variable 'col_name'"
-
-**Cause:** NSE in dplyr/tidyr using bare column names. Check tries to
-resolve them as globals.
-
-**Fix:** Two options.
-
-```r
-# Option 1 — use .data pronoun (preferred)
-my_fn <- function(data) {
-  data |> dplyr::filter(.data$col_name > 0)
-}
-
-# Option 2 — declare as global (quick, less type-safe)
-utils::globalVariables(c("col_name", "other_col"))
-```
-
-Put `globalVariables()` call in `R/mypkg-package.R`.
-
 ### "Error: object 'fn' is not exported by 'namespace:pkg'"
 
 **Cause:** You reference a function that doesn't exist in the version of
@@ -270,6 +239,37 @@ my_fn <- function() {
   data |> dplyr::mutate(x = 1)
 }
 ```
+
+### "no visible binding for global variable '.data'"
+
+**Cause:** You use `.data[[col]]` or `.env$var` without importing from
+rlang.
+
+**Fix:**
+
+```r
+usethis::use_import_from("rlang", ".data")
+devtools::document()
+```
+
+### "no visible binding for global variable 'col_name'"
+
+**Cause:** NSE in dplyr/tidyr using bare column names. Check tries to
+resolve them as globals.
+
+**Fix:** Two options.
+
+```r
+# Option 1 — use .data pronoun (preferred)
+my_fn <- function(data) {
+  data |> dplyr::filter(.data$col_name > 0)
+}
+
+# Option 2 — declare as global (quick, less type-safe)
+utils::globalVariables(c("col_name", "other_col"))
+```
+
+Put `globalVariables()` call in `R/mypkg-package.R`.
 
 ### "New submission"
 
