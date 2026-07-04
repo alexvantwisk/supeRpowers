@@ -189,7 +189,7 @@ ggplot(data, aes(x = group, y = value, color = subgroup)) +
 | `coord_fixed()` | Fixed aspect ratio | `ratio` (default 1) |
 | `coord_polar()` | Polar coordinates | `theta = "x"` or `"y"` |
 | `coord_sf()` | Map projections | `crs`, `xlim`, `ylim` |
-| `coord_trans()` | Transformed axes | `x`, `y` (transform names) |
+| `coord_transform()` | Transformed axes | `x`, `y` (transform names; renamed from `coord_trans` in 4.0) |
 
 **Important:** Use `coord_cartesian(ylim = ...)` to zoom, NOT `scale_y_continuous(limits = ...)`.
 `scale_*` limits remove data outside range (affecting stat computations).
@@ -234,7 +234,7 @@ scale_y_continuous(labels = scales::label_number(suffix = "K", scale = 1e-3))
 # Transforms
 scale_y_log10()                                      # Log10 axis
 scale_y_sqrt()                                       # Square root axis
-scale_y_continuous(trans = "reverse")                 # Reversed axis
+scale_y_continuous(transform = "reverse")             # Reversed axis
 
 # Custom breaks
 scale_x_continuous(breaks = c(1, 5, 10, 50, 100))
@@ -332,8 +332,8 @@ guides(
 
 # Legend position via theme
 theme(
-  legend.position = "bottom",                          # "top", "left", "right", "none"
-  legend.position = c(0.85, 0.15),                     # Inside plot (x, y in 0-1)
+  legend.position = "inside",                          # or "top"/"bottom"/"left"/"right"/"none"
+  legend.position.inside = c(0.85, 0.15),              # Inside plot (x, y in 0-1)
   legend.direction = "horizontal",
   legend.title = element_text(face = "bold", size = 10),
   legend.text = element_text(size = 9),

@@ -2,6 +2,21 @@
 
 Complete reference for customizing every visual element of a ggplot2 plot.
 
+## What changed in ggplot2 4.0 (2025-09)
+
+- **S7 objects:** plots, layers, scales, and themes are S7 objects. Access
+  internals with `@` (e.g. `p@layers`), not `$`.
+- **Inside-plot legends:** set `legend.position = "inside"` and give the
+  coordinates via `legend.position.inside = c(x, y)` (the old form that passed
+  `c(x, y)` straight to `legend.position` is gone).
+- **Legend-title alignment** now lives in `legend.title = element_text(hjust = ...)`.
+- **`coord_transform()`** replaces the old `coord_trans` spelling; the scale
+  argument `trans =` is now `transform =`, and `scales::*_trans()` constructors
+  are `scales::transform_*()` (`trans_new()` -> `new_transform()`).
+- **`theme()` gains `ink`, `paper`, and `accent`** slots for foreground,
+  background, and highlight colours across a theme.
+- `linewidth` (not `size`) for line geoms is unchanged from >=3.4.
+
 ---
 
 ## Element Types
@@ -107,11 +122,12 @@ theme(
   legend.key.height = unit(1, "lines"),# Key height only
   legend.key.width = unit(1, "lines"), # Key width only
   legend.text = element_text(),        # Legend item labels
-  legend.title = element_text(),       # Legend title
-  legend.title.align = 0,             # 0 = left, 0.5 = center, 1 = right
+  legend.title = element_text(hjust = 0),  # Legend title (hjust replaces the
+                                           # removed title-alignment theme arg)
 
-  legend.position = "right",           # "top", "bottom", "left", "right", "none"
-  legend.position = c(0.9, 0.1),       # Inside plot (0-1 coordinates)
+  legend.position = "right",           # "top", "bottom", "left", "right", "none", "inside"
+  legend.position = "inside",          # place inside the panel...
+  legend.position.inside = c(0.9, 0.1),# ...at these 0-1 coordinates (4.0 API)
   legend.direction = "vertical",       # "horizontal" or "vertical"
   legend.justification = c(1, 0),      # Anchor point for legend.position
   legend.box = "vertical",             # Arrangement of multiple legends
@@ -167,14 +183,16 @@ theme(legend.position = "bottom", legend.direction = "horizontal")
 
 # Inside plot, top-right corner
 theme(
-  legend.position = c(0.95, 0.95),
+  legend.position = "inside",
+  legend.position.inside = c(0.95, 0.95),
   legend.justification = c(1, 1),
   legend.background = element_rect(fill = alpha("white", 0.8))
 )
 
 # Inside plot, bottom-left
 theme(
-  legend.position = c(0.05, 0.05),
+  legend.position = "inside",
+  legend.position.inside = c(0.05, 0.05),
   legend.justification = c(0, 0)
 )
 
@@ -422,13 +440,15 @@ scale_x_date(breaks = breaks_pretty(6))
 ### Transformations
 
 ```r
-scale_y_continuous(trans = "log10")
-scale_y_continuous(trans = scales::pseudo_log_trans(base = 10))   # handles 0
-scale_y_continuous(trans = scales::sqrt_trans())
+scale_y_continuous(transform = "log10")
+scale_y_continuous(transform = scales::transform_pseudo_log(base = 10)) # handles 0
+scale_y_continuous(transform = scales::transform_sqrt())
 ```
 
 For a custom transformation use
-`scales::trans_new(name, transform, inverse, breaks, format)`.
+`scales::new_transform(name, transform, inverse, breaks, format)`.
+(ggplot2 4.0 renamed the `trans =` argument to `transform =`; scales renamed
+`*_trans()` constructors to `transform_*()` and `trans_new()` to `new_transform()`.)
 
 ### Why `scales::label_*` over `formatC` / `sprintf`
 

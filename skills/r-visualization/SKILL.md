@@ -84,8 +84,11 @@ mtcars |>
   theme_minimal()
 ```
 
-**ggplot2 ≥3.4 note:** line geoms use `linewidth`, not `size`. `size` now
-controls only point and text radius.
+**ggplot2 4.0 note:** line geoms use `linewidth`, not `size`. Place inside-plot
+legends with `legend.position = "inside"` + `legend.position.inside = c(x, y)`;
+use `coord_transform()` / `transform =` (not `coord_trans` / `trans =`). See
+`references/theme-guide.md` "What changed in ggplot2 4.0" for the S7 /
+ink-paper-accent orientation.
 
 ---
 
