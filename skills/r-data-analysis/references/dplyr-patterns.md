@@ -11,7 +11,7 @@ Recipes for `across()`, `pick()`, window functions, `.by`, `reframe()`,
 # Apply multiple functions to multiple columns
 df |>
   summarise(
-    across(where(is.numeric), list(mean = mean, sd = sd), na.rm = TRUE),
+    across(where(is.numeric), list(mean = \(x) mean(x, na.rm = TRUE), sd = \(x) sd(x, na.rm = TRUE))),
     .by = group
   )
 
@@ -21,7 +21,7 @@ df |>
 
 # Rename while transforming
 df |>
-  summarise(across(c(revenue, cost), mean, .names = "avg_{.col}"), .by = region)
+  summarise(across(c(revenue, cost), \(x) mean(x), .names = "avg_{.col}"), .by = region)
 ```
 
 **Key selectors:** `where(is.numeric)`, `starts_with()`, `ends_with()`,

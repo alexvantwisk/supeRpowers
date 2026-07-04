@@ -88,7 +88,7 @@ Use `.by` argument (not `group_by()`) for per-operation grouping. Use `across()`
 ```r
 # .by replaces group_by() + ungroup() — avoids forgotten ungroup() bugs
 df |> summarise(total = sum(revenue), .by = c(region, product))
-df |> summarise(across(where(is.numeric), list(mean = mean, sd = sd), na.rm = TRUE), .by = group)
+df |> summarise(across(where(is.numeric), list(mean = \(x) mean(x, na.rm = TRUE), sd = \(x) sd(x, na.rm = TRUE))), .by = group)
 ```
 
 Use `pivot_longer()` / `pivot_wider()` exclusively — `gather()`/`spread()` are deprecated. Use `separate_wider_delim()` not `separate()`. Use `nest(.by =)` + `map()` for group-level modeling.
