@@ -188,7 +188,7 @@ plot(ph_test)          # should show flat, horizontal smoother over time
 # 2. Log-linearity (functional form of continuous predictors)
 mg_res <- residuals(fit_cox, type = "martingale")
 plot(df$x1, mg_res)                            # LOESS smoother should be linear
-# Or use ggcoxfunctional() from survminer
+lines(lowess(df$x1, mg_res), col = "red")      # add the smoother; ~linear = OK
 
 # 3. Influential observations
 dfbeta_res <- residuals(fit_cox, type = "dfbeta")
@@ -212,8 +212,8 @@ survdiff(Surv(time, event) ~ group, data = df)
 # Check: does KM curve cross between groups?
 # Crossing suggests non-proportional hazards — use weighted log-rank or
 # restricted mean survival time (RMST) instead
-km <- survfit(Surv(time, event) ~ group, data = df)
-survminer::ggsurvplot(km, data = df, risk.table = TRUE)
+km <- survfit2(Surv(time, event) ~ group, data = df)
+km |> ggsurvfit::ggsurvfit() + ggsurvfit::add_risktable()
 ```
 
 ---

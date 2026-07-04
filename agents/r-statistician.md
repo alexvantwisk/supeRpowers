@@ -135,11 +135,12 @@ lme4::allFit(model)  # try multiple optimizers
 cox.zph(model)  # Schoenfeld residual test
 plot(cox.zph(model))  # visual check
 
-# Influential observations
-ggcoxdiagnostics(model, type = "dfbeta")
+# Influential observations (base survival dfbeta residuals)
+plot(residuals(model, type = "dfbeta"))
 
-# Functional form
-ggcoxfunctional(Surv(time, status) ~ age + log(age), data = df)
+# Functional form of a continuous covariate (martingale residuals)
+mg <- residuals(coxph(Surv(time, status) ~ 1, data = df), type = "martingale")
+plot(df$age, mg); lines(lowess(df$age, mg))  # LOESS should be ~linear
 ```
 
 ### 4. Interpret Results

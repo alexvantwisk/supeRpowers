@@ -70,11 +70,16 @@ Use `performance::icc()` to check if random effects are warranted. Convergence f
 
 ```r
 library(survival)
+library(ggsurvfit)
 
 # Kaplan-Meier
-km <- survfit(Surv(time, event) ~ group, data = df)
+km <- survfit2(Surv(time, event) ~ group, data = df)   # survfit2 captures the call
 summary(km)
-survminer::ggsurvplot(km, data = df, risk.table = TRUE, pval = TRUE)
+km |>
+  ggsurvfit() +
+  add_confidence_interval() +
+  add_risktable() +
+  add_pvalue()        # log-rank p-value
 
 # Cox proportional hazards
 fit_cox <- coxph(Surv(time, event) ~ x1 + x2 + strata(center), data = df)

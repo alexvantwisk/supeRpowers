@@ -215,5 +215,9 @@ Captions appear below the figure using the `ImageCaption` paragraph style from
 #| fig-width: 8
 #| fig-height: 5
 
-survminer::ggsurvplot(fit = km_fit, data = df_surv, palette = "Set1")
+ggsurvfit::survfit2(survival::Surv(time, status) ~ treatment, data = df_surv) |>
+  ggsurvfit::ggsurvfit() +
+  ggsurvfit::add_confidence_interval() +
+  ggsurvfit::add_risktable() +
+  ggplot2::scale_color_brewer(palette = "Set1")
 ```

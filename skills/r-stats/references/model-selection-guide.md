@@ -181,9 +181,11 @@ process is clearly distinct from the count process.
 ### 1. Kaplan-Meier (non-parametric, descriptive)
 
 ```r
-km <- survfit(Surv(time, event) ~ group, data = df)
+km <- survfit2(Surv(time, event) ~ group, data = df)
 summary(km)                           # median survival, CIs
-survminer::ggsurvplot(km, data = df, risk.table = TRUE, pval = TRUE)
+km |> ggsurvfit::ggsurvfit() +
+  ggsurvfit::add_risktable() +
+  ggsurvfit::add_pvalue()
 ```
 
 ### 2. Cox Proportional Hazards (semi-parametric)
