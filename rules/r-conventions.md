@@ -32,7 +32,7 @@ Mention base R or data.table alternatives when they are genuinely better:
 
 ## Style
 
-- **Formatter:** `styler::tidyverse_style()`
+- **Formatter:** Air (`air format`) for format-on-save and CI; `styler::tidyverse_style()` is the in-R alternative
 - **Linter:** `lintr` with default tidyverse rules
 - **Naming:** `snake_case` for functions, variables, and file names
 - **Assignment:** `<-` for assignment, never `=`

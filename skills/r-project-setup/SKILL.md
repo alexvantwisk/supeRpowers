@@ -174,6 +174,7 @@ See `references/scaffold-templates.md` for `_quarto.yml` templates for each type
 Every scaffold includes:
 
 - **`.lintr`** — tidyverse defaults with `line_length_linter(120)` and `snake_case`
+- **`air.toml`** — Air formatter config (`air format` on save / in CI); styler remains the in-R alternative. In Positron, Air is the default R formatter.
 - **`.gitignore`** — R-specific ignores (.Rhistory, .RData, .Rproj.user/, renv/library/, _targets/)
 - **`.Rprofile`** — renv activation (for projects using renv)
 - **`README.md`** — stub with project name and description placeholder
@@ -203,27 +204,31 @@ After scaffold, dispatch to **r-dependency-manager** agent for renv review.
 **Prompt:** "Set up a new analysis project for exploring the mtcars dataset."
 
 ```r
-# 1. Create directory structure
-dir.create("mtcars-analysis", recursive = TRUE)
-setwd("mtcars-analysis")
+proj <- "mtcars-analysis"
 
-dirs <- c("R", "data/raw", "data/processed", "output", "docs")
-lapply(dirs, dir.create, recursive = TRUE)
+# 1. Create the project scaffold (.Rproj, .Rprofile) — no working-directory change
+usethis::create_project(proj, open = FALSE)
 
-# 2. Create starter analysis script
+# 2. Add analysis subdirectories under the project root
+purrr::walk(
+  file.path(proj, c("R", "data/raw", "data/processed", "output", "docs")),
+  dir.create, recursive = TRUE
+)
+
+# 3. Create starter analysis script (here::here() resolves inside the project)
 writeLines(c(
   "library(dplyr)",
   "library(ggplot2)",
   "",
   'raw <- readr::read_csv(here::here("data", "raw", "mtcars.csv"))',
   "clean <- raw |> filter(!is.na(mpg))"
-), "R/01-import.R")
+), file.path(proj, "R", "01-import.R"))
 
-# 3. Initialize renv and git
-renv::init()
-usethis::use_git()
+# 4. Initialize renv and git in the project directory (no working-directory change)
+renv::init(project = proj)
+gert::git_init(proj)
 
-# 4. Verify scaffold
+# 5. Verify scaffold
 fs::dir_tree()
 # mtcars-analysis/
 # ├── .Rprofile           <- source("renv/activate.R")
