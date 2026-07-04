@@ -671,5 +671,45 @@
     "must_not_fire": [],
     "discriminator": "comparison of MCP server options = MCP setup",
     "category": "mcp-setup"
+  },
+  {
+    "id": "route-085",
+    "prompt": "What can supeRpowers do — give me a list of the available R skills",
+    "expected_skill": "r-overview",
+    "must_not_fire": ["r-package-skill-generator"],
+    "discriminator": "discovery / inventory request, not skill generation from a repo",
+    "category": "discovery"
+  },
+  {
+    "id": "route-086",
+    "prompt": "List the R skills and commands this plugin provides",
+    "expected_skill": "r-overview",
+    "must_not_fire": ["r-data-analysis"],
+    "discriminator": "list available R skills = discovery inventory, not data wrangling",
+    "category": "discovery"
+  },
+  {
+    "id": "route-087",
+    "prompt": "Fit a Bayesian hierarchical model for my Phase 2 trial data",
+    "expected_skill": "r-bayesian",
+    "must_not_fire": ["r-clinical"],
+    "discriminator": "Bayesian hierarchical fitting; no CDISC/FDA/regulatory vocabulary",
+    "category": "bayesian-clinical-seam"
+  },
+  {
+    "id": "route-088",
+    "prompt": "Draw a Kaplan-Meier survival curve with a risk table for my dataset",
+    "expected_skill": "r-visualization",
+    "must_not_fire": ["r-clinical"],
+    "discriminator": "KM plotting mechanics without trial/regulatory framing = visualization",
+    "category": "survival-ambiguity"
+  },
+  {
+    "id": "route-089",
+    "prompt": "Scaffold the standard directory structure for a new project that will later run a targets pipeline",
+    "expected_skill": "r-project-setup",
+    "must_not_fire": ["r-targets"],
+    "discriminator": "scaffold + directory structure + new project = setup, not pipeline authoring",
+    "category": "package-overload"
   }
 ]
