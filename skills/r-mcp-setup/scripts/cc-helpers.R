@@ -20,16 +20,18 @@ cc_plot <- function(name = NULL, width = 8, height = 5, dpi = 120) {
 
 cc_env <- function() {
   if (!requireNamespace("purrr", quietly = TRUE) ||
-      !requireNamespace("tibble", quietly = TRUE)) {
-    stop("Packages purrr and tibble are required. ",
-         "Install with: install.packages(c(\"purrr\", \"tibble\"))")
+    !requireNamespace("tibble", quietly = TRUE)) {
+    stop(
+      "Packages purrr and tibble are required. ",
+      "Install with: install.packages(c(\"purrr\", \"tibble\"))"
+    )
   }
   objs <- ls(envir = .GlobalEnv)
   if (!length(objs)) {
     cat("(empty)\n")
     return(invisible(NULL))
   }
-  out <- purrr::map_dfr(objs, function(x) {
+  out <- purrr::map(objs, function(x) {
     o <- get(x, envir = .GlobalEnv)
     tibble::tibble(
       name  = x,
@@ -37,7 +39,7 @@ cc_env <- function() {
       dim   = if (!is.null(dim(o))) paste(dim(o), collapse = "x") else as.character(length(o)),
       mem   = format(utils::object.size(o), units = "auto")
     )
-  })
+  }) |> purrr::list_rbind()
   print(out, n = Inf)
   invisible(out)
 }

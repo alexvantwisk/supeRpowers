@@ -16,7 +16,8 @@ model_path <- args[1]
 if (!file.exists(model_path)) stop(sprintf("File not found: %s", model_path))
 
 model <- tryCatch(readRDS(model_path),
-  error = function(e) stop(sprintf("Could not read RDS: %s", e$message)))
+  error = function(e) stop(sprintf("Could not read RDS: %s", e$message))
+)
 if (!inherits(model, "lm")) stop("Object is not a fitted lm model.")
 
 alpha <- 0.05
@@ -27,8 +28,10 @@ resids <- residuals(model)
 n <- length(resids)
 if (n >= 3 && n <= 5000) {
   sw <- shapiro.test(resids)
-  cat(sprintf("  [%s] Shapiro-Wilk normality (p = %.4f)\n",
-    if (sw$p.value >= alpha) "PASS" else "WARN", sw$p.value))
+  cat(sprintf(
+    "  [%s] Shapiro-Wilk normality (p = %.4f)\n",
+    if (sw$p.value >= alpha) "PASS" else "WARN", sw$p.value
+  ))
 } else {
   cat("  [SKIP] Shapiro-Wilk — requires 3-5000 observations\n")
 }
@@ -36,8 +39,10 @@ if (n >= 3 && n <= 5000) {
 # 2. Breusch-Pagan heteroscedasticity
 if (requireNamespace("lmtest", quietly = TRUE)) {
   bp <- lmtest::bptest(model)
-  cat(sprintf("  [%s] Breusch-Pagan heteroscedasticity (p = %.4f)\n",
-    if (bp$p.value >= alpha) "PASS" else "WARN", bp$p.value))
+  cat(sprintf(
+    "  [%s] Breusch-Pagan heteroscedasticity (p = %.4f)\n",
+    if (bp$p.value >= alpha) "PASS" else "WARN", bp$p.value
+  ))
 } else {
   cat("  [SKIP] Breusch-Pagan — install lmtest package\n")
 }
@@ -49,8 +54,18 @@ if (n_pred < 2) {
 } else if (requireNamespace("car", quietly = TRUE)) {
   vif_vals <- tryCatch(car::vif(model), error = function(e) NULL)
   if (!is.null(vif_vals)) {
-    cat(sprintf("  [%s] VIF multicollinearity (max = %.2f)\n",
-      if (max(vif_vals) < 5) "PASS" else "WARN", max(vif_vals)))
+    # car::vif() returns a matrix (GVIF, Df, GVIF^(1/(2*Df))) when any term has
+    # >1 df (factors/polynomials). Compare the GVIF^(1/(2*Df)) column against
+    # sqrt(5); for a plain numeric vector, compare the value against 5.
+    vif_metric <- if (is.matrix(vif_vals)) {
+      vif_vals[, "GVIF^(1/(2*Df))"]^2
+    } else {
+      vif_vals
+    }
+    cat(sprintf(
+      "  [%s] VIF multicollinearity (max = %.2f)\n",
+      if (max(vif_metric) < 5) "PASS" else "WARN", max(vif_metric)
+    ))
   } else {
     cat("  [SKIP] VIF — could not compute (aliased coefficients?)\n")
   }

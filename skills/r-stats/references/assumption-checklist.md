@@ -85,8 +85,11 @@ plot(fit_gam)
 plot(fit, which = 4)   # Cook's distance
 car::influencePlot(fit)
 
-# Hosmer-Lemeshow goodness-of-fit (calibration)
-ResourceSelection::hoslem.test(df$outcome, fitted(fit))  # p > 0.05 = adequate fit
+# Calibration: prefer a calibration plot / Brier score. Hosmer-Lemeshow is
+# sensitive to the (arbitrary) number of bins g and is under-powered in small
+# samples and over-powered in large ones — treat its p-value as weak evidence.
+ResourceSelection::hoslem.test(df$outcome, fitted(fit), g = 10)  # bin-sensitive
+# Better: plot predicted vs observed by decile (a calibration curve).
 ```
 
 ### Poisson / Count Models

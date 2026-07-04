@@ -130,9 +130,9 @@ fits <- list(
 
 # Compare posterior of key parameter
 fits |>
-  purrr::map_dfr(\(f) tidybayes::spread_draws(f, b_x1) |>
-                       tidybayes::median_hdi(),
-                 .id = "prior") |>
+  purrr::map(\(f) tidybayes::spread_draws(f, b_x1) |>
+                   tidybayes::median_hdi()) |>
+  purrr::list_rbind(names_to = "prior") |>
   print()
 ```
 
