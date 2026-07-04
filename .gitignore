@@ -5,10 +5,12 @@
 __pycache__/
 *.pyc
 
-# Claude Code local state
-.claude/worktrees/
-.claude/settings.local.json
-.claude/plans/
+# Claude Code — ignore local state, keep shared settings
+.claude/*
+!.claude/settings.json
 
-# Docs
-docs/
+# Superpowers plugin working state (spec-driven-development tracking)
+.superpowers/
+
+# Internal planning artifacts (not shipped to plugin users)
+docs/superpowers/

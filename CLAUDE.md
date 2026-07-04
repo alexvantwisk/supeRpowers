@@ -33,7 +33,7 @@ skills/                  # Skills (SKILL.md + optional references/, scripts/, ev
 agents/                  # Shared agents (YAML frontmatter required)
   r-code-reviewer.md     r-statistician.md      r-pkg-check.md
   r-shiny-architect.md   r-dependency-manager.md
-docs/                    # Reference documentation (e.g. docs/superpowers/)
+docs/                    # User-facing reference docs (docs/superpowers/ = local planning, gitignored)
 tests/                   # Routing, structural, and convention test suites
 ```
 
