@@ -16,27 +16,6 @@ frequency.
 
 ## ERRORs — Block Release
 
-### "no visible global function definition for 'fn'"
-
-```
-❯ checking R code for possible problems ... NOTE
-  my_fn: no visible global function definition for 'mutate'
-```
-
-**Cause:** You use `mutate()` without importing it.
-
-**Fix:**
-
-```r
-# Either:
-usethis::use_import_from("dplyr", "mutate")
-
-# Or (preferred):
-my_fn <- function() {
-  data |> dplyr::mutate(x = 1)
-}
-```
-
 ### "no visible binding for global variable '.data'"
 
 **Cause:** You use `.data[[col]]` or `.env$var` without importing from
@@ -271,6 +250,27 @@ See `cran-submission-checklist.md` for template.
 
 ## NOTEs — Often Acceptable
 
+### "no visible global function definition for 'fn'"
+
+```
+❯ checking R code for possible problems ... NOTE
+  my_fn: no visible global function definition for 'mutate'
+```
+
+**Cause:** You use `mutate()` without importing it.
+
+**Fix:**
+
+```r
+# Either:
+usethis::use_import_from("dplyr", "mutate")
+
+# Or (preferred):
+my_fn <- function() {
+  data |> dplyr::mutate(x = 1)
+}
+```
+
 ### "New submission"
 
 Appears on first CRAN submission. Mention in `cran-comments.md`:
@@ -500,7 +500,7 @@ upload. It's never needed manually.
 ### Checking on multiple platforms
 
 ```r
-rhub::check_for_cran()                # Three typical CRAN platforms
+rhub::rhub_check()                    # CRAN platforms via GitHub Actions (rhub v2)
 devtools::check_win_devel()           # Windows R-devel (via win-builder)
 devtools::check_mac_release()         # macOS (via mac.r-project.org)
 ```

@@ -47,7 +47,7 @@ Add false positives to `inst/WORDLIST` (one word per line, sorted).
 ### Cross-Platform Testing
 
 ```r
-rhub::check_for_cran()                 # Multiple platforms via R-hub
+rhub::rhub_check()                     # Multiple platforms via GitHub Actions (rhub v2)
 devtools::check_win_devel()            # Windows R-devel (via win-builder)
 devtools::check_mac_release()          # macOS (via mac.r-project.org)
 ```

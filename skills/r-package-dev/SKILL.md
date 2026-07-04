@@ -202,7 +202,7 @@ Run the gauntlet: `Rscript scripts/release_checklist.R .`. It chains:
 
 ```r
 devtools::check(cran = TRUE)          # 0 errors, 0 warnings mandatory
-rhub::check_for_cran()                # Multi-platform
+rhub::rhub_check()                    # Multi-platform via GitHub Actions runners
 urlchecker::url_check()               # URL validity
 spelling::spell_check_package()       # Typos
 revdepcheck::revdep_check()           # For updates — see references/revdep-workflow.md
