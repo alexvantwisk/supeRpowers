@@ -46,7 +46,7 @@ pwr.2p.test(h = ES.h(p1 = 0.40, p2 = 0.25), sig.level = 0.05, power = 0.80)
 
 # Group sequential design (interim analysis)
 gs <- gsDesign(k = 2, test.type = 1, alpha = 0.025, beta = 0.20,
-               sfu = sfO'Brien-Fleming)
+               sfu = sfLDOF)
 gs$n.I   # sample sizes at each look
 gs$upper$bound  # efficacy boundaries
 ```
@@ -103,12 +103,11 @@ cp <- cutpointr(data = bm_df, x = biomarker, class = response,
                 method = maximize_metric, metric = youden)
 summary(cp)
 
-# Subgroup analysis scaffold
-subgroups <- c("SEX", "AGEGR1", "RACE", "BMICAT")
-subgroup_results <- purrr::map(subgroups, \(sg) {
-  coxph(Surv(AVAL, CNSR == 0) ~ TRT01P,
-        data = adtte |> dplyr::filter(.data[[sg]] == level))
-})
+# Subgroup scaffold — one Cox fit per (subgroup, observed level)
+fit_stratum <- \(d) coxph(Surv(AVAL, CNSR == 0) ~ TRT01P, data = d)
+subgroup_results <- purrr::map(c("SEX", "AGEGR1", "RACE", "BMICAT"), \(sg)
+  purrr::map(unique(adtte[[sg]]),
+             \(lv) fit_stratum(dplyr::filter(adtte, .data[[sg]] == lv))))
 ```
 
 ---

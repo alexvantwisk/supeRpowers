@@ -228,7 +228,7 @@ forest_plot <- forest_data |>
   ) |>
   ggplot(aes(x = hr, y = subgroup)) +
   geom_vline(xintercept = 1, linetype = "dashed", colour = "grey50") +
-  geom_errorbarh(aes(xmin = ci_lo, xmax = ci_hi), height = 0.25, linewidth = 0.6) +
+  geom_errorbar(aes(xmin = ci_lo, xmax = ci_hi), orientation = "y", width = 0.25, linewidth = 0.6) +
   geom_point(aes(size = n), shape = 15, colour = "#0072B2") +
   geom_text(aes(x = 3.5, label = label_text), hjust = 1, size = 3) +
   scale_x_log10(breaks = c(0.25, 0.5, 1, 2, 4)) +
