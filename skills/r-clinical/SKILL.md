@@ -62,7 +62,7 @@ Key packages: `pwr`, `gsDesign`, `rpact` (adaptive designs), `PowerTOST`
 
 ```r
 library(survival)
-library(survminer)
+library(ggsurvfit)
 
 # Fit Kaplan-Meier
 km_fit <- survfit(Surv(AVAL, CNSR == 0) ~ TRT01P, data = adtte)
@@ -252,25 +252,23 @@ After Cox model: check `cox.zph()` for PH assumption. After CDISC derivation: va
 ```r
 # Input — ADTTE dataset with CDISC conventions
 library(survival)
-library(survminer)
+library(ggsurvfit)
 
-km_fit <- survfit(
+km_fit <- survfit2(
   Surv(AVAL, CNSR == 0) ~ TRT01P,
   data = adtte,
   conf.type = "log-log"
 )
 survdiff(Surv(AVAL, CNSR == 0) ~ TRT01P, data = adtte)
 
-# Output — KM plot with risk table
-survminer::ggsurvplot(
-  km_fit,
-  data       = adtte,
-  risk.table = TRUE,
-  pval       = TRUE,
-  xlab       = "Time (days)",
-  ylab       = "Overall Survival Probability",
-  legend.labs = c("Placebo", "Treatment")
-)
+# Output — KM plot with risk table and log-rank p-value
+km_fit |>
+  ggsurvfit() +
+  add_confidence_interval() +
+  add_risktable() +
+  add_pvalue(caption = "Log-rank {p.value}") +
+  scale_ggsurvfit() +
+  ggplot2::labs(x = "Time (days)", y = "Overall Survival Probability")
 ```
 
 ### Edge Case: Competing risks when death precedes progression

@@ -151,38 +151,29 @@ cox_os <- coxph(Surv(AVAL, CNSR == 0) ~ TRT01P, data = adtte |> filter(PARAMCD =
 
 ```r
 library(survival)
-library(survminer)
+library(ggsurvfit)
 library(ggplot2)
 
 adtte_os <- adtte |>
   filter(PARAMCD == "OS", ITTFL == "Y") |>
   mutate(TRT01P = factor(TRT01P))
 
-km_fit <- survfit(Surv(AVAL, CNSR == 0) ~ TRT01P, data = adtte_os)
-
-km_plot <- ggsurvplot(
-  km_fit,
-  data = adtte_os,
-  pval = TRUE,
-  pval.method = TRUE,
-  conf.int = TRUE,
-  risk.table = TRUE,
-  risk.table.col = "strata",
-  risk.table.height = 0.28,
-  xlab = "Time (Months)",
-  ylab = "Overall Survival Probability",
-  title = "Figure 1. Kaplan-Meier Curve for Overall Survival (ITT Population)",
-  legend.labs = levels(adtte_os$TRT01P),
-  palette = c("#0072B2", "#D55E00"),
-  break.time.by = 3,
-  xlim = c(0, 24),
-  ggtheme = theme_classic(base_size = 11),
-  surv.median.line = "hv"
-)
+km_plot <- survfit2(Surv(AVAL, CNSR == 0) ~ TRT01P, data = adtte_os) |>
+  ggsurvfit(linewidth = 0.9) +
+  add_confidence_interval() +
+  add_risktable(risktable_stats = c("n.risk", "n.event")) +
+  add_pvalue(caption = "Log-rank {p.value}") +
+  scale_color_manual(values = c("#0072B2", "#D55E00")) +
+  scale_x_continuous(breaks = seq(0, 24, 3), limits = c(0, 24)) +
+  labs(
+    x = "Time (Months)", y = "Overall Survival Probability",
+    title = "Figure 1. Kaplan-Meier Curve for Overall Survival (ITT Population)"
+  ) +
+  theme_classic(base_size = 11)
 
 # Save at regulatory-quality resolution
 ggsave("output/tlf/figure_1_km_os.png",
-       plot = print(km_plot), width = 8, height = 6, dpi = 300)
+       plot = km_plot, width = 8, height = 6, dpi = 300)
 ```
 
 ---
@@ -204,7 +195,7 @@ subgroups <- list(
   "ECOG 1-2"  = quote(ECOG %in% c(1, 2))
 )
 
-forest_data <- purrr::imap_dfr(subgroups, \(cond, label) {
+forest_data <- purrr::imap(subgroups, \(cond, label) {
   sub_data <- adtte |>
     filter(PARAMCD == "OS", ITTFL == "Y") |>
     filter(!!cond)
@@ -219,7 +210,7 @@ forest_data <- purrr::imap_dfr(subgroups, \(cond, label) {
     ci_hi = s$conf.int[1, "upper .95"],
     pval = s$coefficients[1, "Pr(>|z|)"]
   )
-})
+}) |> purrr::list_rbind()
 
 forest_plot <- forest_data |>
   mutate(
