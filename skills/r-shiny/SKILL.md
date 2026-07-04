@@ -159,7 +159,9 @@ Cache plots: `renderPlot(...) |> bindCache(input$x, input$y)`. Hidden tabs: `out
 ```r
 output$plot <- renderPlot({ create_expensive_plot(filtered_data()) }) |>
   bindCache(input$dataset, input$cyl)
-# Async: library(promises); library(future); plan(multisession)
+# Async (primary): shiny::ExtendedTask + bslib::input_task_button() runs a slow
+#   job off the reactive thread without freezing the session; promises/mirai are
+#   the machinery beneath. Skeleton in references/reactivity-guide.md.
 # JS: session$sendCustomMessage() (R -> JS), Shiny.setInputValue() (JS -> R)
 ```
 
@@ -203,7 +205,7 @@ for golem apps. See `references/deployment.md` for secrets, sizing, observabilit
 | Side effects inside `reactive()` | Side effects fire unpredictably | Move to `observe()` / `observeEvent()` |
 | Scope creep | Restructuring whole app to fix one reactive | Fix only the identified issue; minimal diff |
 | teal data schema mismatch | `cdisc_data()` requires each domain wrapped in `cdisc_dataset()` with `keys` | Wrap each domain with `cdisc_dataset()` and `keys = c("STUDYID", "USUBJID")` |
-| Async without promises | Long-running reactive blocks the entire session | `library(promises); library(future); plan(multisession)`; chain via the promise pipe `%...>%` from the `promises` package (NOT magrittr — the one place this project allows that token) |
+| Long task freezes the whole session | A slow reactive blocks every user until it returns | Wrap the work in `shiny::ExtendedTask` + `bslib::input_task_button()`; `promises`/`mirai` and the promise pipe `%...>%` are the machinery beneath (the one place this project allows that token). See `references/reactivity-guide.md`. |
 ## Examples
 ### Happy Path: Basic module with ns() wrapping
 **Prompt:** "Create a reusable chart module with namespace-safe inputs."

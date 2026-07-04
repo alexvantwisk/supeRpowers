@@ -91,13 +91,16 @@ observeEvent(input$refresh, {
 
 ### isolate() — read without dependency
 
+Assign outputs at the top level, NOT inside `observe()`. Assigning
+`output$preview` inside `observe()` re-registers the output on every
+invalidation — a leaking anti-pattern.
+
 ```r
-observe({
-  # Takes dependency on input$dataset only
-  data <- get(input$dataset, "package:datasets")
-  # Reads input$n_rows but does NOT re-trigger when n_rows changes
-  n <- isolate(input$n_rows)
-  output$preview <- renderTable({ head(data, n) })
+# GOOD — output assigned once; isolate() reads without a dependency
+output$preview <- renderTable({
+  data <- get(input$dataset, "package:datasets")  # depends on input$dataset
+  n <- isolate(input$n_rows)                       # read, no re-trigger on n_rows
+  head(data, n)
 })
 ```
 
@@ -396,3 +399,39 @@ search_results <- reactive({
 ```
 
 This prevents expensive computations from firing on every keystroke.
+
+---
+
+## Async with ExtendedTask (primary async pattern)
+
+`ExtendedTask` runs long work off the main reactive thread so one user's slow
+job does not block the session. `bslib::input_task_button()` disables itself and
+shows a spinner while the task runs.
+
+```r
+library(shiny)
+library(bslib)
+library(mirai)
+
+ui <- page_fluid(
+  numericInput("x", "Input", 10),
+  input_task_button("run", "Run long job"),
+  verbatimTextOutput("result")
+)
+
+server <- function(input, output, session) {
+  task <- ExtendedTask$new(function(x) {
+    mirai::mirai(slow_compute(x), environment())   # returns a promise
+  }) |> bind_task_button("run")
+
+  observeEvent(input$run, task$invoke(input$x))
+
+  output$result <- renderPrint({
+    req(task$status() == "success")
+    task$result()
+  })
+}
+```
+
+`promises` + the promise pipe `%...>%` are the lower-level machinery; prefer
+`ExtendedTask` for new code.
