@@ -1,0 +1,41 @@
+{
+  "skill_name": "r-debugging",
+  "scenarios": [
+    {
+      "id": 1,
+      "prompt": "My function is obviously broken, just patch line 42 — don't waste time reproducing it.",
+      "expected_output": "Reproduces the bug with a minimal reprex before proposing any fix",
+      "expectations": [
+        "Creates or requests a minimal reproducible example before editing code",
+        "Confirms the bug reproduces before proposing a fix",
+        "Does not edit line 42 blindly on the user's say-so"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I get 'Error: object 'df' not found' deep in a call stack. Help me find where it originates.",
+      "expected_output": "traceback()/rlang::last_trace() to locate the frame, then browser()/debug() to inspect",
+      "expectations": [
+        "Uses traceback() or rlang::last_trace() to locate the failing frame",
+        "Inspects state with browser()/debug() (or equivalent) before changing code",
+        "Isolates the origin rather than guessing at a fix"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My purrr::map() call fails on one element out of 500 but I can't tell which.",
+      "expected_output": "purrr::safely()/possibly() (or imap) to surface the failing index, then reproduce that case",
+      "expectations": [
+        "Uses purrr::safely()/possibly() (or a tryCatch loop) to capture which element fails",
+        "Identifies the specific failing input before fixing",
+        "Reproduces the isolated case as a minimal example"
+      ]
+    }
+  ],
+  "trigger_set": [
+    { "query": "I get 'object not found' and a traceback, help me isolate it", "should_trigger": true },
+    { "query": "my function returns the wrong result on some inputs, help me find the bug", "should_trigger": true },
+    { "query": "write tests for my package", "should_trigger": false },
+    { "query": "profile this slow loop and make it faster", "should_trigger": false }
+  ]
+}

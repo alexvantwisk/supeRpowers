@@ -1,0 +1,42 @@
+{
+  "skill_name": "r-stats",
+  "scenarios": [
+    {
+      "id": 1,
+      "prompt": "Fit a logistic regression of readmission on age and sex, check assumptions, report odds ratios with 95% CIs",
+      "expected_output": "glm(family=binomial) fit, assumption checks, tidy OR table with CIs",
+      "expectations": [
+        "Uses glm() with family = binomial",
+        "Reports odds ratios (exponentiated coefficients) with confidence intervals",
+        "Checks at least one model assumption or diagnostic"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have repeated measurements per patient over time. Fit a mixed-effects model of the outcome with a random intercept per patient and check the residuals.",
+      "expected_output": "lme4::lmer with (1 | patient), residual diagnostics",
+      "expectations": [
+        "Uses a mixed-effects model (e.g. lme4::lmer or nlme) with a random intercept per patient",
+        "Checks residuals or another model assumption",
+        "Does not treat the repeated measures as independent observations"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Compare two nested linear models and tell me whether the extra predictors are justified.",
+      "expected_output": "anova()/likelihood-ratio or AIC comparison with interpretation",
+      "expectations": [
+        "Compares the models with anova(), a likelihood-ratio test, or AIC/BIC",
+        "Interprets the comparison to decide whether the extra predictors are justified",
+        "Stays in base R / broom rather than a machine-learning framework"
+      ]
+    }
+  ],
+  "trigger_set": [
+    { "query": "run a mixed-effects model with lme4 and check residuals", "should_trigger": true },
+    { "query": "fit a logistic regression and report odds ratios with confidence intervals", "should_trigger": true },
+    { "query": "tune an xgboost classifier with cross-validation", "should_trigger": false },
+    { "query": "fit a hierarchical brms model with weakly-informative priors", "should_trigger": false },
+    { "query": "generate a CDISC ADaM survival endpoint for the regulatory submission", "should_trigger": false }
+  ]
+}

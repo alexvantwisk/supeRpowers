@@ -24,11 +24,11 @@ Two practical consequences:
 | You want to... | Do this |
 |---|---|
 | Report a bug | [Open a bug-report issue](https://github.com/alexvantwisk/supeRpowers/issues/new?template=bug_report.md) |
-| Suggest a new skill, command, or agent | [Open a feature-request issue](https://github.com/alexvantwisk/supeRpowers/issues/new?template=feature_request.md) |
+| Suggest a new skill, workflow, or agent | [Open a feature-request issue](https://github.com/alexvantwisk/supeRpowers/issues/new?template=feature_request.md) |
 | Suggest content for an existing skill | [Open a skill-suggestion issue](https://github.com/alexvantwisk/supeRpowers/issues/new?template=skill_suggestion.md) |
 | Fix a typo or small documentation error | Open a PR directly |
 | Fix a bug or add a small feature | Open an issue, then PR (link the issue) |
-| Add a new skill, command, or agent | Open an issue **first**, then PR |
+| Add a new skill, workflow, or agent | Open an issue **first**, then PR |
 | Refactor or restructure existing content | Open an issue first |
 
 Issues and PRs are both welcome. Issues are preferred for anything that
@@ -81,7 +81,7 @@ the skill is enough.
 - For anything bigger than a typo, please open an issue first so we can
   align on direction before you invest time in code
 - Read [`CLAUDE.md`](CLAUDE.md) for content-format requirements (skill,
-  command, agent, and rule conventions)
+  workflow-skill, agent, and rule conventions)
 - Skim the [R coding conventions](#r-coding-conventions) below
 
 ### Workflow
@@ -100,7 +100,7 @@ the skill is enough.
 4. Run the convention spot-check:
 
    ```bash
-   grep -rn '%>%' skills/ commands/ agents/ rules/ --exclude=eval.md
+   grep -rn '%>%' skills/ agents/ rules/ --exclude=eval.md
    ```
 
    This must produce zero output.
@@ -109,20 +109,44 @@ the skill is enough.
 6. Fill in the PR template
 7. Be patient — review may take a few days
 
-### Adding a new skill / command / agent
+### Adding a new skill / workflow / agent
 
 See [`CLAUDE.md`](CLAUDE.md) for canonical procedures. Briefly:
 
-- **New skill:** create `skills/<name>/SKILL.md` with `name` + `description`
-  frontmatter; optional `references/`, `scripts/`, `eval.md`. Keep
-  SKILL.md ≤ 300 lines; offload detail to `references/`.
-- **New command:** create `commands/<name>.md` with single-field
-  `description:` frontmatter. ≤ 200 lines including frontmatter.
+- **New knowledge skill:** create `skills/<name>/SKILL.md` with `name` +
+  `description` + `when_to_use` frontmatter (triggers live in
+  `when_to_use`; combined `description` + `when_to_use` ≤ 1536 chars);
+  optional `paths`, `references/`, `scripts/`, `eval.md`, `evals/evals.json`.
+  Keep SKILL.md ≤ 300 lines; offload detail to `references/`.
+- **New workflow skill:** create `skills/<name>/SKILL.md` with `name` +
+  one-line `description` + `disable-model-invocation: true`. Invoked only
+  as `/r-<name>`; no `when_to_use`, no `Triggers:`, no `eval.md`. ≤ 300 lines.
 - **New agent:** create `agents/<name>.md` with `name` + `description`
   frontmatter and Inputs / Output / Procedure sections. ≤ 200 lines.
 
-For new skills, also update `tests/routing_matrix.json` with at least one
-positive test plus 1–2 negative tests against sibling skills.
+For new knowledge skills, also update `tests/routing_matrix.json` with at
+least one positive test plus 1–2 negative tests against sibling skills.
+
+## Evals
+
+Knowledge skills carry an `evals/evals.json` alongside `SKILL.md` (schema:
+`skill_name`, a `scenarios[]` array with `prompt`/`expected_output`/
+`expectations[]`, and a `trigger_set[]` of should/should-not-trigger
+queries). Two layers exercise them:
+
+- **Cheap, deterministic (CI-gating).** `python tests/run_all.py --layer 3`
+  validates the eval files' structure and the trigger-set shape offline. It
+  runs on every PR — no API calls, no cost. When you add or edit a skill's
+  `evals/evals.json`, this must stay green.
+- **Full with/without-skill benchmark (manual/nightly, NOT PR-gating).** Run
+  the skill-creator `run_eval.py` benchmark locally or on a nightly job to
+  measure whether the skill actually improves Claude's answers on its
+  scenarios; archive the resulting `grading.json` as a CI artifact. This is
+  expensive (LLM calls) so it never blocks a PR.
+
+When the `r-analysis` workflow's step list changes, regenerate the demo GIF:
+record with `asciinema` and render with `agg` (`agg docs/media/r-analysis.cast
+docs/media/r-analysis.gif`), committing both the `.cast` and the `.gif`.
 
 ---
 

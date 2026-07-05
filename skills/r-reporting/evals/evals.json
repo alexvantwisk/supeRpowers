@@ -1,0 +1,42 @@
+{
+  "skill_name": "r-reporting",
+  "scenarios": [
+    {
+      "id": 1,
+      "prompt": "Render my analysis to a Word .docx consulting report with a custom reference.docx that sets 1.5 line spacing, justified text, and a page break before each Heading 1.",
+      "expected_output": "reference.docx authored + Quarto docx format reference-doc, rendered through Quarto -> Pandoc -> Word",
+      "expectations": [
+        "Authors/edits a reference.docx and points the Quarto docx format at it (reference-doc:)",
+        "Configures line spacing, justification, and Heading 1 page breaks in the reference doc",
+        "Renders through Quarto -> Pandoc -> Word"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Put a gtsummary Table 1 into my Word report so it stays a native, editable Word table.",
+      "expected_output": "gtsummary |> as_flex_table() -> flextable in the docx (not an image)",
+      "expectations": [
+        "Converts the gtsummary table to a flextable (as_flex_table()) for native Word output",
+        "Ensures the table renders as an editable Word table, not a pasted image",
+        "Places it in the Quarto/Word rendering pipeline"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My upstream model takes 20 minutes; I don't want to re-run it every time I render the Word doc.",
+      "expected_output": "cache the expensive result to RDS and read it in the qmd, keeping render cheap",
+      "expectations": [
+        "Caches the expensive result (e.g. saveRDS/readRDS or a cached upstream step) so rendering re-reads it",
+        "Keeps the render step cheap and reproducible",
+        "Explains the RDS cache pattern for upstream tables/models"
+      ]
+    }
+  ],
+  "trigger_set": [
+    { "query": "render my analysis to a Word docx with a reference-doc and flextable tables", "should_trigger": true },
+    { "query": "the figures aren't centered in my Word consulting report", "should_trigger": true },
+    { "query": "render this report to HTML and PDF with cross-references", "should_trigger": false },
+    { "query": "style this gt table with conditional colors for a web page", "should_trigger": false },
+    { "query": "produce the regulatory TLF shells for the clinical study report", "should_trigger": false }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "skill_name": "r-tdd",
+  "scenarios": [
+    {
+      "id": 1,
+      "prompt": "We're behind schedule — just write the validate_input() function and its test together so we can ship.",
+      "expected_output": "Refuses to write implementation first; writes a failing test, runs it to confirm RED, then implements",
+      "expectations": [
+        "Writes the test BEFORE the implementation",
+        "Runs the test and confirms it FAILS before writing implementation code",
+        "Does not present implementation and test as a single already-passing unit"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Set up testthat 3e for my package and add a snapshot test for the printed output of summary_report().",
+      "expected_output": "usethis::use_testthat(3), edition 3, expect_snapshot(), snapshot review workflow",
+      "expectations": [
+        "Sets up testthat 3rd edition (usethis::use_testthat(3) / Config/testthat/edition: 3)",
+        "Uses expect_snapshot() for the printed output",
+        "Explains reviewing/accepting snapshots (testthat::snapshot_review())"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My function reads a file from the working directory in its test and the test is flaky. Fix the test discipline.",
+      "expected_output": "isolate filesystem/working-directory state with withr, avoid depending on the ambient CWD",
+      "expectations": [
+        "Isolates filesystem/working-directory state (e.g. withr::local_tempdir() or withr::local_dir())",
+        "Removes the dependency on the ambient working directory",
+        "Keeps the test hermetic and order-independent"
+      ]
+    }
+  ],
+  "trigger_set": [
+    { "query": "write a testthat test for my new function then implement it", "should_trigger": true },
+    { "query": "set up a red-green-refactor cycle with testthat snapshot tests", "should_trigger": true },
+    { "query": "why does my function error on single-row groups", "should_trigger": false },
+    { "query": "run R CMD check and fix the package-level warnings", "should_trigger": false }
+  ]
+}

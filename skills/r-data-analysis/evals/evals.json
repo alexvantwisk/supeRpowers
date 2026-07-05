@@ -1,0 +1,43 @@
+{
+  "skill_name": "r-data-analysis",
+  "scenarios": [
+    {
+      "id": 1,
+      "prompt": "I have two CSVs — orders and customers. Clean the column names, left-join them on customer_id, and reshape the result to one row per customer with total spend.",
+      "expected_output": "readr import, janitor::clean_names(), dplyr left_join + group_by/summarise, tidyr pivot as needed",
+      "expectations": [
+        "Imports with readr and standardizes names (e.g. janitor::clean_names())",
+        "Uses dplyr::left_join() on customer_id",
+        "Aggregates to one row per customer with group_by()/summarise() (total spend)",
+        "Uses the base pipe |> and tidyverse verbs, not base subsetting"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "This data frame has dates stored as 'MM/DD/YYYY' strings and a numeric column read in as character with stray commas. Parse both correctly.",
+      "expected_output": "lubridate date parsing + readr::parse_number / stringr cleanup inside mutate()",
+      "expectations": [
+        "Parses the date column with lubridate (e.g. mdy())",
+        "Converts the character-numeric column (e.g. readr::parse_number() or stringr + as.numeric)",
+        "Applies the conversions inside a dplyr::mutate()"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Give me a missing-data overview of this data frame before I model it — which columns have NAs and how many.",
+      "expected_output": "per-column NA counts via dplyr::summarise(across()) or a tidy count, no silent imputation",
+      "expectations": [
+        "Computes per-column missingness (e.g. summarise(across(everything(), ~ sum(is.na(.x)))) or equivalent)",
+        "Presents the result as a tidy summary",
+        "Does not silently impute or drop rows without flagging the choice"
+      ]
+    }
+  ],
+  "trigger_set": [
+    { "query": "clean and reshape this messy data frame with dplyr and tidyr", "should_trigger": true },
+    { "query": "left-join two tables and pivot the result to wide format", "should_trigger": true },
+    { "query": "fit a linear regression and test whether the coefficient is significant", "should_trigger": false },
+    { "query": "my dplyr pipeline is too slow on 80 million rows, make it faster", "should_trigger": false },
+    { "query": "orchestrate this multi-step analysis as a reproducible targets pipeline", "should_trigger": false }
+  ]
+}

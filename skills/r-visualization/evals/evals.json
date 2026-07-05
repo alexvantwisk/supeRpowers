@@ -1,0 +1,42 @@
+{
+  "skill_name": "r-visualization",
+  "scenarios": [
+    {
+      "id": 1,
+      "prompt": "Make a publication-quality scatter plot of weight vs mpg colored by cylinders, with a colorblind-safe palette and a clean theme.",
+      "expected_output": "ggplot2 with aes, geom_point, a colorblind-safe scale (viridis/ggsci/Okabe-Ito), refined theme",
+      "expectations": [
+        "Builds the plot with ggplot2 (ggplot() + geom_point())",
+        "Uses a colorblind-safe colour scale (e.g. viridis, ggsci, or Okabe-Ito)",
+        "Applies a clean theme and readable axis/legend labels"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Compose a two-panel figure: a volcano plot on the left and a boxplot on the right, sharing one caption.",
+      "expected_output": "two ggplot objects combined with patchwork, annotated as a single figure",
+      "expectations": [
+        "Creates each panel as a ggplot object",
+        "Combines them with patchwork (e.g. p1 + p2 with plot_layout)",
+        "Adds a shared caption/annotation via patchwork (plot_annotation)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Plot a Kaplan-Meier survival curve with a risk table under it for exploratory purposes.",
+      "expected_output": "ggsurvfit::survfit2 |> ggsurvfit() with add_risktable(), treated as a figure (not a regulatory deliverable)",
+      "expectations": [
+        "Uses ggsurvfit (survfit2 |> ggsurvfit()) rather than survminer",
+        "Adds a risk table (add_risktable())",
+        "Treats it as an exploratory figure, not a regulatory TLF"
+      ]
+    }
+  ],
+  "trigger_set": [
+    { "query": "make a faceted ggplot with a colorblind palette and patchwork composition", "should_trigger": true },
+    { "query": "draw a volcano plot and a forest plot for my figure", "should_trigger": true },
+    { "query": "style this reactable table with conditional formatting", "should_trigger": false },
+    { "query": "build a Shiny dashboard with interactive plots and filters", "should_trigger": false },
+    { "query": "produce the regulatory Kaplan-Meier TLF for the ADaM ADTTE dataset", "should_trigger": false }
+  ]
+}

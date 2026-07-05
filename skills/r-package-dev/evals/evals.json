@@ -1,0 +1,41 @@
+{
+  "skill_name": "r-package-dev",
+  "scenarios": [
+    {
+      "id": 1,
+      "prompt": "Add a fetch_forecast() function to my package with full roxygen2 documentation, then regenerate the docs and NAMESPACE.",
+      "expected_output": "roxygen2 block with @param/@return/@examples/@export, devtools::document()",
+      "expectations": [
+        "Writes a complete roxygen2 documentation block (@param, @return, @export at minimum)",
+        "Regenerates docs + NAMESPACE with devtools::document() (not hand-editing NAMESPACE)",
+        "Uses the usethis/devtools workflow"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Get this package ready for CRAN submission — what checks and fixes do I need?",
+      "expected_output": "devtools::check(), cross-platform checks (rhub/win-builder), addressing NOTEs/WARNINGs",
+      "expectations": [
+        "Runs R CMD check via devtools::check() and aims for 0 errors / 0 warnings",
+        "Mentions cross-platform checks (e.g. rhub::rhub_check() or win-builder) before submission",
+        "Explains how to resolve NOTEs/WARNINGs rather than ignoring them"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "R CMD check warns that .data is undefined — how do I fix the NAMESPACE?",
+      "expected_output": "import .data from rlang via usethis::use_import_from('rlang', '.data'), then re-document",
+      "expectations": [
+        "Imports .data from rlang (not dplyr)",
+        "Uses usethis::use_import_from() or an @importFrom roxygen tag, then re-documents",
+        "Explains why the undefined-global NOTE arises with tidy evaluation"
+      ]
+    }
+  ],
+  "trigger_set": [
+    { "query": "document my package functions with roxygen2 and rebuild the NAMESPACE", "should_trigger": true },
+    { "query": "prepare my R package for CRAN submission and fix the check notes", "should_trigger": true },
+    { "query": "scaffold a brand-new empty R package directory from scratch", "should_trigger": false },
+    { "query": "write testthat unit tests for my new function", "should_trigger": false }
+  ]
+}

@@ -8,6 +8,7 @@ Usage:
     python tests/run_all.py --layer 1        # Run only Layer 1 (structural)
     python tests/run_all.py --layer 1b       # Run only Layer 1b (conventions)
     python tests/run_all.py --layer 2        # Run only Layer 2 (routing)
+    python tests/run_all.py --layer 3        # Run only Layer 3 (eval files)
     python tests/run_all.py --verbose        # Show passing tests too
 """
 
@@ -21,6 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from test_structural import run_structural_tests
 from test_conventions import run_convention_tests
 from test_routing import run_routing_tests
+from test_evals import run_eval_tests
 from conftest import TestSuite
 
 
@@ -67,7 +69,7 @@ def print_summary(suites: list[TestSuite]):
 
 def main():
     parser = argparse.ArgumentParser(description="supeRpowers Plugin Test Suite")
-    parser.add_argument("--layer", type=str, help="Run specific layer: 1, 1b, 2, or all")
+    parser.add_argument("--layer", type=str, help="Run specific layer: 1, 1b, 2, 3, or all")
     parser.add_argument("--verbose", action="store_true", help="Show passing tests")
     args = parser.parse_args()
 
@@ -88,6 +90,11 @@ def main():
 
     if layer in ("all", "2"):
         suite = run_routing_tests()
+        suites.append(suite)
+        suite.print_report()
+
+    if layer in ("all", "3"):
+        suite = run_eval_tests()
         suites.append(suite)
         suite.print_report()
 
