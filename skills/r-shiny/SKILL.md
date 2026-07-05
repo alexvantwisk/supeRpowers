@@ -7,15 +7,22 @@ description: >
   modules, bslib UI with shinydashboard migration, reactive data-flow,
   render wrappers (Plot/Plotly/DT/Reactable), testServer + shinytest2,
   and deployment to Posit Connect, shinyapps.io, ShinyProxy, or Shiny
-  Server with renv. Triggers: Shiny, reactive, module, moduleServer, ns,
-  observeEvent, reactiveVal, bindCache, dashboard, golem, rhino, teal,
-  bslib, value_box, shinydashboard, shinytest2, AppDriver, testServer,
-  Posit Connect, ShinyProxy, app.R, mod_*.R. Do NOT use for standalone
+  Server with renv. Do NOT use for standalone
   ggplot2 — use r-visualization. Do NOT use for DT/reactable styling —
   use r-tables. Do NOT use for Quarto docs — use r-quarto. Do NOT use
   for crash debugging — use r-debugging. Do NOT use for ADaM/SDTM
   semantics — use r-clinical. Shiny for Python is out of scope.
   /r-shiny-app scaffolds apps.
+when_to_use: >
+  Triggers: Shiny, reactive, module, moduleServer, ns,
+  observeEvent, reactiveVal, bindCache, dashboard, golem, rhino, teal,
+  bslib, value_box, shinydashboard, shinytest2, AppDriver, testServer,
+  Posit Connect, ShinyProxy, app.R, mod_*.R.
+paths:
+  - "app.R"
+  - "server.R"
+  - "ui.R"
+  - "R/mod_*.R"
 ---
 
 # R Shiny

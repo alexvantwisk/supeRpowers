@@ -6,15 +6,16 @@ description: >
   plugin — discovery-only intent, not actual R work. Renders a one-page
   inventory of the 20 skills, 7 commands, and 5 agents shipped here, grouped
   by area, so the user can find the right tool for their next R task.
-  Triggers: what can supeRpowers do, what R skills do you have, list
-  available R helpers, list R skills, list commands, what does this plugin
-  do, R plugin overview, what's in supeRpowers, getting started with the R
-  plugin, what tools are available, show me the R helpers.
   Do NOT use for actually doing R work — route to the matching domain skill
   (r-data-analysis, r-stats, r-bayesian, r-shiny, r-tdd, r-debugging, etc.).
   Do NOT use for MCP setup — use r-mcp-setup.
   Do NOT use for generating a skill from a package — use
   r-package-skill-generator.
+when_to_use: >
+  Triggers: what can supeRpowers do, what R skills do you have, list
+  available R helpers, list R skills, list commands, what does this plugin
+  do, R plugin overview, what's in supeRpowers, getting started with the R
+  plugin, what tools are available, show me the R helpers.
 ---
 
 # R Plugin Overview

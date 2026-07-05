@@ -10,15 +10,16 @@ description: >
   gtsummary -> flextable -> docx pipeline, the RDS cache pattern for
   upstream tables, qmd project layout (resources, execute-dir, path
   helpers), and system2(quarto, ...) rendering.
-  Triggers: word document, docx, render to word, reference-doc,
-  reference docx, flextable, save_as_docx, consulting report, client
-  report, statistical report, page break, page numbers in word, figure
-  not centered, table not centered.
   Do NOT use for HTML/PDF output — use r-quarto.
   Do NOT use for table styling without a Word context — use r-tables.
   Do NOT use for regulatory TLFs — use r-clinical.
   Do NOT use for interactive HTML reports or Shiny dashboards — use
   r-shiny.
+when_to_use: >
+  Triggers: word document, docx, render to word, reference-doc,
+  reference docx, flextable, save_as_docx, consulting report, client
+  report, statistical report, page break, page numbers in word, figure
+  not centered, table not centered.
 ---
 
 # R Reporting

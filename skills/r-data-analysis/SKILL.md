@@ -7,15 +7,16 @@ description: >
   manipulation, joins, type conversion, string and date processing, factor
   reordering, list-columns, missing-data EDA, and data validation in
   pipelines.
+  Do NOT use for statistical modeling or hypothesis testing — use r-stats instead.
+  Do NOT use for performance optimization of large datasets — use r-performance instead.
+  Do NOT use for pipeline orchestration — use r-targets instead.
+  For a guided analysis pipeline, invoke /r-analysis instead.
+when_to_use: >
   Triggers: data wrangling, data cleaning, data transformation, dplyr, tidyr,
   readr, mutate, filter, pivot, join, reshape, stringr, forcats, lubridate,
   purrr, pipe, regex, time zone, nested data, list-columns, factor reorder,
   clean names, data validation, missing data EDA, data manipulation, tidy
   data, clean data.
-  Do NOT use for statistical modeling or hypothesis testing — use r-stats instead.
-  Do NOT use for performance optimization of large datasets — use r-performance instead.
-  Do NOT use for pipeline orchestration — use r-targets instead.
-  For a guided analysis pipeline, invoke /r-analysis instead.
 ---
 
 # R Data Analysis

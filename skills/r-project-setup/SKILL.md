@@ -5,10 +5,11 @@ description: >
   Shiny app, or Quarto document. Provides best-practice templates for
   directory structure, renv dependency management, .Rprofile configuration,
   git setup, and CI scaffolding for any R project type.
-  Triggers: new project, initialize, scaffold, project setup, create project,
-  start project, new package, new Shiny app, new Quarto, bootstrap.
   Do NOT use for ongoing package development — use r-package-dev instead.
   Do NOT use for pipeline setup beyond initial scaffold — use r-targets instead.
+when_to_use: >
+  Triggers: new project, initialize, scaffold, project setup, create project,
+  start project, new package, new Shiny app, new Quarto, bootstrap.
 ---
 
 # R Project Setup

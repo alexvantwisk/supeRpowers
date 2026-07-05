@@ -6,10 +6,13 @@ description: >
   Provides expert guidance on target definitions, static and dynamic branching,
   dependency graphs, caching, cloud storage backends, and integration with
   renv for fully reproducible workflows.
-  Triggers: targets, pipeline, workflow, reproducible, tar_make, tar_read,
-  tar_target, branching, dependency graph, pipeline orchestration, make-like.
   Do NOT use for initial project scaffold, directory structure, or setup — use r-project-setup instead.
   Do NOT use for general data wrangling within a target — use r-data-analysis instead.
+when_to_use: >
+  Triggers: targets, pipeline, workflow, reproducible, tar_make, tar_read,
+  tar_target, branching, dependency graph, pipeline orchestration, make-like.
+paths:
+  - "_targets.R"
 ---
 
 # R Targets — Pipeline Orchestration

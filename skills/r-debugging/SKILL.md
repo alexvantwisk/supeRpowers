@@ -5,11 +5,12 @@ description: >
   a systematic reproduce-isolate-diagnose-fix-test workflow covering browser(),
   traceback(), debug(), condition handling, and common R pitfalls for both
   interactive scripts and package code.
-  Triggers: debug, error, bug, traceback, browser, breakpoint, unexpected
-  behavior, stack trace, warning, object not found, wrong results.
   Do NOT use for performance profiling and optimization — use r-performance instead.
   Do NOT use for writing tests — use r-tdd instead.
   For a guided debugging workflow, invoke /r-debug instead.
+when_to_use: >
+  Triggers: debug, error, bug, traceback, browser, breakpoint, unexpected
+  behavior, stack trace, warning, object not found, wrong results.
 ---
 
 # R Debugging

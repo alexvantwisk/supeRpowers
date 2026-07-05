@@ -2,14 +2,15 @@
 name: r-package-dev
 description: >
   Use when creating, developing, documenting, or submitting R packages. Provides
-  full-lifecycle guidance on usethis, devtools, roxygen2, pkgdown, NAMESPACE
-  management, DESCRIPTION metadata, vignettes, CRAN submission, and CI/CD
-  workflows.
-  Triggers: R package, usethis, devtools, roxygen2, NAMESPACE, DESCRIPTION,
-  pkgdown, CRAN submission, vignette, R CMD check, package development.
+  full-lifecycle guidance on usethis, devtools, roxygen2, pkgdown, NAMESPACE management, DESCRIPTION metadata, vignettes, CRAN submission, and CI/CD workflows.
   Do NOT use for initial project scaffolding only — use r-project-setup instead.
   Do NOT use for writing package tests — use r-tdd instead.
   For a guided release workflow, invoke /r-pkg-release instead.
+when_to_use: >
+  Triggers: R package, usethis, devtools, roxygen2, NAMESPACE, DESCRIPTION, pkgdown, CRAN submission, vignette, R CMD check, package development.
+paths:
+  - "DESCRIPTION"
+  - "NAMESPACE"
 ---
 
 # R Package Development

@@ -7,14 +7,15 @@ description: >
   ggiraph, gganimate. Covers grammar of graphics, publication-quality figures,
   multi-panel composition, domain plots (KM, volcano, forest), colorblind
   palettes, theming, and interactive / animated visualization.
+  Do NOT use for Shiny dashboards (use r-shiny), formatted tables (r-tables),
+  FDA/regulatory KM analysis (r-clinical owns the analytical layer), or
+  Quarto report layout (r-quarto).
+when_to_use: >
   Triggers: ggplot2, plot, chart, figure, publication figure, facet, theme,
   patchwork, multi-panel, raincloud, ridgeline, beeswarm, ggrepel, ggtext,
   markdown title, ggdist, ggridges, gghighlight, ggh4x, ggsurvfit,
   Kaplan-Meier, risk table, volcano plot, forest plot, ggsci, NEJM palette,
   colorblind, ggiraph, plotly, gganimate, animated plot.
-  Do NOT use for Shiny dashboards (use r-shiny), formatted tables (r-tables),
-  FDA/regulatory KM analysis (r-clinical owns the analytical layer), or
-  Quarto report layout (r-quarto).
 ---
 
 # R Visualization

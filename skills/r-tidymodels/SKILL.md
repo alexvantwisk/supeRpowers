@@ -6,13 +6,14 @@ description: >
   Provides expert guidance on the split-preprocess-model-tune-evaluate
   pipeline, feature engineering with recipes, hyperparameter tuning,
   cross-validation, and model performance assessment.
+  Do NOT use for inferential statistics or hypothesis testing — use r-stats instead.
+  Do NOT use for clinical trial endpoints — use r-clinical instead.
+  Do NOT use for Bayesian posterior inference or MCMC tuning — use r-bayesian instead.
+when_to_use: >
   Triggers: tidymodels, machine learning, predictive model, recipes, parsnip,
   workflows, tune, yardstick, cross-validation, hyperparameter, rsample,
   model tuning, feature engineering, classification, random forest, xgboost,
   model comparison, train test split, predict.
-  Do NOT use for inferential statistics or hypothesis testing — use r-stats instead.
-  Do NOT use for clinical trial endpoints — use r-clinical instead.
-  Do NOT use for Bayesian posterior inference or MCMC tuning — use r-bayesian instead.
 ---
 
 # R Tidymodels — Machine Learning

@@ -7,16 +7,16 @@ description: >
   workflow, weakly-informative prior choice, prior predictive checks,
   Hamiltonian Monte Carlo diagnostics (Rhat, ESS, divergences, treedepth),
   posterior predictive checks, and tidy posterior summaries.
-  Triggers: brms, rstanarm, cmdstanr, Stan, Bayesian, MCMC, posterior, prior,
-  Rhat, ESS, divergences, posterior predictive check, pp_check, tidybayes,
-  spread_draws, gather_draws, hierarchical model, multilevel Bayes, credible
-  interval, HDI, posterior probability.
   Do NOT use for frequentist hypothesis tests, p-values, or AIC-based model
   comparison — use r-stats instead.
   Do NOT use for tidymodels-based ML tuning or cross-validation — use
   r-tidymodels instead.
-  Do NOT use for clinical trial regulatory submissions — use r-clinical
-  instead.
+  Do NOT use for clinical trial regulatory submissions — use r-clinical instead.
+when_to_use: >
+  Triggers: brms, rstanarm, cmdstanr, Stan, Bayesian, MCMC, posterior, prior,
+  Rhat, ESS, divergences, posterior predictive check, pp_check, tidybayes,
+  spread_draws, gather_draws, hierarchical model, multilevel Bayes, credible
+  interval, HDI, posterior probability.
 ---
 
 # R Bayesian Modeling

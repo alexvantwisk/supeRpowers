@@ -3,12 +3,13 @@ name: r-quarto
 description: >
   Use when creating Quarto documents, presentations, websites, or books in R.
   Provides expert guidance on YAML configuration, code chunk options,
-  cross-references, journal templates, revealjs slides, multi-format
-  publishing, and parameterized reports.
-  Triggers: Quarto, qmd, document, presentation, revealjs, website, book,
-  cross-reference, YAML header, code chunk, journal template, multi-format.
+  cross-references, journal templates, revealjs slides, multi-format publishing, and parameterized reports.
   Do NOT use for R package vignettes — use r-package-dev instead.
   Do NOT use for Shiny apps — use r-shiny instead.
+when_to_use: >
+  Triggers: Quarto, qmd, document, presentation, revealjs, website, book, cross-reference, YAML header, code chunk, journal template, multi-format.
+paths:
+  - "**/*.qmd"
 ---
 
 # R Quarto

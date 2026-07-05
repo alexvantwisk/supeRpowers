@@ -5,13 +5,14 @@ description: >
   practices. Scores any skill folder against a 38-check rubric covering
   description quality, content efficiency, gotchas, examples, scripts,
   multi-skill orchestration, and testability.
-  Triggers: audit skill, review skill, check skill quality, score skill,
-  improve skill, skill audit, eval criteria, benchmark skill, skill rubric.
   Do NOT use for creating new skills from scratch — write the skill manually
   following the SKILL.md format in CLAUDE.md instead.
   Do NOT use for generating R package skills from GitHub repos — use
   r-package-skill-generator instead.
   Do NOT use for reviewing R code quality — use r-code-reviewer agent instead.
+when_to_use: >
+  Triggers: audit skill, review skill, check skill quality, score skill,
+  improve skill, skill audit, eval criteria, benchmark skill, skill rubric.
 disable-model-invocation: true
 ---
 

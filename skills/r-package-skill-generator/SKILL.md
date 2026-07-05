@@ -6,12 +6,13 @@ description: >
   R package. Automates cloning, exploration via parallel sub-agents, and
   assembly of a complete SKILL.md with references from any public R package
   repository.
-  Triggers: generate skill, create skill from package, GitHub package, teach
-  Claude a package from GitHub, learn package from repo, reverse-engineer package,
-  package skill, analyze R package.
   Do NOT use for manually writing or editing skills — write the skill manually following the SKILL.md format in CLAUDE.md instead.
   Do NOT use for general R package development — use r-package-dev instead.
   Do NOT use for learning how to use an R package — use the relevant domain skill (r-data-analysis, r-visualization, etc.) instead.
+when_to_use: >
+  Triggers: generate skill, create skill from package, GitHub package, teach
+  Claude a package from GitHub, learn package from repo, reverse-engineer package,
+  package skill, analyze R package.
 ---
 
 # R Package Skill Generator

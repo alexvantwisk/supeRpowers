@@ -79,42 +79,44 @@ def run_structural_tests() -> TestSuite:
             f"Name '{fm['name']}' != directory '{skill_name}'",
         )
 
-        # Description starts with "Use when"
         desc = fm["description"] or ""
-        suite.add(
-            f"desc-starts-use-when/{skill_name}",
-            desc.startswith("Use when"),
-            f"Description starts with: '{desc[:30]}...'",
-        )
 
-        # Description length: 500-1024 chars
-        desc_len = len(desc)
-        in_range = 500 <= desc_len <= 1024
-        suite.add(
-            f"desc-length/{skill_name}",
-            in_range,
-            f"Description is {desc_len} chars (expected 500-1024)",
-            severity="FAIL" if desc_len > 1024 else "WARN",
-        )
-
-        # Has trigger phrases
-        has_triggers = "Trigger" in desc
-        suite.add(
-            f"desc-has-triggers/{skill_name}",
-            has_triggers,
-            "No 'Triggers:' keyword list found in description",
-        )
-
-        # Has at least 1 "Do NOT use for" boundary
-        has_boundary = "Do NOT use for" in desc or "Do NOT use" in desc
-        suite.add(
-            f"desc-has-boundary/{skill_name}",
-            has_boundary,
-            "No 'Do NOT use for' boundary found in description",
-        )
-
-        # Combined description + when_to_use budget (listing truncates at 1536)
+        # Routing-shape checks apply to knowledge/meta skills only, not
+        # /-invoked workflow skills (which carry no triggers or boundaries).
         if skill_name not in WORKFLOW_SKILLS:
+            # Description starts with "Use when"
+            suite.add(
+                f"desc-starts-use-when/{skill_name}",
+                desc.startswith("Use when"),
+                f"Description starts with: '{desc[:30]}...'",
+            )
+
+            # Description length: <=1024 (triggers now live in when_to_use)
+            desc_len = len(desc)
+            suite.add(
+                f"desc-length/{skill_name}",
+                desc_len <= 1024,
+                f"Description is {desc_len} chars (max 1024)",
+                severity="FAIL" if desc_len > 1024 else "WARN",
+            )
+
+            # Trigger phrases live in when_to_use (post-P2); boundaries stay in description
+            wtu = fm.get("when_to_use") or ""
+            suite.add(
+                f"has-when-to-use/{skill_name}",
+                "Trigger" in wtu,
+                "No 'Triggers:' list found in when_to_use field",
+            )
+
+            # Has at least 1 "Do NOT use for" boundary
+            has_boundary = "Do NOT use for" in desc or "Do NOT use" in desc
+            suite.add(
+                f"desc-has-boundary/{skill_name}",
+                has_boundary,
+                "No 'Do NOT use for' boundary found in description",
+            )
+
+            # Combined description + when_to_use budget (listing truncates at 1536)
             combined_len = len(desc) + len(fm.get("when_to_use") or "")
             suite.add(
                 f"frontmatter-budget/{skill_name}",

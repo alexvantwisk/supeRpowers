@@ -5,12 +5,13 @@ description: >
   following TDD workflow in R packages or scripts. Provides expert guidance on
   the red-green-refactor cycle, testthat 3rd edition, snapshot tests, mocking,
   fixtures, test coverage, and test organization patterns.
-  Triggers: test, testthat, TDD, test-driven, unit test, snapshot test, test
-  coverage, expect_equal, test_that, mock, fixture.
   Do NOT use for R CMD check or package-level quality gates — use r-package-dev instead.
   Do NOT use for debugging existing code — use r-debugging instead.
   Do NOT use for statistical hypothesis testing — use r-stats instead.
   For a guided Red-Green-Refactor cycle, invoke /r-tdd-cycle instead.
+when_to_use: >
+  Triggers: test, testthat, TDD, test-driven, unit test, snapshot test, test
+  coverage, expect_equal, test_that, mock, fixture.
 ---
 
 # R Test-Driven Development

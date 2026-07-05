@@ -5,13 +5,14 @@ description: >
   diagnostics in R. Provides expert guidance on linear models, GLMs, mixed
   models, survival analysis, time series, model comparison, assumption
   checking, and effect-size reporting.
+  Do NOT use for machine learning or predictive modeling — use r-tidymodels instead.
+  Do NOT use for clinical trial-specific analysis — use r-clinical instead.
+  Do NOT use for Bayesian MCMC fitting, prior choice, or posterior diagnostics — use r-bayesian instead.
+when_to_use: >
   Triggers: statistical model, hypothesis test, regression, ANOVA, t-test,
   chi-squared, lm, glm, mixed model, survival analysis, p-value, confidence
   interval, diagnostics, significantly different, statistical test, odds ratio,
   effect size, model assumptions, Cox model.
-  Do NOT use for machine learning or predictive modeling — use r-tidymodels instead.
-  Do NOT use for clinical trial-specific analysis — use r-clinical instead.
-  Do NOT use for Bayesian MCMC fitting, prior choice, or posterior diagnostics — use r-bayesian instead.
 ---
 
 # R Statistics & Modeling
