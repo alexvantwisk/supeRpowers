@@ -9,6 +9,12 @@
 
 Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, biostatistics, and more.
 
+## supeRpowers vs posit-dev/skills
+
+If you want individual, à-la-carte R skills to mix into your own setup, [posit-dev/skills](https://github.com/posit-dev/skills) is a great choice.
+
+supeRpowers is the *integrated* option: not a bag of skills but a coherent R plugin. On top of 26 skills it ships **project-detection and auto-format hooks**, **5 specialized agents** (code review, statistical consulting, package checking, Shiny architecture, dependency management), **6 guided `/r-*` workflows**, a **zero-dependency routing test suite** that keeps skills from stepping on each other, and genuine **clinical / Word-reporting depth** (CDISC, TLFs, reference-docx pipelines) you won't find elsewhere. Think of it as a complement, not a competitor — reach for supeRpowers when you want an opinionated, batteries-included R environment rather than parts.
+
 ## Installation
 
 > **Status:** beta. Verified end-to-end on macOS (Apple Silicon) with Claude Code via the GitHub-marketplace install path. Feedback welcome.
@@ -109,9 +115,28 @@ Service:     5 shared agents
 **Hooks** — Two lifecycle hooks ship with the plugin:
 
 - *Session-start* — detects your R project type (package, Shiny, targets, Quarto, analysis) and surfaces the most relevant skills and agents.
-- *Auto-format* (PostToolUse) — runs `styler::style_file()` on `.R`, `.Rmd`, `.Rmarkdown`, and `.qmd` files after Claude edits them, so the on-disk code stays tidyverse-styled. The hook is silent when the file is already clean and skips silently when `styler` isn't installed. See [Hooks](#hooks-1) below for opt-out and tuning.
+- *Auto-format* (PostToolUse) — runs `styler::style_file()` on `.R`, `.Rmd`, `.Rmarkdown`, and `.qmd` files after Claude edits them, so the on-disk code stays tidyverse-styled. The hook is silent when the file is already clean and skips silently when `styler` isn't installed. See [Hooks](#hooks) below for opt-out and tuning.
 
-## Skills
+## Capabilities
+
+Every skill, workflow, and agent, by domain. **Knowledge skills** auto-route on intent (26 skills = 20 knowledge + 6 workflow); **workflow skills** are invoked explicitly with `/r-<name>` and never auto-activate; **agents** are dispatched by skills or invoked directly. The **hook signal** is what the session-start hook looks for to surface each area.
+
+| Domain | Knowledge skills (auto-route on intent) | Workflows (`/r-*`) | Agents | Hook signal |
+|---|---|---|---|---|
+| **Data** | r-data-analysis · r-visualization · r-tables | `/r-analysis` | r-code-reviewer | analysis project |
+| **Modeling** | r-stats · r-bayesian · r-tidymodels · r-clinical | — | r-statistician | `.stan`, clinical/Bayes deps |
+| **Engineering** | r-tdd · r-debugging · r-package-dev · r-shiny · r-targets · r-project-setup | `/r-tdd-cycle` · `/r-debug` · `/r-pkg-release` · `/r-shiny-app` | r-pkg-check · r-shiny-architect · r-dependency-manager | `DESCRIPTION` · `app.R` · `_targets.R` |
+| **Publishing** | r-quarto · r-reporting | `/r-report` | — | `*.qmd`, Word pipeline |
+| **Tooling & meta** | r-performance · r-mcp-setup · r-package-skill-generator · r-overview · skill-auditor | `/r-overview` | — | MCP servers |
+
+<!-- Demo GIF: record a ~30s /r-analysis walkthrough with asciinema, render with agg to
+     docs/media/r-analysis.gif, then embed here (![/r-analysis demo](docs/media/r-analysis.gif)).
+     Requires an interactive Claude Code session — maintainer follow-up. See CONTRIBUTING.md > Evals. -->
+
+<details>
+<summary><strong>Full reference</strong> — per-skill key packages, workflow procedures, and agent dispatch</summary>
+
+### Knowledge skills
 
 | Skill | What It Does | Key Packages |
 |-------|-------------|-------------|
@@ -137,9 +162,7 @@ Service:     5 shared agents
 
 > Plus the `skill-auditor` meta-skill that audits and scores other skills against the project conventions.
 
-## Workflows
-
-Workflow skills provide guided multi-step procedures. They carry `disable-model-invocation`, so they never auto-activate — invoke each explicitly with `/r-<name>`:
+### Workflows (invoke with `/r-<name>`)
 
 | Workflow | Procedure |
 |----------|-----------|
@@ -150,9 +173,9 @@ Workflow skills provide guided multi-step procedures. They carry `disable-model-
 | /r-analysis | Data analysis pipeline — import, clean, explore, model, visualize, report |
 | /r-report | Word report scaffold — generate `reference.docx`, qmd, render script for an R consulting deliverable |
 
-> `/r-overview` is also slash-invocable, but it's the discovery **knowledge** skill (listed in Skills above) — it auto-routes on "what can supeRpowers do" as well as responding to `/r-overview`. It prints every skill, workflow, and agent at a glance.
+> `/r-overview` is also slash-invocable, but it's the discovery **knowledge** skill — it auto-routes on "what can supeRpowers do" as well as responding to `/r-overview`.
 
-## Agents
+### Agents
 
 | Agent | Purpose | Dispatched By |
 |-------|---------|--------------|
@@ -161,6 +184,8 @@ Workflow skills provide guided multi-step procedures. They carry `disable-model-
 | r-pkg-check | R CMD check issue resolution | r-package-dev |
 | r-shiny-architect | Shiny app structure and reactivity review | r-shiny |
 | r-dependency-manager | renv, dependency auditing, version conflicts | r-package-dev, r-project-setup, r-targets |
+
+</details>
 
 ## Hooks
 
