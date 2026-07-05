@@ -1,10 +1,10 @@
 # supeRpowers
 
 [![Tests](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml/badge.svg)](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml)
-![Version](https://img.shields.io/badge/version-0.6.0-blue)
+![Version](https://img.shields.io/badge/version-0.7.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Skills](https://img.shields.io/badge/skills-20-purple)
-![Commands](https://img.shields.io/badge/commands-7-orange)
+![Skills](https://img.shields.io/badge/skills-26-purple)
+![Workflows](https://img.shields.io/badge/workflows-6-orange)
 ![R](https://img.shields.io/badge/R-%3E%3D%204.1.0-blue)
 
 Comprehensive R programming assistant for Claude Code — tidyverse-first data analysis, package development, Shiny, statistics, biostatistics, and more.
