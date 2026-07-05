@@ -41,7 +41,7 @@ claude plugin marketplace add .
 claude plugin install supeRpowers@supeRpowers
 ```
 
-Use this path if you want to modify skills or commands locally — Claude Code reloads from the source directory.
+Use this path if you want to modify skills locally — Claude Code reloads from the source directory.
 
 ### Verify
 
@@ -88,27 +88,27 @@ supeRpowers uses a four-layer architecture:
 Foundation:  rules/r-conventions.md
                (loaded into every R conversation)
                         |
-Domain:      20 specialized skills
+Domain:      20 knowledge skills
              (activated by user intent)
                         |
-Workflows:   7 slash commands
+Workflows:   6 slash-invoked workflow skills + /r-overview
              (user-invoked: /r-tdd-cycle, /r-debug, ...)
                         |
 Service:     5 shared agents
-             (dispatched from skills/commands or invoked directly)
+             (dispatched from skills or invoked directly)
 ```
 
 **Foundation** — `rules/r-conventions.md` enforces tidyverse-first coding: base pipe `|>`, `<-` assignment, snake_case, and modern toolchain conventions across every R interaction.
 
-**Domain** — 20 skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
+**Domain** — 20 knowledge skills cover the full R development spectrum. Each activates automatically when your request matches its trigger — no commands needed.
 
-**Workflows** — 7 slash commands provide guided multi-step procedures (TDD cycle, debugging, package release, Shiny scaffold, analysis pipeline, Word report scaffold, plugin overview). Invoke explicitly with `/r-<name>`.
+**Workflows** — 6 workflow skills provide guided multi-step procedures (TDD cycle, debugging, package release, Shiny scaffold, analysis pipeline, Word report scaffold). They carry `disable-model-invocation` — invoke them explicitly with `/r-<name>`; they never auto-activate. Plus `/r-overview`, the discovery skill that lists everything at a glance.
 
-**Service** — 5 agents handle specialized tasks like code review, statistical consulting, and dependency auditing. Skills and commands dispatch to agents automatically, or you can invoke them directly.
+**Service** — 5 agents handle specialized tasks like code review, statistical consulting, and dependency auditing. Skills dispatch to agents automatically, or you can invoke them directly.
 
 **Hooks** — Two lifecycle hooks ship with the plugin:
 
-- *Session-start* — detects your R project type (package, Shiny, targets, Quarto, analysis) and surfaces the most relevant skills, commands, and agents.
+- *Session-start* — detects your R project type (package, Shiny, targets, Quarto, analysis) and surfaces the most relevant skills and agents.
 - *Auto-format* (PostToolUse) — runs `styler::style_file()` on `.R`, `.Rmd`, `.Rmarkdown`, and `.qmd` files after Claude edits them, so the on-disk code stays tidyverse-styled. The hook is silent when the file is already clean and skips silently when `styler` isn't installed. See [Hooks](#hooks-1) below for opt-out and tuning.
 
 ## Skills
@@ -133,23 +133,24 @@ Service:     5 shared agents
 | r-project-setup | Scaffold new R projects of any type | usethis, renv, golem, quarto |
 | r-mcp-setup | MCP server setup for live R session awareness | btw, mcptools |
 | r-package-skill-generator | Generate skills from R package repos | (meta-tool) |
-| r-overview | Print an inventory of every skill, command, and agent | (discovery) |
+| r-overview | Print an inventory of every skill, workflow, and agent | (discovery) |
 
 > Plus the `skill-auditor` meta-skill that audits and scores other skills against the project conventions.
 
-## Commands
+## Workflows
 
-Slash commands provide guided multi-step workflows. Invoke explicitly with `/r-<name>`:
+Workflow skills provide guided multi-step procedures. They carry `disable-model-invocation`, so they never auto-activate — invoke each explicitly with `/r-<name>`:
 
-| Command | Workflow |
-|---------|----------|
+| Workflow | Procedure |
+|----------|-----------|
 | /r-tdd-cycle | Test-driven development — Red, Green, Refactor, Review |
 | /r-debug | Systematic debugging — reproduce, isolate, diagnose, fix, regression test, verify |
 | /r-pkg-release | Package release pipeline — audit deps, test, document, R CMD check, version bump, review, submit |
 | /r-shiny-app | Shiny app scaffold — structure, modules, reactivity, test, architecture review |
 | /r-analysis | Data analysis pipeline — import, clean, explore, model, visualize, report |
 | /r-report | Word report scaffold — generate `reference.docx`, qmd, render script for an R consulting deliverable |
-| /r-overview | Plugin directory — every skill, command, and agent at a glance |
+
+> `/r-overview` is also slash-invocable, but it's the discovery **knowledge** skill (listed in Skills above) — it auto-routes on "what can supeRpowers do" as well as responding to `/r-overview`. It prints every skill, workflow, and agent at a glance.
 
 ## Agents
 
@@ -171,7 +172,7 @@ Two lifecycle hooks ship with supeRpowers. Both can be disabled in
 Fires on `startup`, `clear`, and `compact`. Detects whether the current working
 directory looks like an R package, Shiny app, Quarto project, targets pipeline,
 clinical project, or generic R project, and injects, into Claude's context, a note naming the
-relevant skills, commands, and agents. Reports R version + key tidyverse package
+relevant skills and agents. Reports R version + key tidyverse package
 versions when `Rscript` is on `PATH`.
 
 ### Auto-format (`PostToolUse`)
@@ -234,7 +235,7 @@ supeRpowers is in public beta and welcomes contributions — both issues and
 pull requests. For non-trivial changes, please open an issue first to align on
 direction before opening a PR. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
 full guide: issue-quality bar, PR workflow, R coding conventions, and how to
-add a new skill / command / agent.
+add a new skill / workflow / agent.
 
 ## License
 

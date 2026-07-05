@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 20 skills, 7 commands, 5 agents, and 1 rule — covering data analysis, visualization, statistics, Bayesian modeling, clinical trials, Shiny, package development, tables, Quarto publishing, Word reporting, performance, machine learning, pipelines, TDD, debugging, MCP setup, plugin discovery, and guided workflow commands.
+A Claude Code marketplace plugin providing expert-level R programming assistance. It ships 26 skills — 20 knowledge skills plus 6 workflow skills (the former slash commands, now `disable-model-invocation` skills invoked as `/r-<name>`) — 5 agents, and 1 rule; commands have been merged into skills. It covers data analysis, visualization, statistics, Bayesian modeling, clinical trials, Shiny, package development, tables, Quarto publishing, Word reporting, performance, machine learning, pipelines, TDD, debugging, MCP setup, plugin discovery, and guided workflows.
 
 ## Project Structure
 
@@ -16,10 +16,6 @@ hooks/                   # Session lifecycle hooks
   run-hook.cmd           # Cross-platform wrapper
 rules/                   # Foundation rules (loaded into every R conversation)
   r-conventions.md       # Base pipe |>, tidyverse-first, style guide
-commands/                # Slash commands (user-invoked via /<name>)
-  r-analysis.md          r-debug.md             r-overview.md
-  r-pkg-release.md       r-report.md            r-shiny-app.md
-  r-tdd-cycle.md
 skills/                  # Skills (SKILL.md + optional references/, scripts/, eval.md)
   Domain skills:
     r-data-analysis/       r-visualization/       r-tdd/
@@ -28,6 +24,9 @@ skills/                  # Skills (SKILL.md + optional references/, scripts/, ev
     r-tables/              r-quarto/              r-reporting/
     r-performance/         r-tidymodels/          r-targets/
     r-project-setup/       r-mcp-setup/           r-package-skill-generator/
+  Workflow skills (disable-model-invocation, invoked via /r-<name>):
+    r-analysis/            r-debug/               r-pkg-release/
+    r-report/              r-shiny-app/           r-tdd-cycle/
   Meta skills:
     r-overview/            skill-auditor/
 agents/                  # Shared agents (YAML frontmatter required)
@@ -41,18 +40,20 @@ tests/                   # Routing, structural, and convention test suites
 
 ### Skills (`skills/*/SKILL.md`)
 
-- YAML frontmatter with exactly two fields: `name` and `description`
-- `description` starts with "Use when..." followed by third-person capability description, 5+ trigger phrases, and negative boundaries referencing sibling skills. Target 500 chars, hard limit 1024 chars.
+- YAML frontmatter: `name` + `description` + `when_to_use` (plus optional `paths`, `disable-model-invocation`)
+- `description` starts with "Use when..." followed by third-person capability description and negative boundaries referencing sibling skills. Hard limit 1024 chars.
+- `when_to_use` holds the `Triggers: a, b, c.` list (5+ trigger phrases). Combined `description` + `when_to_use` ≤ 1536 chars (the listing truncation point).
+- Optional `paths` (glob list) gates a skill to files it applies to (e.g. `r-targets` → `["_targets.R"]`)
 - Body: max 300 lines (including frontmatter)
 - Optional `references/` subdirectory for deep-dive content (lazy-loaded)
 - Optional `scripts/` subdirectory for helper scripts
 
-### Commands (`commands/*.md`)
+### Workflow skills (`skills/r-analysis`, `r-debug`, `r-pkg-release`, `r-report`, `r-shiny-app`, `r-tdd-cycle`)
 
-- YAML frontmatter with a single field: `description` (one-line, shown in `/` autocomplete)
-- Filename (without `.md`) is the slash command name (e.g. `commands/r-tdd-cycle.md` → `/r-tdd-cycle`)
-- Body is the prompt that runs when the user invokes the command
-- Max 200 lines (including frontmatter)
+A workflow skill is a skill with `disable-model-invocation: true`, invoked only as `/r-<name>`, never intent-routed. Frontmatter is `name` + one-line `description` + `disable-model-invocation: true` — no `when_to_use`, no `Triggers:`, no `Do NOT` boundaries, no `eval.md`. This is the documented successor to the old `commands/` directory (the same pattern `skill-auditor` uses).
+
+- Body is the prompt that runs on `/r-<name>` — Prerequisites, Progress Tracking, Steps, Abort Conditions, Examples
+- Max 300 lines (including frontmatter)
 - May reference skills and agents inline ("Skill: r-tdd", "Agent: r-code-reviewer") to delegate domain knowledge
 
 ### Agents (`agents/*.md`)
@@ -83,7 +84,7 @@ All R code in this project — in skills, agents, rules, references, and example
 Run this to check for violations (eval.md files reference `%>%` inside eval
 questions and should be excluded):
 ```bash
-grep -rn '%>%' skills/ commands/ agents/ rules/ --exclude=eval.md
+grep -rn '%>%' skills/ agents/ rules/ --exclude=eval.md
 ```
 
 ## Adding a New Skill
@@ -96,13 +97,13 @@ grep -rn '%>%' skills/ commands/ agents/ rules/ --exclude=eval.md
 6. Include 3-5 example prompts at the end
 7. Verify: no `%>%`, line count, frontmatter format
 
-## Adding a New Command
+## Adding a New Workflow Skill
 
-1. Create `commands/<name>.md` with frontmatter `description: <one-line summary>`
-2. Body is the prompt that runs on `/<name>` — Prerequisites, Progress Tracking, Steps, Abort Conditions, Examples
+1. Create `skills/<name>/SKILL.md` with frontmatter `name: <name>` + `description: <one-line summary>` + `disable-model-invocation: true`
+2. Body is the prompt that runs on `/r-<name>` — Prerequisites, Progress Tracking, Steps, Abort Conditions, Examples
 3. Reference skills and agents inline (e.g. `**Skill:** r-tdd`) so Claude dispatches them at the right step
-4. Keep under 200 lines (including frontmatter)
-5. No eval.md — commands are explicit invocations, not intent-routed
+4. Keep under 300 lines (including frontmatter)
+5. No `when_to_use`, no `Triggers:`, no `Do NOT` boundaries, no `eval.md` — workflow skills are explicit `/r-<name>` invocations, never intent-routed
 
 ## Adding a New Agent
 
@@ -116,9 +117,9 @@ grep -rn '%>%' skills/ commands/ agents/ rules/ --exclude=eval.md
 
 Before committing any content changes:
 
-- [ ] No `%>%` in skills/, commands/, agents/, rules/ (excluding `eval.md` files)
+- [ ] No `%>%` in skills/, agents/, rules/ (excluding `eval.md` files)
 - [ ] SKILL.md files are ≤300 lines with correct frontmatter
-- [ ] Command files are ≤200 lines with `description` frontmatter
+- [ ] Knowledge-skill frontmatter carries `when_to_use`; workflow skills carry `disable-model-invocation: true`
 - [ ] Agent files are ≤200 lines with `name` + `description` frontmatter
 - [ ] Rule files are ≤150 lines with no frontmatter
 - [ ] All R code uses `<-`, `|>`, snake_case, double quotes

@@ -2,10 +2,10 @@
 name: r-overview
 description: >
   Use when the user asks what supeRpowers can do, requests a list or directory
-  of available R skills / commands / agents, or asks for an overview of the
+  of available R skills / workflows / agents, or asks for an overview of the
   plugin — discovery-only intent, not actual R work. Renders a one-page
-  inventory of the 20 skills, 7 commands, and 5 agents shipped here, grouped
-  by area, so the user can find the right tool for their next R task.
+  inventory of the 26 skills (20 knowledge + 6 workflow) and 5 agents shipped
+  here, grouped by area, so the user can find the right tool for their next R task.
   Do NOT use for actually doing R work — route to the matching domain skill
   (r-data-analysis, r-stats, r-bayesian, r-shiny, r-tdd, r-debugging, etc.).
   Do NOT use for MCP setup — use r-mcp-setup.
@@ -24,10 +24,10 @@ Discovery skill. Render a concise inventory of the supeRpowers plugin so the
 user can locate the right tool for their next R task. **Do not begin any R
 workflow, do not dispatch any agent, do not load any reference file.** This
 skill is for orientation only — once the user picks a direction, the relevant
-domain skill or command takes over.
+domain skill or workflow takes over.
 
-The same content backs the `/r-overview` slash command, which the user can
-invoke explicitly when they want the same orientation on demand.
+`/r-overview` invokes this same skill explicitly, on demand — it also
+auto-routes from discovery intent like "what can supeRpowers do".
 
 ## What to Output
 
@@ -37,11 +37,11 @@ auto-routes to each skill.
 
 ---
 
-> **supeRpowers** — R programming plugin for Claude Code. Skills activate
-> automatically from intent; commands are user-invoked with `/r-<name>`;
-> agents are dispatched by skills/commands or invoked directly.
+> **supeRpowers** — R programming plugin for Claude Code. Knowledge skills
+> activate automatically from intent; workflow skills are user-invoked with
+> `/r-<name>`; agents are dispatched by skills or invoked directly.
 
-### Skills (20)
+### Skills (26)
 
 **Data & visualization**
 
@@ -75,12 +75,12 @@ auto-routes to each skill.
 
 - **r-mcp-setup** — connect Claude Code to R via mcp-repl (persistent agent session) or mcptools/btw (live IDE session). Triggers: mcp-repl, mcptools, btw, claude mcp add, persistent R session.
 - **r-package-skill-generator** — turn a GitHub R package into a Claude skill. Triggers: generate skill, learn package, skill from repo.
-- **r-overview** — this skill: lists every skill / command / agent.
+- **r-overview** — this skill: lists every skill / workflow / agent.
 - **skill-auditor** *(meta)* — score an existing skill against project conventions.
 
-### Commands (7)
+**Workflows** *(user-invoked with `/r-<name>` — never auto-route)*
 
-| Command | Workflow |
+| Workflow | Procedure |
 |---|---|
 | `/r-tdd-cycle` | Red, Green, Refactor, Review for an R package using testthat 3e. |
 | `/r-debug` | Reproduce, isolate, diagnose, fix, regression test, verify. |
@@ -88,7 +88,8 @@ auto-routes to each skill.
 | `/r-shiny-app` | Scaffold app, design modules, wire reactivity, test, architecture review. |
 | `/r-analysis` | Import, clean, explore, model, visualize, report. |
 | `/r-report` | Scaffold a Word `.docx` consulting deliverable from an R analysis. |
-| `/r-overview` | Print this same inventory on demand. |
+
+*(`/r-overview` also runs this inventory on demand — it's the discovery knowledge skill above, not a workflow skill.)*
 
 ### Agents (5)
 
@@ -116,7 +117,7 @@ auto-routes to each skill.
 
 Stop. Do not pre-load any domain skill. Wait for the user's next message — at
 that point the relevant skill will activate from intent (or the user can
-invoke a command explicitly).
+invoke a workflow explicitly with `/r-<name>`).
 
 If the user's next message is a concrete R task, route to the matching domain
 skill rather than re-rendering the inventory.
