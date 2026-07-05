@@ -5,7 +5,6 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # --- Detection flags ---
 is_r_package=false
@@ -122,6 +121,9 @@ elif command -v gtimeout >/dev/null 2>&1; then
 fi
 
 r_session_info=""
+# Single quotes below are intentional: these are R expressions
+# ($major, $platform, ...) that must NOT be expanded by the shell.
+# shellcheck disable=SC2016
 if command -v Rscript >/dev/null 2>&1; then
   r_version=$($r_probe_timeout Rscript --vanilla -e 'cat(R.version$major, R.version$minor, sep=".")' 2>/dev/null || true)
   if [ -n "$r_version" ]; then
