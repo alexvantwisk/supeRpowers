@@ -55,10 +55,8 @@ invokes byte-identically to before.
 ### Notes
 
 - No new domain content — this is a structural/platform migration.
-- Deferred to post-tag follow-ups: the `/r-analysis` demo GIF (needs an
-  interactive recording session; see `docs/media/README.md`) and community-
-  marketplace distribution. The full with/without-skill LLM eval benchmark runs
-  manually/nightly, not in PR-gating CI.
+- Deferred to a post-tag follow-up: community-marketplace distribution. The full
+  with/without-skill LLM eval benchmark runs manually/nightly, not in PR-gating CI.
 
 ---
 

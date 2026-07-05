@@ -129,10 +129,6 @@ Every skill, workflow, and agent, by domain. **Knowledge skills** auto-route on 
 | **Publishing** | r-quarto · r-reporting | `/r-report` | — | `*.qmd`, Word pipeline |
 | **Tooling & meta** | r-performance · r-mcp-setup · r-package-skill-generator · r-overview · skill-auditor | `/r-overview` | — | MCP servers |
 
-<!-- Demo GIF: record a ~30s /r-analysis walkthrough with asciinema, render with agg to
-     docs/media/r-analysis.gif, then embed here (![/r-analysis demo](docs/media/r-analysis.gif)).
-     Requires an interactive Claude Code session — maintainer follow-up. See CONTRIBUTING.md > Evals. -->
-
 <details>
 <summary><strong>Full reference</strong> — per-skill key packages, workflow procedures, and agent dispatch</summary>
 

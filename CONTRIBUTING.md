@@ -144,10 +144,6 @@ queries). Two layers exercise them:
   scenarios; archive the resulting `grading.json` as a CI artifact. This is
   expensive (LLM calls) so it never blocks a PR.
 
-When the `r-analysis` workflow's step list changes, regenerate the demo GIF:
-record with `asciinema` and render with `agg` (`agg docs/media/r-analysis.cast
-docs/media/r-analysis.gif`), committing both the `.cast` and the `.gif`.
-
 ---
 
 ## R coding conventions
