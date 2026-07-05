@@ -1,5 +1,67 @@
 # Release Notes
 
+## 0.7.0 (2026-07-05) — Platform Alignment
+
+Align supeRpowers with the 2026 Claude Code plugin spec: migrate the slash
+commands into workflow skills, split trigger prose into a `when_to_use`
+frontmatter field, add glob `paths` gating, ship skill-creator-style evals with
+a deterministic CI-gating layer, and harden CI to a three-OS matrix. Structural
+and platform migration only — no new domain content, and every `/r-*` workflow
+invokes byte-identically to before.
+
+### Added
+
+- **`when_to_use` frontmatter** on all 20 knowledge skills — trigger phrases now
+  live here; `description` keeps the capability sentence and `Do NOT …`
+  boundaries. Combined `description` + `when_to_use` is budgeted to ≤ 1536 chars
+  (max observed: 995).
+- **`paths` gating** on the four file-signature skills: `r-quarto`
+  (`**/*.qmd`), `r-shiny` (`app.R`, `server.R`, `ui.R`, `R/mod_*.R`),
+  `r-targets` (`_targets.R`), `r-package-dev` (`DESCRIPTION`, `NAMESPACE`).
+- **Evals** — `evals/evals.json` for `r-data-analysis`, `r-visualization`,
+  `r-package-dev`, `r-stats`, `r-reporting`, plus reproduce-before-fix /
+  RED-before-GREEN pressure-scenario sets for `r-debugging` and `r-tdd`.
+- **Layer 3 test suite** (`tests/test_evals.py`) — deterministic, offline eval
+  validation wired into `run_all.py` and CI (`--layer 3`).
+- **`tests/smoke_session_start.py`** — cross-platform smoke test asserting the
+  session-start hook emits valid JSON and spawns zero `Rscript` in a non-R dir.
+- **CI hardening** — three-OS matrix (ubuntu/macos/windows), a `shellcheck` job
+  over the bash hooks, per-OS session-start smoke, and a dedicated eval job.
+- **README capability matrix** (by domain) and a **"supeRpowers vs
+  posit-dev/skills"** positioning section.
+
+### Changed
+
+- **6 slash commands → workflow skills.** `r-analysis`, `r-debug`,
+  `r-pkg-release`, `r-report`, `r-shiny-app`, and `r-tdd-cycle` are now skills
+  with `disable-model-invocation: true`, invoked only as `/r-<name>` and never
+  intent-routed. Bodies ported byte-for-byte; `/r-*` behavior is unchanged.
+- **Test harness** reads triggers from `description` + `when_to_use`; adds
+  `frontmatter-budget`, `has-when-to-use`, and workflow-skill assertions; removes
+  the command-file checks; routing matrix gains six workflow-no-route guards.
+- **Inventory surfaces** (README, CLAUDE.md, `r-overview`, session-start hook)
+  reworded from "commands" to "workflow skills". Counts: **26 skills**
+  (20 knowledge + 6 workflow), 5 agents, 1 rule, **0 commands**.
+- **hooks/session-start** — removed a dead `PLUGIN_ROOT` variable; now
+  shellcheck-clean.
+- **Version** — 0.6.0 → 0.7.0.
+
+### Removed
+
+- The **`commands/` directory** (all 7 files). Six became workflow skills; the
+  seventh, `/r-overview`, is absorbed by the existing `r-overview` knowledge
+  skill, which is slash-invocable under the 2026 model.
+
+### Notes
+
+- No new domain content — this is a structural/platform migration.
+- Deferred to post-tag follow-ups: the `/r-analysis` demo GIF (needs an
+  interactive recording session; see `docs/media/README.md`) and community-
+  marketplace distribution. The full with/without-skill LLM eval benchmark runs
+  manually/nightly, not in PR-gating CI.
+
+---
+
 ## 0.6.0 (2026-07-04)
 
 Currency pass: bring the content corpus from its early-2024 snapshot to
