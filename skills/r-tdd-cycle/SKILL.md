@@ -1,5 +1,7 @@
 ---
+name: r-tdd-cycle
 description: Guided TDD workflow — Red, Green, Refactor, Review for R packages using testthat 3e
+disable-model-invocation: true
 ---
 
 # TDD Cycle

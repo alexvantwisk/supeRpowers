@@ -1,5 +1,7 @@
 ---
+name: r-pkg-release
 description: Guided R package release workflow — audit deps, test, document, R CMD check, version bump, review, submit
+disable-model-invocation: true
 ---
 
 

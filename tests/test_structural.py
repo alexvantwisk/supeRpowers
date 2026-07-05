@@ -24,7 +24,6 @@ WORKFLOW_SKILLS = {
 
 from conftest import (
     AGENTS_DIR,
-    COMMANDS_DIR,
     CONVENTIONS_FILE,
     HOOKS_DIR,
     PLUGIN_JSON,
@@ -35,7 +34,6 @@ from conftest import (
     extract_agent_mentions,
     extract_reference_pointers,
     get_agent_files,
-    get_command_files,
     get_rule_files,
     get_skill_dirs,
     get_skill_frontmatters,
@@ -179,40 +177,23 @@ def run_structural_tests() -> TestSuite:
             f"Rule file is {line_count} lines (max 150)",
         )
 
-    # ── 1.3 Command Files ──────────────────────────────────────────────────
+    # ── 1.3 Workflow Skills (migrated commands) ────────────────────────────
 
-    command_files = get_command_files()
-
-    for cmd_file in command_files:
-        content = cmd_file.read_text(encoding="utf-8")
-
-        # Frontmatter present and parseable
-        has_frontmatter = content.startswith("---\n") and "\n---\n" in content[4:]
+    for skill_name in sorted(WORKFLOW_SKILLS):
+        skill_md = SKILLS_DIR / skill_name / "SKILL.md"
         suite.add(
-            f"command-frontmatter/{cmd_file.stem}",
-            has_frontmatter,
-            "Command file is missing YAML frontmatter delimited by ---",
+            f"workflow-exists/{skill_name}",
+            skill_md.exists(),
+            f"Workflow skill '{skill_name}' has no SKILL.md",
         )
-
-        # Description field present
-        if has_frontmatter:
-            fm_block = content[4:].split("\n---\n", 1)[0]
-            has_description = any(
-                line.strip().startswith("description:")
-                for line in fm_block.splitlines()
-            )
-            suite.add(
-                f"command-has-description/{cmd_file.stem}",
-                has_description,
-                "Command frontmatter missing required 'description' field",
-            )
-
-        # Line limit (200 incl. frontmatter)
-        line_count = content.count("\n") + 1
+        if not skill_md.exists():
+            continue
+        # Must be user-invoked only, never intent-routed
+        fm_block = skill_md.read_text(encoding="utf-8").split("\n---\n", 1)[0]
         suite.add(
-            f"command-line-limit/{cmd_file.stem}",
-            line_count <= 200,
-            f"Command file is {line_count} lines (max 200)",
+            f"workflow-disable-invocation/{skill_name}",
+            "disable-model-invocation: true" in fm_block,
+            f"Workflow skill '{skill_name}' must set disable-model-invocation: true",
         )
 
     # ── 1.4 Reference Integrity ────────────────────────────────────────────
@@ -304,8 +285,8 @@ def run_structural_tests() -> TestSuite:
     # ── 1.8 Eval Coverage ─────────────────────────────────────────────────
 
     for skill_dir in skill_dirs:
-        if skill_dir.name == "skill-auditor":
-            continue  # skill-auditor is the meta-skill, eval is different
+        if skill_dir.name == "skill-auditor" or skill_dir.name in WORKFLOW_SKILLS:
+            continue  # meta-skill and /-invoked workflows have no eval.md
         eval_file = skill_dir / "eval.md"
         suite.add(
             f"eval-exists/{skill_dir.name}",

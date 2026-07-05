@@ -1,5 +1,7 @@
 ---
+name: r-debug
 description: Guided debugging workflow — reproduce, isolate, diagnose, fix, regression test, verify
+disable-model-invocation: true
 ---
 
 

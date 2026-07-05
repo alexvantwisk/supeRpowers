@@ -1,5 +1,7 @@
 ---
+name: r-analysis
 description: Guided data analysis pipeline — import, clean, explore, model, visualize, report
+disable-model-invocation: true
 ---
 
 

@@ -711,5 +711,53 @@
     "must_not_fire": ["r-targets"],
     "discriminator": "scaffold + directory structure + new project = setup, not pipeline authoring",
     "category": "package-overload"
+  },
+  {
+    "id": "route-090",
+    "prompt": "Walk me through writing a failing testthat test then implementing it for my package",
+    "expected_skill": "r-tdd",
+    "must_not_fire": ["r-tdd-cycle"],
+    "discriminator": "TDD knowledge routes to r-tdd; /r-tdd-cycle is invoked explicitly, never intent-routed",
+    "category": "workflow-no-route"
+  },
+  {
+    "id": "route-091",
+    "prompt": "Help me clean and reshape this messy data frame with dplyr and tidyr",
+    "expected_skill": "r-data-analysis",
+    "must_not_fire": ["r-analysis"],
+    "discriminator": "Wrangling knowledge routes to r-data-analysis; /r-analysis is invoked explicitly, never intent-routed",
+    "category": "workflow-no-route"
+  },
+  {
+    "id": "route-092",
+    "prompt": "I hit an 'object not found' error with a traceback, help me isolate the bug",
+    "expected_skill": "r-debugging",
+    "must_not_fire": ["r-debug"],
+    "discriminator": "Debugging knowledge routes to r-debugging; /r-debug is invoked explicitly, never intent-routed",
+    "category": "workflow-no-route"
+  },
+  {
+    "id": "route-093",
+    "prompt": "Get my R package ready with roxygen2 docs and a passing R CMD check",
+    "expected_skill": "r-package-dev",
+    "must_not_fire": ["r-pkg-release"],
+    "discriminator": "Package-dev knowledge routes to r-package-dev; /r-pkg-release is invoked explicitly, never intent-routed",
+    "category": "workflow-no-route"
+  },
+  {
+    "id": "route-094",
+    "prompt": "Render my analysis to a Word docx report with flextable tables",
+    "expected_skill": "r-reporting",
+    "must_not_fire": ["r-report"],
+    "discriminator": "Word-reporting knowledge routes to r-reporting; /r-report is invoked explicitly, never intent-routed",
+    "category": "workflow-no-route"
+  },
+  {
+    "id": "route-095",
+    "prompt": "Build a Shiny app with modules and reactive values",
+    "expected_skill": "r-shiny",
+    "must_not_fire": ["r-shiny-app"],
+    "discriminator": "Shiny knowledge routes to r-shiny; /r-shiny-app is invoked explicitly, never intent-routed",
+    "category": "workflow-no-route"
   }
 ]

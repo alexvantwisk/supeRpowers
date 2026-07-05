@@ -1,5 +1,7 @@
 ---
+name: r-shiny-app
 description: Guided Shiny app workflow — scaffold, design modules, wire reactivity, test, architecture review
+disable-model-invocation: true
 ---
 
 

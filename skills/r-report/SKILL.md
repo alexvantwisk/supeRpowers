@@ -1,5 +1,7 @@
 ---
+name: r-report
 description: Scaffold and render a clean, minimalist Word (.docx) report from an R analysis
+disable-model-invocation: true
 ---
 
 
