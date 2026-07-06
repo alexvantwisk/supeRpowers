@@ -196,11 +196,15 @@ def run_convention_tests() -> TestSuite:
             stripped = line.strip()
             if stripped.startswith("#"):
                 continue
-            # Find single-quoted strings not inside double quotes
+            # Find single-quoted strings NOT inside double quotes. Strip
+            # double-quoted literals first (handling escaped \") so a single
+            # quote used as a regex metacharacter or literal — e.g. "[\"']" or
+            # paste0("'", w, "'") — is not mistaken for an R string delimiter.
+            outside = re.sub(r'"(?:[^"\\]|\\.)*"', "", stripped)
             # Simple heuristic: standalone 'string' not preceded by a word char (contractions)
-            if re.search(r"(?<!\w)'[^']+?'", stripped):
+            if re.search(r"(?<!\w)'[^']+?'", outside):
                 # Exclude format specifiers like '%s' and comments
-                if not re.search(r"'%[sd]'", stripped):
+                if not re.search(r"'%[sd]'", outside):
                     single_quote_violations.append(f"{f.relative_to(SKILLS_DIR)}:{i}")
 
     suite.add(

@@ -1,5 +1,33 @@
 # Release Notes
 
+## 0.7.1 (2026-07-06) — dplyr 1.2 currency
+
+Document the dplyr 1.2 elementwise `when_any()` / `when_all()` helpers in the
+r-data-analysis reference corpus and correct the dplyr 1.2 release date.
+Content/docs only — no skill, agent, hook, or count changes.
+
+### Added
+
+- **`when_any()` / `when_all()` section** in
+  `skills/r-data-analysis/references/dplyr-patterns.md` — elementwise OR / AND
+  across logical vectors, with the `filter()` / `filter_out()` usage pattern.
+
+### Fixed
+
+- **dplyr 1.2 release date** in `dplyr-patterns.md` corrected from "Feb 2026"
+  to "Apr 2026" (CRAN: dplyr 1.2.1 on 2026-04-03).
+- **Convention-checker false positives** — `tests/test_conventions.py` now
+  strips double-quoted literals before its single-quote scan, so single quotes
+  used as regex metacharacters (`[\"']`) or literal search characters
+  (`paste0("'", w, "'")`) no longer warn. Suite is warning-clean (651/651).
+
+### Notes
+
+- No new features; skill/agent/rule counts unchanged
+  (26 skills / 5 agents / 1 rule).
+
+---
+
 ## 0.7.0 (2026-07-05) — Platform Alignment
 
 Align supeRpowers with the 2026 Claude Code plugin spec: migrate the slash
