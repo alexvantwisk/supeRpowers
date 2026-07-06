@@ -74,7 +74,26 @@ df |> filter_out(class == "suv")         # keeps NA class rows
 
 **Rule:** When the *intent* is "drop these rows", use `filter_out()` —
 matches intuition with NAs and avoids the `!(... | is.na(...))` boolean
-gymnastics that `filter()` forces. New in dplyr 1.2 (Feb 2026).
+gymnastics that `filter()` forces. New in dplyr 1.2 (Apr 2026).
+
+---
+
+## when_any() / when_all() — Elementwise OR / AND (dplyr >= 1.2)
+
+```r
+# Elementwise versions of any()/all() across multiple logical vectors:
+# when_any(x, y, z) is x | y | z; when_all(x, y, z) is x & y & z
+
+# Inside filter(), comma-separated conditions combine with & (AND).
+# Use when_any() to combine them with | (OR) — no parentheses or | chains:
+df |> filter(when_any(revenue > 1e6, region == "APAC", is_priority))
+
+# Pairs naturally with filter_out() to drop rows matching ANY condition:
+df |> filter_out(when_any(is.na(revenue), revenue < 0))
+```
+
+**Rule:** Reach for `when_any()` / `when_all()` when an OR/AND spans several
+columns — clearer than hand-built `|` / `&` chains. New in dplyr 1.2.
 
 ---
 
@@ -150,7 +169,7 @@ names  <- c("Northeast", "Southeast", "Midwest", "West")
 df |> mutate(region_name = recode_values(region_code, from = codes, to = names))
 ```
 
-**dplyr 1.2 (Feb 2026):** `case_match()` is soft-deprecated and `recode()`
+**dplyr 1.2 (Apr 2026):** `case_match()` is soft-deprecated and `recode()`
 is superseded — use `recode_values()` (new vector) or `replace_values()`
 (partial update). Older code using `case_match()` still works but warns.
 Use `case_when()` for conditional logic with expressions.
