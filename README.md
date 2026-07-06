@@ -114,7 +114,7 @@ Service:     5 shared agents
 
 **Hooks** — Two lifecycle hooks ship with the plugin:
 
-- *Session-start* — detects your R project type (package, Shiny, targets, Quarto, analysis) and surfaces the most relevant skills and agents.
+- *Session-start* — detects your R project type (package, Shiny, Quarto, targets, clinical, Bayesian, Word report, or generic analysis) and surfaces the most relevant skills and agents.
 - *Auto-format* (PostToolUse) — runs `styler::style_file()` on `.R`, `.Rmd`, `.Rmarkdown`, and `.qmd` files after Claude edits them, so the on-disk code stays tidyverse-styled. The hook is silent when the file is already clean and skips silently when `styler` isn't installed. See [Hooks](#hooks) below for opt-out and tuning.
 
 ## Capabilities
@@ -126,7 +126,7 @@ Every skill, workflow, and agent, by domain. **Knowledge skills** auto-route on 
 | **Data** | r-data-analysis · r-visualization · r-tables | `/r-analysis` | r-code-reviewer | analysis project |
 | **Modeling** | r-stats · r-bayesian · r-tidymodels · r-clinical | — | r-statistician | `.stan`, clinical/Bayes deps |
 | **Engineering** | r-tdd · r-debugging · r-package-dev · r-shiny · r-targets · r-project-setup | `/r-tdd-cycle` · `/r-debug` · `/r-pkg-release` · `/r-shiny-app` | r-pkg-check · r-shiny-architect · r-dependency-manager | `DESCRIPTION` · `app.R` · `_targets.R` |
-| **Publishing** | r-quarto · r-reporting | `/r-report` | — | `*.qmd`, Word pipeline |
+| **Publishing** | r-quarto · r-reporting | `/r-report` | — | `_quarto.yml`, Word pipeline |
 | **Tooling & meta** | r-performance · r-mcp-setup · r-package-skill-generator · r-overview · skill-auditor | `/r-overview` | — | MCP servers |
 
 <details>
@@ -146,9 +146,9 @@ Every skill, workflow, and agent, by domain. **Knowledge skills** auto-route on 
 | r-bayesian | Bayesian inference, MCMC, priors, posterior diagnostics | brms, rstanarm, cmdstanr, posterior, tidybayes |
 | r-clinical | Clinical trials, CDISC, biostatistics | admiral, pwr, gsDesign, pROC, meta |
 | r-tables | Publication-quality tables | gt, gtsummary, gtExtras, reactable |
-| r-quarto | Documents, presentations, websites, books | quarto, rmarkdown, tarchetypes |
+| r-quarto | Documents, presentations, websites, books | quarto, rmarkdown, knitr |
 | r-reporting | Word (.docx) consulting reports — reference docx, flextable pipeline, page layout | quarto, flextable, gtsummary, knitr |
-| r-performance | Profiling, optimization, parallel processing | profvis, data.table, Rcpp, furrr, bench |
+| r-performance | Profiling, optimization, parallel processing | profvis, data.table, Rcpp, mirai, bench |
 | r-tidymodels | Machine learning, predictive modeling, tuning | tidymodels, recipes, tune, yardstick |
 | r-targets | Reproducible pipelines, workflow orchestration | targets, tarchetypes, crew |
 | r-project-setup | Scaffold new R projects of any type | usethis, renv, golem, quarto |
@@ -192,9 +192,10 @@ Two lifecycle hooks ship with supeRpowers. Both can be disabled in
 
 Fires on `startup`, `clear`, and `compact`. Detects whether the current working
 directory looks like an R package, Shiny app, Quarto project, targets pipeline,
-clinical project, or generic R project, and injects, into Claude's context, a note naming the
-relevant skills and agents. Reports R version + key tidyverse package
-versions when `Rscript` is on `PATH`.
+clinical project, Bayesian/Stan project, Word (.docx) report pipeline, or generic
+R project, and injects, into Claude's context, a note naming the
+relevant skills and agents. Reports R version + key tidyverse and ecosystem
+package versions when `Rscript` is on `PATH`.
 
 ### Auto-format (`PostToolUse`)
 
