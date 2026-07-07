@@ -1,5 +1,47 @@
 # Release Notes
 
+## 0.8.0 (2026-07-07) — Quarto template creation + docx ownership
+
+Give r-quarto real coverage of *creating* templates (its biggest gap — it only
+documented *using* installed ones), and move the full Word (.docx) mechanics
+surface from r-reporting into r-quarto so one skill owns docx output end to end.
+r-reporting refocuses on the report *content* and *project pipeline*.
+
+### Added
+
+- **`skills/r-quarto/references/template-creation.md`** — reference docs
+  (docx/pptx), `quarto create extension`, `quarto use template` vs `quarto add`,
+  template partials, Typst templates, and distributing extensions. Verified
+  against the current quarto.org docs.
+- **"Creating Templates" + "Word (docx) output" sections** in `r-quarto`
+  SKILL.md, plus docx-mechanics triggers and a template-partials-on-docx gotcha.
+- **docx eval coverage** in `r-quarto/eval.md` (styling + extension ownership,
+  content/pipeline boundary to r-reporting).
+
+### Changed
+
+- **docx ownership moved to r-quarto.** `reference-docx-anatomy.md`,
+  `word-figure-table-patterns.md`, and `quarto-docx-pitfalls.md` relocated from
+  r-reporting to r-quarto (`git mv`) and reframed to be Quarto-native
+  (reference-doc, `quarto render`) rather than consulting-pipeline artifacts.
+- **r-reporting rewritten** to own report content (ICH E9(R1) estimands,
+  structure, prose helpers) + project orchestration (layout, path helpers, RDS
+  cache, `system2` render, `/r-report` scaffold), deferring all docx styling to
+  r-quarto. Frontmatter triggers, boundary, and `evals.json` retargeted.
+- **`/r-report`** now dispatches docx styling/troubleshooting steps to r-quarto
+  (scaffold scripts stay in place).
+- **Routing matrix** — added `route-096`–`099` for template creation; flipped
+  `route-065`–`069`, `094`, `099` to r-quarto (docx mechanics), kept `route-070`
+  on r-reporting (pipeline orchestration). README capability matrix updated.
+
+### Notes
+
+- Skill/agent/rule counts unchanged (26 skills / 5 agents / 1 rule); the
+  r-quarto ↔ r-reporting boundary was re-drawn, not the inventory.
+- Full suite green (`python tests/run_all.py`), `claude plugin validate .` clean.
+
+---
+
 ## 0.7.1 (2026-07-06) — dplyr 1.2 currency
 
 Document the dplyr 1.2 elementwise `when_any()` / `when_all()` helpers in the
