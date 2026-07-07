@@ -1,18 +1,22 @@
 # Reference.docx Anatomy
 
-Deep-dive reference for patching a Pandoc `reference.docx`. This file provides
-the XML internals, unit conversions, and verbatim R code.
+Deep-dive reference for **programmatically patching** the `reference-doc` behind
+Quarto's `format: docx`. This is the reproducible, CI-friendly alternative to
+editing the reference file by hand in Word (that edit-in-Word path is in
+`template-creation.md`). Use code patching when the styling must be diff-able,
+parameterised, or regenerated on every build. This file gives the XML internals,
+unit conversions, and verbatim R code.
 
-## Why a reference.docx?
+## Why patch the reference doc?
 
-Pandoc applies paragraph and character styles from a template Word file. Without
-a `reference-doc:` key, Pandoc uses its built-in default — single spacing,
-left-aligned figures, no page breaks before headings, blank footer. That default
-is intentionally minimal. The only practical path to 1.5 line spacing, full
-justification, Heading 1 page breaks, centered figures and tables, and a
-page-number footer is to supply a patched `reference.docx`. Pandoc strips
-`\centering` and alignment markup from `.qmd` files for docx output; patching
-is the only lever.
+Quarto's docx output applies paragraph and character styles from the file named
+in `reference-doc:`. Without one, Pandoc uses its built-in default — single
+spacing, left-aligned figures, no page breaks before headings, blank footer. To
+impose any custom styling (e.g. 1.5 line spacing, full justification, Heading 1
+page breaks, centered figures and tables, a page-number footer) supply a
+customised reference doc. Pandoc strips `\centering` and alignment markup from
+`.qmd` files for docx output, so the reference doc's *styles* are the only lever —
+you cannot force it from the document body.
 
 ## The docx Is a Zip Archive
 

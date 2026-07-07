@@ -2,9 +2,9 @@
 
 > Lazy reference. Use when drafting the *content* of a consulting report — what
 > sections to include, how to handle prespecification, multiplicity, missing
-> data, uncertainty, and the consultant/client boundary. For *how to render*
-> docx files cleanly, see `reference-docx-anatomy.md`,
-> `quarto-docx-pitfalls.md`, and `word-figure-table-patterns.md`.
+> data, uncertainty, and the consultant/client boundary. For *how to render and
+> style* docx output cleanly (reference-doc, flextable tables, figure centering,
+> render traps), use the **r-quarto** skill.
 
 This reference distills evidence-based reporting structure from ICH E9(R1),
 CONSORT, STROBE, JAMA SAP guidelines, the ASA Statement on P-Values, the TIER

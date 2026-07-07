@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Report Pipeline (Quarto -> Word)
 
-Guided workflow: detect project type, scaffold the qmd + reference docx + render wrapper, generate the reference docx with the five style invariants, run the first render. Pairs with the `r-reporting` skill for mechanics and troubleshooting.
+Guided workflow: detect project type, scaffold the qmd + reference docx + render wrapper, generate the reference docx with the five style invariants, run the first render. Pairs with `r-reporting` for report content and the project pipeline, and `r-quarto` for docx styling (reference-doc) and render troubleshooting.
 
 ## Prerequisites
 
@@ -72,9 +72,10 @@ If `_quarto.yml` already exists, merge by appending (or splice into) the `projec
 
 ### Step 4: Generate reference.docx
 
-**Skill:** `r-reporting`
+**Skill:** `r-quarto`
 
-Run the bundled generator with defaults:
+Run the bundled generator with defaults (the reference-doc styling technique is
+documented in r-quarto; the ready-made generator ships with this scaffold):
 
 ```r
 source("path/to/make_reference_doc.R")
@@ -107,7 +108,7 @@ Confirms exit code 0 and a timestamped docx in `output/`.
 - Windows: `shell.exec(path)`.
 - CI / headless: print path only.
 
-If the user reports issues (figures not centered, page breaks missing, footer wrong), dispatch back to the `r-reporting` skill — most fixes are reference.docx regeneration with a different `make_reference_doc()` argument.
+If the user reports issues (figures not centered, page breaks missing, footer wrong), dispatch to the `r-quarto` skill — these are docx styling fixes, most often reference.docx regeneration with a different `make_reference_doc()` argument.
 
 **Gate:** user has visually verified the output OR explicitly skipped verification.
 

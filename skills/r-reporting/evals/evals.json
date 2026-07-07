@@ -3,40 +3,41 @@
   "scenarios": [
     {
       "id": 1,
-      "prompt": "Render my analysis to a Word .docx consulting report with a custom reference.docx that sets 1.5 line spacing, justified text, and a page break before each Heading 1.",
-      "expected_output": "reference.docx authored + Quarto docx format reference-doc, rendered through Quarto -> Pandoc -> Word",
+      "prompt": "Structure a biostatistics consulting report for a two-arm trial: what sections it needs, where to state the estimand, and how to label prespecified vs exploratory analyses.",
+      "expected_output": "a report structure grounded in the ICH E9(R1) estimand framework with prespecified/exploratory labeling",
       "expectations": [
-        "Authors/edits a reference.docx and points the Quarto docx format at it (reference-doc:)",
-        "Configures line spacing, justification, and Heading 1 page breaks in the reference doc",
-        "Renders through Quarto -> Pandoc -> Word"
+        "Lays out report sections (summary, methods, results, limitations) with Heading 1 sections",
+        "States the estimand (population, variable, intercurrent-event strategy, summary measure) before results",
+        "Labels analyses as prespecified vs exploratory and addresses multiplicity"
       ]
     },
     {
       "id": 2,
-      "prompt": "Put a gtsummary Table 1 into my Word report so it stays a native, editable Word table.",
-      "expected_output": "gtsummary |> as_flex_table() -> flextable in the docx (not an image)",
+      "prompt": "My upstream model takes 20 minutes; I don't want to re-run it every time I render the Word report.",
+      "expected_output": "cache the expensive result to RDS in the analysis script and read it in the qmd, keeping render cheap",
       "expectations": [
-        "Converts the gtsummary table to a flextable (as_flex_table()) for native Word output",
-        "Ensures the table renders as an editable Word table, not a pasted image",
-        "Places it in the Quarto/Word rendering pipeline"
+        "Fits the model in the analysis script and saveRDS() the result (or its summary) to output/",
+        "readRDS() in the qmd so rendering re-reads a cached artifact instead of re-fitting",
+        "Explains the RDS cache pattern keeps renders fast and reproducible"
       ]
     },
     {
       "id": 3,
-      "prompt": "My upstream model takes 20 minutes; I don't want to re-run it every time I render the Word doc.",
-      "expected_output": "cache the expensive result to RDS and read it in the qmd, keeping render cheap",
+      "prompt": "Set up the render step for my consulting report so each run produces a timestamped docx for an audit trail.",
+      "expected_output": "system2(quarto) render to docx, then rename to a timestamped file after exit 0",
       "expectations": [
-        "Caches the expensive result (e.g. saveRDS/readRDS or a cached upstream step) so rendering re-reads it",
-        "Keeps the render step cheap and reproducible",
-        "Explains the RDS cache pattern for upstream tables/models"
+        "Renders via system2() against the Quarto CLI (not the R quarto package)",
+        "Renames the output to report_YYYYMMDD_HHMMSS.docx after a successful (exit 0) render",
+        "Avoids --output (renames post-render instead) and copies to output/ for the audit trail"
       ]
     }
   ],
   "trigger_set": [
-    { "query": "render my analysis to a Word docx with a reference-doc and flextable tables", "should_trigger": true },
-    { "query": "the figures aren't centered in my Word consulting report", "should_trigger": true },
+    { "query": "structure a biostatistics consulting report with estimands and a limitations section", "should_trigger": true },
+    { "query": "cache my gtsummary tables to RDS so re-rendering the Word report is fast", "should_trigger": true },
+    { "query": "set up a timestamped system2 quarto render for my client report pipeline", "should_trigger": true },
+    { "query": "my figures aren't centered in the Word output and I need 1.5 line spacing", "should_trigger": false },
     { "query": "render this report to HTML and PDF with cross-references", "should_trigger": false },
-    { "query": "style this gt table with conditional colors for a web page", "should_trigger": false },
     { "query": "produce the regulatory TLF shells for the clinical study report", "should_trigger": false }
   ]
 }

@@ -1,7 +1,7 @@
 # supeRpowers
 
 [![Tests](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml/badge.svg)](https://github.com/alexvantwisk/supeRpowers/actions/workflows/test.yml)
-![Version](https://img.shields.io/badge/version-0.7.1-blue)
+![Version](https://img.shields.io/badge/version-0.8.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Skills](https://img.shields.io/badge/skills-26-purple)
 ![Workflows](https://img.shields.io/badge/workflows-6-orange)
@@ -146,8 +146,8 @@ Every skill, workflow, and agent, by domain. **Knowledge skills** auto-route on 
 | r-bayesian | Bayesian inference, MCMC, priors, posterior diagnostics | brms, rstanarm, cmdstanr, posterior, tidybayes |
 | r-clinical | Clinical trials, CDISC, biostatistics | admiral, pwr, gsDesign, pROC, meta |
 | r-tables | Publication-quality tables | gt, gtsummary, gtExtras, reactable |
-| r-quarto | Documents, presentations, websites, books | quarto, rmarkdown, knitr |
-| r-reporting | Word (.docx) consulting reports — reference docx, flextable pipeline, page layout | quarto, flextable, gtsummary, knitr |
+| r-quarto | Documents, presentations, websites, books, templates/extensions, and Word (.docx) output — reference-doc styling, flextable tables, figure layout | quarto, rmarkdown, knitr, flextable |
+| r-reporting | Consulting/clinical Word report as a deliverable — report content (estimands, structure), RDS-cache + render pipeline | quarto, gtsummary, here |
 | r-performance | Profiling, optimization, parallel processing | profvis, data.table, Rcpp, mirai, bench |
 | r-tidymodels | Machine learning, predictive modeling, tuning | tidymodels, recipes, tune, yardstick |
 | r-targets | Reproducible pipelines, workflow orchestration | targets, tarchetypes, crew |
